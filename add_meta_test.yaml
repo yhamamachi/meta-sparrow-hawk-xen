@@ -49,4 +49,10 @@
               conf:
                 - [IMAGE_INSTALL:append, " iperf3 htop tcpdump libaio coreutils rt-tests ethtool fio"]
                 - [EXTRA_IMAGE_FEATURES:append, " ssh-server-openssh"]
+        images:
+          full:
+            partitions:
+              boot:
+                items:
+                  "flash.bin": "%{YOCTOS_WORK_DIR}/build-domd/tmp/deploy/images/%{MACHINE}/flash.bin"
 
