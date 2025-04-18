@@ -1,0 +1,52 @@
+# parameters:
+  MACHINE:
+    desc: "RCAR Gen4-based device"
+    "sparrow-hawk":
+      default: true
+      overrides:
+        variables:
+          MACHINE: "sparrow-hawk"
+          SOC_FAMILY: "r8a779g3"
+        components:
+          domd:
+            builder:
+              layers:
+                - "../meta-renesas/meta-rcar-bsp"
+                - "../meta-renesas/meta-rcar-adas"
+          domu:
+            builder:
+              layers:
+                - "../meta-renesas/meta-rcar-bsp"
+                - "../meta-renesas/meta-rcar-adas"
+  ADD_META_TEST:
+    desc: "Add meta-test layer and some configs"
+    "no":
+      desc: "Nothing to do"
+      default: true
+    "yes":
+      overrides:
+        components:
+          dom0:
+            builder:
+              layers:
+                - "../../../meta-xen-dom0"
+                - "../../../meta-xen-domx"
+          domd:
+            builder:
+              layers:
+                - "../../../meta-xen-domd"
+                - "../../../meta-xen-domx"
+              conf:
+                - [IMAGE_INSTALL:append, " iperf3 htop tcpdump coreutils ethtool"]
+                - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-domd-gen4/recipes-bsp/u-boot"]
+                - [BBMASK:append, "|meta-xt-rcar/meta-xt-gateway/meta-xt-domd-gen4/recipes-bsp/u-boot"]
+          domu:
+            builder:
+              layers:
+                - "../meta-openembedded/meta-networking"
+                - "../../../meta-xen-domu"
+                - "../../../meta-xen-domx"
+              conf:
+                - [IMAGE_INSTALL:append, " iperf3 htop tcpdump libaio coreutils rt-tests ethtool fio"]
+                - [EXTRA_IMAGE_FEATURES:append, " ssh-server-openssh"]
+

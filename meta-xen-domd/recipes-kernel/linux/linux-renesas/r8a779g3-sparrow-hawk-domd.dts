@@ -1,0 +1,4 @@
+#include "r8a779g3-sparrow-hawk.dts"
+
+#include "r8a779g3-domd.dts"
+
