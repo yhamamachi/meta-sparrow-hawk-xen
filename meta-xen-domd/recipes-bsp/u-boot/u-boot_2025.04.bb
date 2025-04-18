@@ -24,7 +24,15 @@ SRC_URI:append = " \
 "
 # HACK patch
 SRC_URI:append = " \
-    file://0001-HACK-Limit-ethernet-speed-to-100-Mbps.patch \
+    file://0004-HACK-Limit-ethernet-speed-to-100-Mbps.patch \
+"
+# Support BL31 load after U-Boot-SPL
+SRC_URI:append = " \
+    file://0005-HACK-Add-support-BL31-firmware-before-starting-U-boo.patch \
+    file://0006-HACK-Skip-fdt_shrink_to_minimum-to-avoid-stack.patch \
+    file://0007-HACK-ATF-missing-parts-support.patch \
+    file://0008-WIP-Add-support-ATF-booting-with-SPL_FIT_LOAD_FULL-m.patch \
+    file://0009-Disable-FIT-detail-log.patch \
 "
 
 PV = "v2025.04+git${SRCPV}"
@@ -33,6 +41,13 @@ UBOOT_SREC_SUFFIX = "srec"
 UBOOT_SREC ?= "u-boot-elf.${UBOOT_SREC_SUFFIX}"
 UBOOT_SREC_IMAGE ?= "u-boot-elf-${MACHINE}-${PV}-${PR}.${UBOOT_SREC_SUFFIX}"
 UBOOT_SREC_SYMLINK ?= "u-boot-elf-${MACHINE}.${UBOOT_SREC_SUFFIX}"
+
+do_compile[depends] += "arm-trusted-firmware:do_deploy"
+do_compile:prepend() {
+    cd ${S}
+    sed -i arch/arm/dts/r8a779g0-u-boot.dtsi \
+        -e "s|\".*bl31.*.bin\"|\"${DEPLOY_DIR}/images/${MACHINE}/bl31-${MACHINE}.bin\"|"
+}
 
 do_deploy:append() {
     if [ -n "${UBOOT_CONFIG}" ]

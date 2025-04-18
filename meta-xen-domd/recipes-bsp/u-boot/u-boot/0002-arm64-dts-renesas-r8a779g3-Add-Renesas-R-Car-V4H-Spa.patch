@@ -1,7 +1,7 @@
-From d8667ce436790c2fc7588298b4a7f39e826384a8 Mon Sep 17 00:00:00 2001
+From 997e24058ebba544339a6300cd57dec021f242bc Mon Sep 17 00:00:00 2001
 From: Marek Vasut <marek.vasut+renesas@mailbox.org>
 Date: Fri, 14 Mar 2025 20:56:10 +0100
-Subject: [PATCH 2/3] arm64: dts: renesas: r8a779g3: Add Renesas R-Car V4H
+Subject: [PATCH 2/9] arm64: dts: renesas: r8a779g3: Add Renesas R-Car V4H
  Sparrow Hawk board support
 
 Add Renesas R-Car V4H Sparrow Hawk board based on R-Car V4H ES3.0 (R8A779G3)

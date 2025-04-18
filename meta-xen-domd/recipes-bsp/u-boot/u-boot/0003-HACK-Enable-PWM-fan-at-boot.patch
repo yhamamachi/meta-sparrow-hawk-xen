@@ -1,7 +1,7 @@
-From 08672ad5bf1c0e23c71046be58fe457d44a5e904 Mon Sep 17 00:00:00 2001
+From 0a33985285b6a0c6649e1952d2dc1956a73659a6 Mon Sep 17 00:00:00 2001
 From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
 Date: Fri, 28 Mar 2025 13:55:36 +0900
-Subject: [PATCH 3/3] HACK: Enable PWM fan at boot
+Subject: [PATCH 3/9] HACK: Enable PWM fan at boot
 
 Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
 ---

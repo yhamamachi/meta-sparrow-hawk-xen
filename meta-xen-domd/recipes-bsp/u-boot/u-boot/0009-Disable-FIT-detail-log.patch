@@ -1,0 +1,26 @@
+From 9e6fdfeb36734659d8a2ce25c39d0733fc12392d Mon Sep 17 00:00:00 2001
+From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+Date: Thu, 17 Apr 2025 12:51:54 +0900
+Subject: [PATCH 9/9] Disable FIT detail log
+
+Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+---
+ configs/r8a779g3_sparrowhawk_defconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configs/r8a779g3_sparrowhawk_defconfig b/configs/r8a779g3_sparrowhawk_defconfig
+index a42accc3ab5..f6dbfe9e7f2 100644
+--- a/configs/r8a779g3_sparrowhawk_defconfig
++++ b/configs/r8a779g3_sparrowhawk_defconfig
+@@ -35,7 +35,7 @@ CONFIG_SPL_SYS_MALLOC_F_LEN=0x20000
+ CONFIG_SPL_STACK_R=y
+ CONFIG_SPL_SPI_FLASH_SUPPORT=y
+ CONFIG_SPL_SPI=y
+-CONFIG_SPL_FIT_PRINT=y
++#CONFIG_SPL_FIT_PRINT=y
+ CONFIG_SPL_LOAD_FIT=y
+ CONFIG_SPL_LOAD_FIT_ADDRESS=0x48000000
+ # CONFIG_SPL_BOARD_INIT is not set
+-- 
+2.34.1
+

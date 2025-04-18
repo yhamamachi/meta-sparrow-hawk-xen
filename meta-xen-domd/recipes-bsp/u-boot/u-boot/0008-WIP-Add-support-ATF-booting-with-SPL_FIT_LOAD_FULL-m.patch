@@ -1,0 +1,167 @@
+From d8c990c3d14965a85a7f0967626251237b3259dc Mon Sep 17 00:00:00 2001
+From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+Date: Thu, 17 Apr 2025 12:51:51 +0900
+Subject: [PATCH 8/9] WIP: Add support ATF booting with SPL_FIT_LOAD_FULL mode
+
+Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+---
+ arch/arm/dts/r8a779g0-u-boot.dtsi      | 15 ++++-
+ board/renesas/common/gen4-spl.c        | 85 ++++++++++++++++++++++++++
+ boot/image-fit.c                       |  3 +
+ configs/r8a779g3_sparrowhawk_defconfig |  3 +
+ 4 files changed, 103 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/dts/r8a779g0-u-boot.dtsi b/arch/arm/dts/r8a779g0-u-boot.dtsi
+index c74adfda877..511320b1f47 100644
+--- a/arch/arm/dts/r8a779g0-u-boot.dtsi
++++ b/arch/arm/dts/r8a779g0-u-boot.dtsi
+@@ -118,7 +118,16 @@
+ 							load  = <0x46400000>;
+ 							entry = <0x46400000>;
+ 							atf-blob {
+-								filename = "../bl31-hack.bin";
++								filename = "../bl31.bin";
++								type = "blob-ext";
++							};
++							/*
++							 * ATF expects DTB will be located
++							 * at bottom of ATF binary. So,
++							 * uboot-fdt-blob is duplicated.
++							 */
++							uboot-fdt-blob {
++								filename = "u-boot.dtb";
+ 								type = "blob-ext";
+ 							};
+ 						};
+@@ -148,8 +157,8 @@
+ 					};
+ 				};
+ 			};
+-			fill@21ffff {
+-				offset = <0x21ffff>;
++			fill@22ffff {
++				offset = <0x22ffff>;
+ 				size = <0x1>;
+ 				fill-byte = [00];
+ 			};
+diff --git a/board/renesas/common/gen4-spl.c b/board/renesas/common/gen4-spl.c
+index ebfefab7253..d41cf302f9f 100644
+--- a/board/renesas/common/gen4-spl.c
++++ b/board/renesas/common/gen4-spl.c
+@@ -100,3 +100,88 @@ void s_init(void)
+ void reset_cpu(void)
+ {
+ }
++
++/* R-Car Gen4 TFA BL31 handoff structure and handling. */
++struct rcar_param_header {
++	u8			type;
++	u8			version;
++	u16			size;
++	u32			attr;
++};
++
++struct rcar_tfa_image_info {
++	struct rcar_param_header	h;
++	uintptr_t		image_base;
++	u32			image_size;
++	u32			image_max_size;
++};
++
++struct rcar_aapcs64_params {
++	u64			arg0;
++	u64			arg1;
++	u64			arg2;
++	u64			arg3;
++	u64			arg4;
++	u64			arg5;
++	u64			arg6;
++	u64			arg7;
++};
++
++struct rcar_entry_point_info {
++	struct rcar_param_header	h;
++	uintptr_t		pc;
++	u32			spsr;
++	struct rcar_aapcs64_params	args;
++};
++
++struct rcar_bl2_to_bl31_params_mem {
++	struct rcar_tfa_image_info	bl32_image_info;
++	struct rcar_tfa_image_info	bl33_image_info;
++	struct rcar_entry_point_info	bl33_ep_info;
++	struct rcar_entry_point_info	bl32_ep_info;
++};
++
++/* Default jump address, return to U-Boot */
++//#define BL33_BASE	0x44100000
++#define BL33_BASE	0x50000000
++/* Custom parameters address passed to TFA by ICUMXA loader */
++#define PARAMS_BASE	0x46422200
++
++/* Usually such a structure is produced by ICUMXA and passed in at 0x46422200 */
++static struct rcar_bl2_to_bl31_params_mem blinfo_template = {
++	.bl33_ep_info.h.type = 1,	/* PARAM_EP */
++	.bl33_ep_info.h.version = 2,	/* Version 2 */
++	.bl33_ep_info.h.size = sizeof(struct rcar_entry_point_info),
++	.bl33_ep_info.h.attr = 0x81,	/* Executable | Non-Secure */
++	.bl33_ep_info.spsr = 0x2c9,	/* Mode=EL2, SP=ELX, Exceptions=OFF */
++	.bl33_ep_info.pc = BL33_BASE,
++
++	.bl33_image_info.h.type = 1,	/* PARAM_EP */
++	.bl33_image_info.h.version = 2,	/* Version 2 */
++	.bl33_image_info.h.size = sizeof(struct image_info),
++	.bl33_image_info.h.attr = 0,
++	.bl33_image_info.image_base = BL33_BASE,
++};
++
++void board_fit_image_post_process(const void *fit, int node,
++				  void **p_image, size_t *p_size) {
++	struct rcar_bl2_to_bl31_params_mem *param = PARAMS_BASE;
++	ulong entry = 0;
++	int ret = 0;
++	const char *name = fdt_getprop(fit, node, FIT_OS_PROP, NULL);
++
++	if (!name)
++		goto EXIT;
++
++	// BL33
++	if (!strcmp(name, "u-boot")) {
++		ret = fit_image_get_entry(fit, node, &entry);
++		if (!ret) {
++			blinfo_template.bl33_image_info.image_base = entry;
++			blinfo_template.bl33_ep_info.pc = entry;
++		}
++	}
++EXIT:
++	memcpy(param, &blinfo_template, sizeof(struct rcar_bl2_to_bl31_params_mem));
++}
++
+diff --git a/boot/image-fit.c b/boot/image-fit.c
+index 7a9fdb9536b..868e114d49d 100644
+--- a/boot/image-fit.c
++++ b/boot/image-fit.c
+@@ -2227,6 +2227,9 @@ int fit_image_load(struct bootm_headers *images, ulong addr,
+ 	/* perform any post-processing on the image data */
+ 	if (!tools_build() && IS_ENABLED(CONFIG_FIT_IMAGE_POST_PROCESS))
+ 		board_fit_image_post_process(fit, noffset, &buf, &size);
++	if (!tools_build() && IS_ENABLED(CONFIG_SPL_BUILD) &&
++            IS_ENABLED(CONFIG_SPL_FIT_IMAGE_POST_PROCESS))
++		board_fit_image_post_process(fit, noffset, &buf, &size);
+ 
+ 	len = (ulong)size;
+ 
+diff --git a/configs/r8a779g3_sparrowhawk_defconfig b/configs/r8a779g3_sparrowhawk_defconfig
+index 298c4300ca6..a42accc3ab5 100644
+--- a/configs/r8a779g3_sparrowhawk_defconfig
++++ b/configs/r8a779g3_sparrowhawk_defconfig
+@@ -69,3 +69,6 @@ CONFIG_SPL_ATF_SUPPORT=y
+ CONFIG_SPL_ATF_TEXT_BASE=0x46400000
+ CONFIG_TEXT_BASE=0x50000000
+ 
++CONFIG_SPL_LOAD_FIT_FULL=y
++CONFIG_SPL_FIT_IMAGE_POST_PROCESS=y
++
+-- 
+2.34.1
+
