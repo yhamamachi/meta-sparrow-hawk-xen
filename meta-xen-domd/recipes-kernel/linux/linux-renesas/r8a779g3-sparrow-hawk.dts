@@ -117,17 +117,17 @@
 	};
 
 	/* Page 27 / DSI to Display */
-	//mini-dp-con {
-	//	compatible = "dp-connector";
-	//	label = "CN6";
-	//	type = "full-size";
+	mini-dp-con {
+		compatible = "dp-connector";
+		label = "CN6";
+		type = "full-size";
 
-	//	port {
-	//		mini_dp_con_in: endpoint {
-	//			remote-endpoint = <&sn65dsi86_out>;
-	//		};
-	//	};
-	//};
+		port {
+			mini_dp_con_in: endpoint {
+				remote-endpoint = <&sn65dsi86_out>;
+			};
+		};
+	};
 
 	clk_cam_j1: clk_cam_j1 {
 		compatible = "fixed-clock";
@@ -201,11 +201,11 @@
 	};
 
 	/* Page 27 / DSI to Display */
-	//sn65dsi86_refclk: clk-x9 {
-	//	compatible = "fixed-clock";
-	//	#clock-cells = <0>;
-	//	clock-frequency = <38400000>;
-	//};
+	sn65dsi86_refclk: clk-x9 {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <38400000>;
+	};
 
 	/* Page 26 / PCIe.0/1 CLK */
 	pcie_refclk: clk-x8 {
@@ -281,18 +281,18 @@
 };
 
 /* Page 27 / DSI to Display */
-//&dsi1 {
-//	status = "okay";
-//
-//	ports {
-//		port@1 {
-//			dsi1_out: endpoint {
-//				remote-endpoint = <&sn65dsi86_in>;
-//				data-lanes = <1 2 3 4>;
-//			};
-//		};
-//	};
-//};
+&dsi1 {
+	status = "okay";
+
+	ports {
+		port@1 {
+			dsi1_out: endpoint {
+				remote-endpoint = <&sn65dsi86_in>;
+				data-lanes = <1 2 3 4>;
+			};
+		};
+	};
+};
 
 /* Page 27 / DSI to Display */
 &du {
@@ -371,51 +371,51 @@
 		#size-cells = <0>;
 		vdd-supply = <&reg_3p3v>;
 
-		//i2c0_mux0: i2c@0 { //intc_ex is not supported current kernel version
-		//	reg = <0>;
-		//	#address-cells = <1>;
-		//	#size-cells = <0>;
+		i2c0_mux0: i2c@0 { //intc_ex is not supported current kernel version
+			reg = <0>;
+			#address-cells = <1>;
+			#size-cells = <0>;
 
-		//	/* Page 27 / DSI to Display */
-		//	bridge@2c {
-		//		pinctrl-0 = <&irq0_pins>;
-		//		pinctrl-names = "default";
+			/* Page 27 / DSI to Display */
+			bridge@2c {
+				pinctrl-0 = <&irq0_pins>;
+				pinctrl-names = "default";
 
-		//		compatible = "ti,sn65dsi86";
-		//		reg = <0x2c>;
+				compatible = "ti,sn65dsi86";
+				reg = <0x2c>;
 
-		//		clocks = <&sn65dsi86_refclk>;
-		//		clock-names = "refclk";
+				clocks = <&sn65dsi86_refclk>;
+				clock-names = "refclk";
 
-		//		interrupts-extended = <&intc_ex 0 IRQ_TYPE_LEVEL_HIGH>;
+				interrupts-extended = <&intc_ex 0 IRQ_TYPE_LEVEL_HIGH>;
 
-		//		enable-gpios = <&gpio2 1 GPIO_ACTIVE_HIGH>;
+				enable-gpios = <&gpio2 1 GPIO_ACTIVE_HIGH>;
 
-		//		vccio-supply = <&reg_1p8v>;
-		//		vpll-supply = <&reg_1p8v>;
-		//		vcca-supply = <&reg_1p2v>;
-		//		vcc-supply = <&reg_1p2v>;
+				vccio-supply = <&reg_1p8v>;
+				vpll-supply = <&reg_1p8v>;
+				vcca-supply = <&reg_1p2v>;
+				vcc-supply = <&reg_1p2v>;
 
-		//		ports {
-		//			#address-cells = <1>;
-		//			#size-cells = <0>;
+				ports {
+					#address-cells = <1>;
+					#size-cells = <0>;
 
-		//			port@0 {
-		//				reg = <0>;
-		//				sn65dsi86_in: endpoint {
-		//					remote-endpoint = <&dsi1_out>;
-		//				};
-		//			};
+					port@0 {
+						reg = <0>;
+						sn65dsi86_in: endpoint {
+							remote-endpoint = <&dsi1_out>;
+						};
+					};
 
-		//			port@1 {
-		//				reg = <1>;
-		//				sn65dsi86_out: endpoint {
-		//					remote-endpoint = <&mini_dp_con_in>;
-		//				};
-		//			};
-		//		};
-		//	};
-		//};
+					port@1 {
+						reg = <1>;
+						sn65dsi86_out: endpoint {
+							remote-endpoint = <&mini_dp_con_in>;
+						};
+					};
+				};
+			};
+		};
 
 		i2c0_mux1: i2c@1 {
 			reg = <1>;
@@ -708,10 +708,10 @@
 	};
 
 	/* Page 27 / DSI to Display */ //intc_ex is not supported current kernel version
-	//irq0_pins: irq0 {
-	//	groups = "intc_ex_irq0_a";
-	//	function = "intc_ex";
-	//};
+	irq0_pins: irq0 {
+		groups = "intc_ex_irq0_a";
+		function = "intc_ex";
+	};
 
 	///* Page 31 / FAN */
 	//irq4_pins: irq4 {
