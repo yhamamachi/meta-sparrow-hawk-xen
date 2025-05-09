@@ -33,10 +33,11 @@ do_compile:prepend() {
 
 FILESEXTRAPATHS:prepend:sparrow-hawk = "${TOPDIR}/../../../firmware:"
 SRC_URI:append:sparrow-hawk = " \
-    file://renesas_defconfig_sparrow_hawk_20250421.cfg \
+    file://renesas_defconfig_sparrow_hawk_20250508.cfg \
     file://rcar_gen4_pcie.bin;subdir=git/ \
     file://renesas_usb_fw.mem;subdir=git/ \
     file://disable.cfg \
     file://firmware.cfg \
+    file://append_modules.cfg \
 "
 
