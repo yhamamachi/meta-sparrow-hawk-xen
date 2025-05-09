@@ -31,3 +31,12 @@ do_compile:prepend() {
         -e "/cr_region/d" -e "/linux,cma@80000000/,+6d"
 }
 
+FILESEXTRAPATHS:prepend:sparrow-hawk = "${TOPDIR}/../../../firmware:"
+SRC_URI:append:sparrow-hawk = " \
+    file://renesas_defconfig_sparrow_hawk_20250421.cfg \
+    file://rcar_gen4_pcie.bin;subdir=git/ \
+    file://renesas_usb_fw.mem;subdir=git/ \
+    file://disable.cfg \
+    file://firmware.cfg \
+"
+
