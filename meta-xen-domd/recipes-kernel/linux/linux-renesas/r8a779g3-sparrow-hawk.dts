@@ -573,8 +573,9 @@
 	pinctrl-names = "default", "state_uhs";
 	bus-width = <4>;
 	cd-gpios = <&gpio3 11 GPIO_ACTIVE_LOW>;	/* SD_CD */
-	sd-uhs-sdr50;
-	sd-uhs-sdr104;
+	/* UHS is unstable, so it's disabled. */
+	// sd-uhs-sdr50;
+	// sd-uhs-sdr104;
 	vmmc-supply = <&reg_3p3v>;
 	vqmmc-supply = <&vcc_sdhi>;
 	status = "okay";
