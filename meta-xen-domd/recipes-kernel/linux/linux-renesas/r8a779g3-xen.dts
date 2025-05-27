@@ -22,9 +22,9 @@
 	};
 };
 
-&gsx {
-	xen,passthrough;
-};
+//&gsx {
+//	xen,passthrough;
+//};
 
 &ipmmu_mm {
 	status = "okay";
@@ -124,18 +124,25 @@
 &vin01          { xen,passthrough; };
 &vin02          { xen,passthrough; };
 &vin03          { xen,passthrough; };
+&vin04          { xen,passthrough; };
+&vin05          { xen,passthrough; };
+&vin07          { xen,passthrough; };
+&vin08          { xen,passthrough; };
+&vin09          { xen,passthrough; };
 &vin10          { xen,passthrough; };
 &vin11          { xen,passthrough; };
 &vin12          { xen,passthrough; };
 &vin13          { xen,passthrough; };
+&vin14          { xen,passthrough; };
+&vin15          { xen,passthrough; };
 &csi40		   	{ xen,passthrough; };
 &csi41		   	{ xen,passthrough; };
 &dmac0			{ xen,passthrough; };
 &dmac1			{ xen,passthrough; };
-&rt_dmac0		{ xen,passthrough; };
-&rt_dmac1		{ xen,passthrough; };
-&rt_dmac2		{ xen,passthrough; };
-&rt_dmac3		{ xen,passthrough; };
+//&rt_dmac0		{ xen,passthrough; };
+//&rt_dmac1		{ xen,passthrough; };
+//&rt_dmac2		{ xen,passthrough; };
+//&rt_dmac3		{ xen,passthrough; };
 &gpio0			{ xen,passthrough; };
 &gpio1			{ xen,passthrough; };
 &gpio2			{ xen,passthrough; };
@@ -155,13 +162,13 @@
 &vspd0 { xen,passthrough; };
 &vspd1 { xen,passthrough; };
 &du { xen,passthrough; };
-&dsc { xen,passthrough; };
+//&dsc { xen,passthrough; };
 &dsi0 { xen,passthrough; };
 &dsi1 { xen,passthrough; };
-&isp0 { xen,passthrough; };
-&isp1 { xen,passthrough; };
-&cisp0 { xen,passthrough; };
-&cisp1 { xen,passthrough; };
+//&isp0 { xen,passthrough; };
+//&isp1 { xen,passthrough; };
+//&cisp0 { xen,passthrough; };
+//&cisp1 { xen,passthrough; };
 
 &soc {
     /delete-node/video@e6ef4000;
@@ -268,6 +275,8 @@
 
 	/delete-node/ tisp0;
 	/delete-node/ tisp1;
+	/delete-node/ isp0;
+	/delete-node/ isp1;
 
 	/delete-node/ vip_wrap;
 	/delete-node/ ipmmu_mm0;
@@ -285,6 +294,8 @@
 	/delete-node/ ipmmu_cache_3dg;
 	/delete-node/ tisp@fed00000;
 	/delete-node/ tisp@fed20000;
+	/delete-node/ isp@fed00000;
+	/delete-node/ isp@fed20000;
 
 	vip_wrap {
 		status = "disabled";

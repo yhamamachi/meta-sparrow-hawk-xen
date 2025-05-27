@@ -54,16 +54,24 @@ do_configure:append () {
 EOS
 
 # Remove unused memory assign
-cat << 'EOS' >> yocto/meta-xt-prod-devel-rcar-gen4/meta-xt-domd-gen4/recipes-kernel/linux/linux-renesas_%.bbappend
-do_compile:prepend() {
-    sed -i ${S}/arch/arm64/boot/dts/renesas/r8a779g0-whitehawk.dts \
-        -e "/linux,cr_region@60000000/,+3d"
-    sed -i ${S}/arch/arm64/boot/dts/renesas/r8a779g0-domd.dts \
-        -e "/cr_region/d" -e "/linux,cma@80000000/,+6d"
-}
-EOS
+#cat << 'EOS' >> yocto/meta-xt-prod-devel-rcar-gen4/meta-xt-domd-gen4/recipes-kernel/linux/linux-renesas_%.bbappend
+#do_compile:prepend() {
+#    sed -i ${S}/arch/arm64/boot/dts/renesas/r8a779g0-whitehawk.dts \
+#        -e "/linux,cr_region@60000000/,+3d"
+#    sed -i ${S}/arch/arm64/boot/dts/renesas/r8a779g0-domd.dts \
+#        -e "/cr_region/d" -e "/linux,cma@80000000/,+6d"
+#}
+#EOS
 
 ninja
 ninja full.img.gz
 ninja boot_artifacts
+
+cd yocto/build-domd/tmp/deploy/images/sparrow-hawk/
+cp -f Image boot-tftp.uImage -t /tftp/v4hsbc_xen/
+cp -f r8a779g3-sparrow-hawk-xen.dtb /tftp/v4hsbc_xen/xen.dtb
+cp -f xen-sparrow-hawk /tftp/v4hsbc_xen/xen
+cp -f xenpolicy-sparrow-hawk /tftp/v4hsbc_xen/xen-policy
+cd $WORK_DIR/yocto/build-dom0/tmp/deploy/images/generic-armv8-xt/
+cp -f uInitramfs -t /tftp/v4hsbc_xen/
 
