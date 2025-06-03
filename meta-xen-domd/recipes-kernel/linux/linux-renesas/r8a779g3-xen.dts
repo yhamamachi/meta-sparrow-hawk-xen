@@ -111,9 +111,12 @@
 /delete-node/ &pciec0_ep;
 /delete-node/ &pciec1_ep;
 &avb0			{ xen,passthrough; };
-&avb1			{ xen,passthrough; };
-&avb2			{ xen,passthrough; };
-&tsn0			{ xen,passthrough; };
+//&avb1			{ xen,passthrough; };
+//&avb2			{ xen,passthrough; };
+//&tsn0			{ xen,passthrough; };
+&canfd			{ xen,passthrough; };
+&ssi0			{ xen,passthrough; };
+&rpc			{ xen,passthrough; };
 &i2c0			{ xen,passthrough; };
 &i2c1			{ xen,passthrough; };
 &i2c2			{ xen,passthrough; };
@@ -126,6 +129,7 @@
 &vin03          { xen,passthrough; };
 &vin04          { xen,passthrough; };
 &vin05          { xen,passthrough; };
+&vin06          { xen,passthrough; };
 &vin07          { xen,passthrough; };
 &vin08          { xen,passthrough; };
 &vin09          { xen,passthrough; };
@@ -165,44 +169,54 @@
 //&dsc { xen,passthrough; };
 &dsi0 { xen,passthrough; };
 &dsi1 { xen,passthrough; };
-//&isp0 { xen,passthrough; };
-//&isp1 { xen,passthrough; };
+&dsi0 { xen,passthrough; };
+&dsi1 { xen,passthrough; };
+&isp0 { xen,passthrough; };
+&isp1 { xen,passthrough; };
 //&cisp0 { xen,passthrough; };
 //&cisp1 { xen,passthrough; };
 
 &soc {
-    /delete-node/video@e6ef4000;
-    /delete-node/video@e6ef5000;
-    /delete-node/video@e6ef6000;
-    /delete-node/video@e6ef7000;
-    /delete-node/video@e6efc000;
-    /delete-node/video@e6efd000;
-    /delete-node/video@e6efe000;
-    /delete-node/video@e6eff000;
+//     /delete-node/video@e6ef0000;
+//     /delete-node/video@e6ef1000;
+//     /delete-node/video@e6ef2000;
+//     /delete-node/video@e6ef3000;
+//     /delete-node/video@e6ef4000;
+//     /delete-node/video@e6ef5000;
+//     /delete-node/video@e6ef6000;
+//     /delete-node/video@e6ef7000;
+//     /delete-node/video@e6ef8000;
+//     /delete-node/video@e6ef9000;
+//     /delete-node/video@e6efa000;
+//     /delete-node/video@e6efb000;
+//     /delete-node/video@e6efc000;
+//     /delete-node/video@e6efd000;
+//     /delete-node/video@e6efe000;
+//     /delete-node/video@e6eff000;
 
-	/delete-node/du0;
-	/delete-node/du_01;
-	/delete-node/dsi0_01;
-	/delete-node/dsi0_02;
-	/delete-node/dsi0_03;
-	/delete-node/dsi0_04;
-	/delete-node/dsi0_05;
-	/delete-node/dsi0_06;
-	/delete-node/dsi0_07;
-	/delete-node/dsi0_08;
-	/delete-node/dsi1_01;
-	/delete-node/dsi1_02;
-	/delete-node/dsi1_03;
-	/delete-node/dsi1_04;
-	/delete-node/dsi1_05;
-	/delete-node/dsi1_06;
-	/delete-node/dsi1_07;
-	/delete-node/dsi1_08;
+//	/delete-node/du0;
+//	/delete-node/du_01;
+//	/delete-node/dsi0_01;
+//	/delete-node/dsi0_02;
+//	/delete-node/dsi0_03;
+//	/delete-node/dsi0_04;
+//	/delete-node/dsi0_05;
+//	/delete-node/dsi0_06;
+//	/delete-node/dsi0_07;
+//	/delete-node/dsi0_08;
+//	/delete-node/dsi1_01;
+//	/delete-node/dsi1_02;
+//	/delete-node/dsi1_03;
+//	/delete-node/dsi1_04;
+//	/delete-node/dsi1_05;
+//	/delete-node/dsi1_06;
+//	/delete-node/dsi1_07;
+//	/delete-node/dsi1_08;
 
-    /delete-node/vdsp@f1400000;
-    /delete-node/vdsp@f1600000;
-    /delete-node/vdsp@f1800000;
-    /delete-node/vdsp@f1a00000;
+	/delete-node/vdsp@f1400000;
+	/delete-node/vdsp@f1600000;
+	/delete-node/vdsp@f1800000;
+	/delete-node/vdsp@f1a00000;
 
 	/delete-node/ impvdsp00_00_01;
 	/delete-node/ impvdsp00_00_02;
@@ -252,7 +266,6 @@
 	/delete-node/ impvdsp03_06;
 	/delete-node/ impvdsp03_07;
 
-
 	/delete-node/ icumx_cmd0_01;
 	/delete-node/ icumx_cmd0_02;
 	/delete-node/ icumx_cmd0_03;
@@ -275,8 +288,8 @@
 
 	/delete-node/ tisp0;
 	/delete-node/ tisp1;
-	/delete-node/ isp0;
-	/delete-node/ isp1;
+//	/delete-node/ isp0;
+//	/delete-node/ isp1;
 
 	/delete-node/ vip_wrap;
 	/delete-node/ ipmmu_mm0;
@@ -294,8 +307,6 @@
 	/delete-node/ ipmmu_cache_3dg;
 	/delete-node/ tisp@fed00000;
 	/delete-node/ tisp@fed20000;
-	/delete-node/ isp@fed00000;
-	/delete-node/ isp@fed20000;
 
 	vip_wrap {
 		status = "disabled";

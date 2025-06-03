@@ -9,26 +9,6 @@
 	soc {
 		/* This must point to Xen interrupt-parent. */
 		interrupt-parent = <PHANDLE_GIC>;
-		/delete-node/ du0;
-		/delete-node/ du_01;
-		/delete-node/dsi0 ;
-		/delete-node/dsi0_01 ;
-		/delete-node/dsi0_02 ;
-		/delete-node/dsi0_03 ;
-		/delete-node/dsi0_04 ;
-		/delete-node/dsi0_05 ;
-		/delete-node/dsi0_06 ;
-		/delete-node/dsi0_07 ;
-		/delete-node/dsi0_08 ;
-		/delete-node/dsi1 ;
-		/delete-node/dsi1_01 ;
-		/delete-node/dsi1_02 ;
-		/delete-node/dsi1_03 ;
-		/delete-node/dsi1_04 ;
-		/delete-node/dsi1_05 ;
-		/delete-node/dsi1_06 ;
-		/delete-node/dsi1_07 ;
-		/delete-node/dsi1_08 ;
 	};
 
 	passthrough {
@@ -68,20 +48,6 @@
 
 };
 
-///delete-node/ &vdsp0_region;
-//
-///delete-node/ &vdsp1_region;
-//
-///delete-node/ &vdsp2_region;
-//
-///delete-node/ &vdsp3_region;
-//
-///delete-node/ &pap_region;
-//
-///delete-node/ &cr_region;
-//
-///delete-node/ &region_40bit;
-
 / {
 	/delete-node/ cmem;
 
@@ -99,55 +65,10 @@
 //&gsx {
 //	status = "okay";
 //};
+
 &gic {
 	compatible = "";
 	status = "disabled";
-};
-
-&gpio0 {
-	status = "okay";
-};
-
-&gpio1 {
-	status = "okay";
-};
-
-&gpio2 {
-	status = "okay";
-};
-
-&gpio3 {
-	status = "okay";
-};
-
-&gpio4 {
-	status = "okay";
-};
-
-&gpio5 {
-	status = "okay";
-};
-
-&gpio6 {
-	status = "okay";
-};
-
-&gpio7 {
-	status = "okay";
-};
-&gpio8 {
-	status = "okay";
-};
-
-&pciec0 {
-	status = "okay";
-	ranges = <0x82000000 0 0x30000000 0 0x30000000 0 0x8000000>;
-	msi-map = <0x0 PHANDLE_ITS 0x0 0x1000>;
-	msi-parent = <PHANDLE_ITS>;
-	interrupt-map = <0 0 0 1 PHANDLE_GIC GIC_SPI 449 IRQ_TYPE_LEVEL_HIGH
-					0 0 0 2 PHANDLE_GIC GIC_SPI 449 IRQ_TYPE_LEVEL_HIGH
-					0 0 0 3 PHANDLE_GIC GIC_SPI 449 IRQ_TYPE_LEVEL_HIGH
-					0 0 0 4 PHANDLE_GIC GIC_SPI 449 IRQ_TYPE_LEVEL_HIGH>;
 };
 
 /* Xen serial consoles */
@@ -156,6 +77,12 @@
 };
 
 &hscif0	{
+	status = "disabled";
+};
+&hscif1	{
+	status = "disabled";
+};
+&hscif3	{
 	status = "disabled";
 };
 
@@ -204,6 +131,7 @@
 	status = "disabled";
 };
 
+
 &vspd0 {
 	status = "okay";
 };
@@ -234,13 +162,6 @@
 
 &i2c1 {
 	status = "okay";
-	sn65dsi86_0@2c {
-		status = "okay";
-	};
-	max96789@60 {
-		status = "okay";
-	};
-
 };
 
 &i2c2 {
@@ -253,9 +174,6 @@
 
 &i2c4 {
 	status = "okay";
-	sn65dsi86_1@2c {
-		status = "okay";
-	};
 };
 
 &i2c5 {
@@ -274,10 +192,19 @@
 &vin01          { status = "okay";};
 &vin02          { status = "okay";};
 &vin03          { status = "okay";};
+&vin03          { status = "okay";};
+&vin04          { status = "okay";};
+&vin05          { status = "okay";};
+&vin06          { status = "okay";};
+&vin07          { status = "okay";};
+&vin08          { status = "okay";};
+&vin09          { status = "okay";};
 &vin10          { status = "okay";};
 &vin11          { status = "okay";};
 &vin12          { status = "okay";};
 &vin13          { status = "okay";};
+&vin14          { status = "okay";};
+&vin15          { status = "okay";};
 &csi40		   	{ status = "okay";};
 &csi41		   	{ status = "okay";};
 

@@ -19,6 +19,9 @@ curl -LO https://raw.github.com/xen-troops/meta-xt-prod-devel-rcar-gen4/v4h_demo
 sed -i -e "s/4.17.0+git%/4.19.0+git%/" prod-devel-rcar4.yaml
 # Remove MACHINE parameter because it is contained append yaml file.
 sed -i '/^  MACHINE/,+39d' prod-devel-rcar4.yaml
+sed -i -e 's/wayland//' -e 's/opengl//' prod-devel-rcar4.yaml
+sed -i -e 's/- \[MACHINE_FEATURES:remove, " gsx"\]//' prod-devel-rcar4.yaml
+sed -i -e 's/rcar-image-adas/core-image-weston/' prod-devel-rcar4.yaml
 cat prod-devel-rcar4.yaml ../add_meta_test.yaml > prod-devel-rcar4_new.yaml
 
 moulin prod-devel-rcar4_new.yaml \
@@ -66,12 +69,12 @@ EOS
 ninja
 ninja full.img.gz
 ninja boot_artifacts
-
-cd yocto/build-domd/tmp/deploy/images/sparrow-hawk/
-cp -f Image boot-tftp.uImage -t /tftp/v4hsbc_xen/
-cp -f r8a779g3-sparrow-hawk-xen.dtb /tftp/v4hsbc_xen/xen.dtb
-cp -f xen-sparrow-hawk /tftp/v4hsbc_xen/xen
-cp -f xenpolicy-sparrow-hawk /tftp/v4hsbc_xen/xen-policy
-cd $WORK_DIR/yocto/build-dom0/tmp/deploy/images/generic-armv8-xt/
-cp -f uInitramfs -t /tftp/v4hsbc_xen/
+# 
+# cd yocto/build-domd/tmp/deploy/images/sparrow-hawk/
+# cp -f Image boot-tftp.uImage -t /tftp/v4hsbc_xen/
+# cp -f r8a779g3-sparrow-hawk-xen.dtb /tftp/v4hsbc_xen/xen.dtb
+# cp -f xen-sparrow-hawk /tftp/v4hsbc_xen/xen
+# cp -f xenpolicy-sparrow-hawk /tftp/v4hsbc_xen/xen-policy
+# cd $WORK_DIR/yocto/build-dom0/tmp/deploy/images/generic-armv8-xt/
+# cp -f uInitramfs -t /tftp/v4hsbc_xen/
 

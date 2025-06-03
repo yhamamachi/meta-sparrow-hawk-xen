@@ -2,7 +2,3 @@
 
 #include "r8a779g3-domd.dts"
 
-&rpc {
-    status = "disabled";
-};
-
