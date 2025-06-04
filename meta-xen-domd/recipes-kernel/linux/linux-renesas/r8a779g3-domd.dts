@@ -86,6 +86,30 @@
 	status = "disabled";
 };
 
+&avb0 {
+	/delete-property/iommus;
+};
+
+&avb1 {
+	/delete-property/iommus;
+};
+
+&avb2 {
+	/delete-property/iommus;
+};
+
+&mmc0 {
+	/delete-property/iommus;
+};
+
+&fcpvd0 {
+	/delete-property/iommus;
+};
+
+&fcpvd1 {
+	/delete-property/iommus;
+};
+
 &dmac0 {
 	/delete-property/iommus;
 };

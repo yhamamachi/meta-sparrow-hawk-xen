@@ -165,16 +165,17 @@
 &tsc			{ xen,passthrough; };
 &vspd0 { xen,passthrough; };
 &vspd1 { xen,passthrough; };
+&fcpvd0 { xen,passthrough; };
+&fcpvd1 { xen,passthrough; };
 &du { xen,passthrough; };
 //&dsc { xen,passthrough; };
-&dsi0 { xen,passthrough; };
-&dsi1 { xen,passthrough; };
 &dsi0 { xen,passthrough; };
 &dsi1 { xen,passthrough; };
 &isp0 { xen,passthrough; };
 &isp1 { xen,passthrough; };
 //&cisp0 { xen,passthrough; };
 //&cisp1 { xen,passthrough; };
+&intc_ex { xen,passthrough; };
 
 &soc {
 //     /delete-node/video@e6ef0000;

@@ -15,5 +15,8 @@ SRC_URI:remove = "file://0003-xen-pciback-allow-compiling-on-other-archs-than-x8
 
 do_compile:prepend:sparrow-hawk () {
     sed -i -e "s/CAM_J2 1/CAM_J2 0/" ${S}/arch/arm64/boot/dts/renesas/r8a779g3-sparrow-hawk.dts
+
+    # WA for Xen DomD
+    sed -i -e "s/1, 0, 1, 4/1, -1, 1, 4/" ${S}/drivers/gpu/drm/renesas/rcar-du/rcar_mipi_dsi.c
 }
 
