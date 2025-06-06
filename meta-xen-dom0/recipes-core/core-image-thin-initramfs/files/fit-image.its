@@ -1,0 +1,94 @@
+/dts-v1/;
+
+/ {
+	description = "Linux kernel and FDT blob for r8a779g3-sparrow-hawk";
+
+	images {
+		kernel-1 {
+			description = "Dom0 Linux kernel";
+			data = /incbin/("./Image");
+			arch = "arm64";
+			type = "kernel";
+			os = "linux";
+			compression = "none";
+			load = <0x48200000>;
+			entry = <0x48200000>;
+			hash-1 {
+				algo = "crc32";
+			};
+		};
+		fdt-1 {
+			description = "Flattened Device Tree blob";
+			data = /incbin/("./xen.dtb");
+			type = "flat_dt";
+			arch = "arm64";
+			compression = "none";
+			load = <0x48000000>;
+			hash-1 {
+				algo = "crc32";
+			};
+		};
+		atf-1 {
+			description = "ARM Trusted Firmware";
+			data = /incbin/("./bl31.bin");
+			type = "tfa-bl31";
+			arch = "arm64";
+			os = "arm-trusted-firmware";
+			compression = "none";
+			load = <0x46400000>;
+			entry = <0x46400000>;
+			hash-1 {
+				algo = "crc32";
+			};
+		};
+		xen_kernel {
+			description = "Xen image";
+			data = /incbin/("./xen");
+			type = "kernel";
+			arch = "arm64";
+			os = "linux";
+			compression = "none";
+			load = <0x48080000>;
+			entry = <0x48080000>;
+			hash-1 {
+				algo = "crc32";
+			};
+		};
+		xen_policy {
+			description = "Xen policy";
+			data = /incbin/("./xenpolicy");
+			type = "firmware";
+			arch = "arm64";
+			compression = "none";
+			load = <0x48070000>;
+			hash-1 {
+				algo = "crc32";
+			};
+		};
+		ramdisk-1 {
+			description = "Dom0 initramfs";
+			data = /incbin/("./uInitramfs");
+			type = "ramdisk";
+			arch = "arm64";
+			compression = "none";
+			load = <0x84000000>;
+			hash-1 {
+				algo = "crc32";
+			};
+		};
+	};
+
+	configurations {
+		default = "default";
+		default {
+			description = "Boot Xen with Dom0 Linux";
+			kernel = "xen_kernel";
+			fdt = "fdt-1";
+			loadables = "atf-1", "xen_policy", "ramdisk-1", "kernel-1", "xen_kernel";
+			hash-1 {
+				algo = "crc32";
+			};
+		};
+	};
+};
+

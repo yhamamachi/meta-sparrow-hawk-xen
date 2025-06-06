@@ -33,6 +33,8 @@
               layers:
                 - "../../../meta-xen-dom0"
                 - "../../../meta-xen-domx"
+              external_src:
+                core-image-thin-initramfs: "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/"
           domd:
             builder:
               layers:
@@ -76,4 +78,5 @@
               boot:
                 items:
                   "flash.bin": "%{YOCTOS_WORK_DIR}/build-domd/tmp/deploy/images/%{MACHINE}/flash.bin"
+                  "fitImage": "%{YOCTOS_WORK_DIR}/build-dom0/tmp/deploy/images/generic-armv8-xt/fitImage"
 
