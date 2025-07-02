@@ -11,15 +11,15 @@
           domd:
             sources:
               - type: git
-                url: https://github.com/yhamamachi/meta-renesas-upstream-bsp
-                rev: scarthgap-dev-wip
+                url: https://github.com/rcar-community/meta-sparrow-hawk
+                rev: scarthgap
             builder:
               layers:
-                - "../meta-renesas-upstream-bsp"
+                - "../meta-sparrow-hawk"
           domu:
             builder:
               layers:
-                - "../meta-renesas-upstream-bsp"
+                - "../meta-sparrow-hawk"
   ADD_META_TEST:
     desc: "Add meta-test layer and some configs"
     "no":
@@ -33,6 +33,7 @@
               layers:
                 - "../../../meta-xen-dom0"
                 - "../../../meta-xen-domx"
+                - "../meta-openembedded/meta-multimedia"
               external_src:
                 core-image-thin-initramfs: "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/"
           domd:
@@ -40,18 +41,19 @@
               layers:
                 - "../../../meta-xen-domd"
                 - "../../../meta-xen-domx"
+                - "../meta-openembedded/meta-multimedia"
               conf:
                 - [IMAGE_INSTALL:append, " iperf3 htop tcpdump coreutils ethtool"]
                 - [BBMASK:append, "|meta-xt-rcar/meta-xt-gateway/meta-xt-domd-gen4/recipes-bsp/u-boot"]
                 - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-domd-gen4/recipes-bsp/u-boot"]
-                - [BBMASK:append, "|meta-renesas-upstream-bsp/recipes-bsp/optee"]
+                  #- [BBMASK:append, "|meta-renesas-upstream-bsp/recipes-bsp/optee"]
                   #- [BBMASK:append, "|meta-renesas-upstream-bsp/recipes-bsp/arm-trusted-firmware/"]
                 # GFX doesn't support now
                 - [BBMASK:append, "|recipes-graphics/gles-user-module"]
                 - [BBMASK:append, "|recipes-kernel/kernel-module-gles"]
                 - [BBMASK:append, "|meta-xt-rcar/meta-xt-rcar-gles_common/recipes-graphics/gles-module"]
                 - [BBMASK:append, "|meta-xt-rcar/meta-xt-rcar-gles_common/recipes-kernel/kernel-module-gles"]
-                - [BBMASK:append, "|meta-renesas-upstream-bsp/recipes-core/systemd/"]
+                - [BBMASK:append, "|meta-sparrow-hawk/recipes-core/systemd/"]
                 # rcar-image-XXXX is not prepared in upstream-bsp
                 - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-domd-gen4/recipes-core/images/rcar-"]
                 - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-driver-domain-gen4/recipes-core/images/rcar-"]
@@ -67,6 +69,7 @@
             builder:
               layers:
                 - "../meta-openembedded/meta-networking"
+                - "../meta-openembedded/meta-multimedia"
                 - "../../../meta-xen-domu"
                 - "../../../meta-xen-domx"
               conf:

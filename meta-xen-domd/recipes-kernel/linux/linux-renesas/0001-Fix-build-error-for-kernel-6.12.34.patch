@@ -1,0 +1,35 @@
+From 64f02ba6f0ae7f563f16fe904ac3019b66756a72 Mon Sep 17 00:00:00 2001
+From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+Date: Wed, 2 Jul 2025 18:17:37 +0900
+Subject: [PATCH] Fix build error for kernel 6.12.34
+
+Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+---
+ drivers/xen/xt-passthrough.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/xen/xt-passthrough.c b/drivers/xen/xt-passthrough.c
+index 3c425e71fe45..ade703b46db7 100644
+--- a/drivers/xen/xt-passthrough.c
++++ b/drivers/xen/xt-passthrough.c
+@@ -7,6 +7,8 @@
+ #include <linux/module.h>
+ #include <linux/of_device.h>
+ #include <linux/reset.h>
++#include <linux/platform_device.h>
++#include <linux/of.h>
+ 
+ struct xt_passthrough_priv {
+ 	struct clk **clk;
+@@ -113,7 +115,7 @@ static int enable_resets(struct device *dev, struct xt_passthrough_priv *priv)
+ 
+ err_reset:
+ 	dev_err(dev, "failed to de-assert resets, ret %d\n", ret);
+-	while (--priv->rst >= 0)
++	while (--i >= 0)
+ 		reset_control_assert(priv->rst[i]);
+ 	return ret;
+ }
+-- 
+2.34.1
+

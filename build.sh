@@ -66,6 +66,10 @@ EOS
 #}
 #EOS
 
+ninja fetch-domd
+# Fix meta-sparrow-hawk layer for kirkstone
+sed -i -e 's/"scarthgap"/"kirkstone scarthgap"/' yocto/meta-sparrow-hawk/conf/layer.conf
+mv -f yocto/meta-sparrow-hawk/recipes-multimedia/libcamera/libcamera{_%,}.bbappend || true
 ninja
 ninja full.img.gz
 ninja boot_artifacts
