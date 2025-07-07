@@ -16,10 +16,10 @@ addtask do_copy_files before do_image_complete
 generate_fit_image() {
     cd ${WORKDIR}
     cp -f ${S}/Image ./Image
-    cp -f ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.cpio.gz.uInitramfs ./uInitramfs
+    cp -f ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.cpio.gz ./uInitramfs
     cp -f ${S}/xen-*.efi ./xen
     cp -f ${S}/xenpolicy-4.* ./xenpolicy
-    cp -f ${S}/${XT_DOMD_DTB_NAME} ./xen.dtb
+    cp -f ${S}/${XT_XEN_DTB_NAME} ./xen.dtb
     cp -f ${S}/bl31-*.bin ./bl31.bin
     mkimage -f ./fit-image.its ${DEPLOY_DIR_IMAGE}/fitImage
 }

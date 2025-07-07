@@ -36,6 +36,8 @@
                 - "../meta-openembedded/meta-multimedia"
               external_src:
                 core-image-thin-initramfs: "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/"
+              conf:
+                - [XT_XEN_DTB_NAME, "%{XT_XEN_DTB_NAME}"]
           domd:
             builder:
               layers:

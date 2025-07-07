@@ -16,12 +16,6 @@
 	};
 };
 
-/ {
-	reserved-memory {
-		/delete-node/ linux,cma@80000000;
-	};
-};
-
 //&gsx {
 //	xen,passthrough;
 //};
