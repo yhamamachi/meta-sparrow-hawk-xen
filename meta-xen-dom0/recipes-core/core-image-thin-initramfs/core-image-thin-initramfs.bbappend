@@ -15,7 +15,7 @@ addtask do_copy_files before do_image_complete
 
 generate_fit_image() {
     cd ${WORKDIR}
-    cp -f ${S}/Image ./Image
+    cp -f ${DEPLOY_DIR_IMAGE}/Image ./Image
     cp -f ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.cpio.gz ./uInitramfs
     cp -f ${S}/xen-*.efi ./xen
     cp -f ${S}/xenpolicy-4.* ./xenpolicy

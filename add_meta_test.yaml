@@ -38,6 +38,7 @@
                 core-image-thin-initramfs: "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/"
               conf:
                 - [XT_XEN_DTB_NAME, "%{XT_XEN_DTB_NAME}"]
+                - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-dom0-gen4/recipes-kernel"]
           domd:
             builder:
               layers:
