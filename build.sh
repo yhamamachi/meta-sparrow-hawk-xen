@@ -4,6 +4,7 @@ YAML_FILE=https://raw.githubusercontent.com/xen-troops/meta-xt-prod-devel-rcar-g
 SCRIPT_DIR=$(cd `dirname $0` && pwd)
 WORK_DIR=${SCRIPT_DIR}/work_v4hsbc_xen
 mkdir -p ${WORK_DIR}
+USING_DOMU=no
 
 # GFX package
 GFX_DRV="https://github.com/renesas-rcar/rcar-gfx/raw/refs/heads/V4Hx/v1.3.1-2/gfxdrv/GSX_KM_V4H.tar.bz2"
@@ -25,10 +26,30 @@ cd ${WORK_DIR}
 #sed -i -e 's/xen-%{MACHINE}.uImage/xen-%{MACHINE}/' prod-devel-rcar4.yaml
 #sed -i -e 's/xenpolicy-%{MACHINE}/xenpolicy-4.19-unstable/' prod-devel-rcar4.yaml
 #cat prod-devel-rcar4.yaml ../add_meta_test.yaml > prod-devel-rcar4_new.yaml
+
+Usage() {
+    echo "Usage:"
+    echo "    $0 [option]"
+    echo "option:"
+    echo "    -u: Using DomU(Default is disable)"
+    echo "    -h: Show this usage"
+}
+
+# Proc arguments
+OPTIND=1
+while getopts "hu" OPT
+do
+    case $OPT in
+        u) USING_DOMU=yes;;
+        h) Usage; exit;;
+        *) echo -e "\e[31mERROR: Unsupported option\e[m"; Usage; exit;;
+    esac
+done
+
 cp -f ../prod-devel-rcar4_new.yaml ./
 moulin prod-devel-rcar4_new.yaml \
     --MACHINE sparrow-hawk \
-    --ENABLE_DOMU no \
+    --ENABLE_DOMU ${USING_DOMU} \
     --ADD_META_TEST yes \
 
 ninja fetch-domd

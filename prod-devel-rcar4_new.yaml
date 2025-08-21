@@ -211,8 +211,6 @@ components:
         - *COMMON_CONF
         - *DOMD_DOMU_CONF
         - [XT_DOM_NAME, "domu"]
-        - [XT_KERNEL_BRANCH, "%{XT_KERNEL_BRANCH}"]
-        - [XT_KERNEL_REV, "%{XT_KERNEL_REV}"]
         - [IMAGE_INSTALL:append, " iperf3 "]
         # This is temporary workaround required because we use linux-libc-headers 5.10
         # and xt-common provides 6.4 already. So we need this bbmask until upgrade to 6.4
@@ -286,13 +284,17 @@ parameters:
                 - "%{DOMU_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/Image"
               external_src:
                 domu: "%{YOCTOS_WORK_DIR}/%{DOMU_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/"
+          domu:
+            builder:
+              build_target: core-image-minimal
         images:
           full:
             partitions:
               domu-rootfs:
                 type: raw_image
                 gpt_type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4 # Linux filesystem data
-                image_path: "%{YOCTOS_WORK_DIR}/%{DOMU_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/core-image-weston-%{MACHINE}.ext4"
+                #image_path: "%{YOCTOS_WORK_DIR}/%{DOMU_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/core-image-weston-%{MACHINE}.ext4"
+                image_path: "%{YOCTOS_WORK_DIR}/%{DOMU_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/core-image-minimal-%{MACHINE}.ext4"
 # parameters:
   MACHINE:
     desc: "RCAR Gen4-based device"
@@ -375,6 +377,20 @@ parameters:
               conf:
                 - [IMAGE_INSTALL:append, " iperf3 htop tcpdump libaio coreutils rt-tests ethtool fio"]
                 - [EXTRA_IMAGE_FEATURES:append, " ssh-server-openssh"]
+                - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-domu-gen4/recipes-kernel/linux"]
+                - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-domu-gen4/recipes-core"]
+                - [BBMASK:append, "|meta-xt-rcar/meta-xt-rcar-gles_common/recipes-graphics/gles-module"]
+                - [BBMASK:append, "|meta-xt-rcar/meta-xt-rcar-gles_common/recipes-kernel/kernel-module-gles"]
+
+                - [EXTRA_IMAGEDEPENDS:remove, " arm-trusted-firmware"]
+                - [BBMASK:append, "|meta-sparrow-hawk/recipes-core/systemd/"]
+                # CPU rendering
+                - [IMAGE_INSTALL:append, " mesa glmark2 kernel-devicetree"]
+                - [DISTRO_FEATURES_NATIVESDK:append, "wayland x11"]
+                - [DISTRO_FEATURES:append, " pam wayland"]
+                - [DISTRO_FEATURES:remove, " ptest x11 vulkan"]
+                # For core-image-minmal
+                - [IMAGE_INSTALL:remove, " libcamera libcamera-pycamera"]
         images:
           full:
             partitions:
