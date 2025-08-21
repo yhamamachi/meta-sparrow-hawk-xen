@@ -50,16 +50,16 @@
 
 / {
 	/delete-node/ cmem;
-
-	reserved-memory {
-		linux,cma@80000000 {
-			compatible = "shared-dma-pool";
-			reusable;
-			reg = <0x00000000 0x90000000 0x0 0x30000000>;
-			//        0x0000000040000000-0x00000000bfffffff
-			linux,cma-default;
-		};
-	};
+//
+// 	reserved-memory {
+// 		linux,cma@80000000 {
+// 			compatible = "shared-dma-pool";
+// 			reusable;
+// 			reg = <0x00000000 0x90000000 0x0 0x30000000>;
+// 			//        0x0000000040000000-0x00000000bfffffff
+// 			linux,cma-default;
+// 		};
+// 	};
 };
 
 //&gsx {
@@ -137,21 +137,38 @@
 &ipmmu_mm {
 	status = "disabled";
 };
+&ipmmu_hc {
+	status = "disabled";
+};
+&ipmmu_vc {
+	status = "disabled";
+};
+&ipmmu_ir {
+	status = "disabled";
+};
 
 &ipmmu_rt0 {
 	status = "disabled";
 };
-
 &ipmmu_rt1 {
 	status = "disabled";
 };
-
-
 &ipmmu_ds0{
 	status = "disabled";
 };
-
-&ipmmu_hc {
+&ipmmu_3dg{
+	status = "disabled";
+};
+&ipmmu_vi0{
+	status = "disabled";
+};
+&ipmmu_vi1{
+	status = "disabled";
+};
+&ipmmu_vip0{
+	status = "disabled";
+};
+&ipmmu_vip1{
 	status = "disabled";
 };
 
@@ -173,11 +190,11 @@
 //};
 
 &dsi0 {
-	status = "okay";
+	status = "disabled";
 };
 
 &dsi1 {
-	status = "okay";
+	status = "disabled";
 };
 
 &i2c0 {

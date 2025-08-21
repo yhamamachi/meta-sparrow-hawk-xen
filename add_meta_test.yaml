@@ -13,6 +13,8 @@
               - type: git
                 url: https://github.com/rcar-community/meta-sparrow-hawk
                 rev: scarthgap
+                #url: https://github.com/yhamamachi/meta-sparrow-hawk
+                #rev: scarthgap-dev-pcie-test
             builder:
               layers:
                 - "../meta-sparrow-hawk"

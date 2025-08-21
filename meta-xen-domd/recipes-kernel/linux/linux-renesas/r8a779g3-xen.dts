@@ -77,7 +77,6 @@
 
 &mmc0 {
 	iommus = <&ipmmu_ds0 32>;
-
 };
 
 &pciec0 {
@@ -159,8 +158,12 @@
 &tsc			{ xen,passthrough; };
 &vspd0 { xen,passthrough; };
 &vspd1 { xen,passthrough; };
+&vspx0 { xen,passthrough; };
+&vspx1 { xen,passthrough; };
 &fcpvd0 { xen,passthrough; };
 &fcpvd1 { xen,passthrough; };
+&fcpvx0 { xen,passthrough; };
+&fcpvx1 { xen,passthrough; };
 &du { xen,passthrough; };
 //&dsc { xen,passthrough; };
 &dsi0 { xen,passthrough; };

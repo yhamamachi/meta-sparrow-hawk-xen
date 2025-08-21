@@ -15,15 +15,17 @@ cp -f ./GSX_KM_V4H.tar.bz2 ${WORK_DIR}/GSX_KM_V4H_DDK23.3_v2.tar.bz2
 cp -f ./r8a779g0_linux_gsx_binaries_gles.tar.bz2 ${WORK_DIR}/r8a779g0_linux_gsx_binaries_gles_vz_DDK23.3_v2.tar.bz2
 
 cd ${WORK_DIR}
-curl -LO https://raw.github.com/xen-troops/meta-xt-prod-devel-rcar-gen4/v4h_demo/prod-devel-rcar4.yaml
-sed -i -e "s/4.17.0+git%/4.19.0+git%/" prod-devel-rcar4.yaml
-# Remove MACHINE parameter because it is contained append yaml file.
-sed -i '/^  MACHINE/,+39d' prod-devel-rcar4.yaml
-sed -i -e 's/wayland//' -e 's/opengl//' prod-devel-rcar4.yaml
-sed -i -e 's/- \[MACHINE_FEATURES:remove, " gsx"\]//' prod-devel-rcar4.yaml
-sed -i -e 's/rcar-image-adas/core-image-weston/' prod-devel-rcar4.yaml
-cat prod-devel-rcar4.yaml ../add_meta_test.yaml > prod-devel-rcar4_new.yaml
-
+#curl -LO https://raw.github.com/xen-troops/meta-xt-prod-devel-rcar-gen4/v4h_demo/prod-devel-rcar4.yaml
+#sed -i -e "s/4.17.0+git%/4.19.0+git%/" prod-devel-rcar4.yaml
+## Remove MACHINE parameter because it is contained append yaml file.
+#sed -i '/^  MACHINE/,+39d' prod-devel-rcar4.yaml
+#sed -i -e 's/wayland//' -e 's/opengl//' prod-devel-rcar4.yaml
+#sed -i -e 's/- \[MACHINE_FEATURES:remove, " gsx"\]//' prod-devel-rcar4.yaml
+#sed -i -e 's/rcar-image-adas/core-image-weston/' prod-devel-rcar4.yaml
+#sed -i -e 's/xen-%{MACHINE}.uImage/xen-%{MACHINE}/' prod-devel-rcar4.yaml
+#sed -i -e 's/xenpolicy-%{MACHINE}/xenpolicy-4.19-unstable/' prod-devel-rcar4.yaml
+#cat prod-devel-rcar4.yaml ../add_meta_test.yaml > prod-devel-rcar4_new.yaml
+cp -f ../prod-devel-rcar4_new.yaml ./
 moulin prod-devel-rcar4_new.yaml \
     --MACHINE sparrow-hawk \
     --ENABLE_DOMU no \
@@ -72,7 +74,7 @@ sed -i -e 's/"scarthgap"/"kirkstone scarthgap"/' yocto/meta-sparrow-hawk/conf/la
 mv -f yocto/meta-sparrow-hawk/recipes-multimedia/libcamera/libcamera{_%,}.bbappend || true
 ninja
 ninja full.img.gz
-ninja boot_artifacts
+#ninja boot_artifacts
 # 
 # cd yocto/build-domd/tmp/deploy/images/sparrow-hawk/
 # cp -f Image boot-tftp.uImage -t /tftp/v4hsbc_xen/
