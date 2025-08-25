@@ -194,7 +194,7 @@
 };
 
 &dsi1 {
-	status = "disabled";
+	status = "okay";
 };
 
 &i2c0 {
