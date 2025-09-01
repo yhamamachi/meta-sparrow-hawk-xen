@@ -1,0 +1,5 @@
+SRC_URI = "git://github.com/xen-troops/xen.git;protocol=https;branch=xen-4.19-xt0.2"
+XEN_REL = "4.19.0"
+XEN_REV = "8d17019373ad2d0928dfe9ce1ee4e3805209fc6c"
+LIC_FILES_CHKSUM = "file://COPYING;md5=d1a1e216f80b6d8da95fec897d0dbec9"
+PV = "${XEN_REL}+git${XEN_REV}"

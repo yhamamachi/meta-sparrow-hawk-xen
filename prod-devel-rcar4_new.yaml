@@ -12,8 +12,6 @@ variables:
   XT_GENERIC_DOMU_TAG: ""
   XT_DOMD_CONFIG_NAME: "domd-%{MACHINE}.cfg"
   XT_DOMU_CONFIG_NAME: "domu-%{MACHINE}.cfg"
-  XT_KERNEL_BRANCH: "v5.10.41/rcar-5.1.7.rc11.2-xt"
-  XT_KERNEL_REV: "${AUTOREV}"
 common_data:
   # Sources used by all yocto-based domains
   sources: &COMMON_SOURCES
@@ -36,9 +34,6 @@ common_data:
   # Sources to be used in DomD and DomU
   domd_domu_sources: &DOMD_DOMU_SOURCES
     - type: git
-      url: https://github.com/rshym/meta-renesas.git
-      rev: rsm_v4h_kirkstone
-    - type: git
       url: https://github.com/Deedone/meta-xt-rcar
       rev: v4h_xt_wip
 
@@ -56,6 +51,10 @@ common_data:
     - [DISTRO_FEATURES:remove, "x11 gtk gobject-introspection-data wifi nfc
             bluetooth irda zeroconf 3g sysvinit acl alsa argp pcmcia usbgadget
             usbhost  ptest multiarch  vulkan sysvinit pulseaudio"]
+
+    - [PREFERRED_VERSION_xen-tools, "4.19.0+git%"]
+    - [PREFERRED_VERSION_xen, "4.19.0+git%"]
+
   # Conf options for domain that are built used renesas layer
   domd_domu_conf: &DOMD_DOMU_CONF
     - [MACHINE, "%{MACHINE}"]
@@ -80,14 +79,11 @@ common_data:
     # Generate ext4 image files
     - [IMAGE_FSTYPES:append, " ext4"]
 
-    # Mask Renesas OP-TEE
-    - [BBMASK:append, " /meta-renesas/meta-rcar-gateway/recipes-bsp/optee"]
-
     - [PACKAGECONFIG:remove, "perf"]
     - [PACKAGECONFIG:remove, "tools-profile"]
     - [RENESAS_EXTRA_IMAGE_FEATURES:remove, "tools-profile"]
     - [CORE_IMAGE_EXTRA_INSTALL:remove, "perf"]
-    - [MACHINE_FEATURES:append, " gsx"]
+    #- [MACHINE_FEATURES:append, " gsx"]
 
 components:
   dom0:
@@ -118,8 +114,6 @@ components:
         # Do not install kernel image to rootfs to decrease initrd size
         - ["RRECOMMENDS:${KERNEL_PACKAGE_NAME}-base", ""]
 
-        - [PREFERRED_VERSION_xen-tools, "4.19.0+git%"]
-        - [PREFERRED_VERSION_xen, "4.19.0+git%"]
 
       layers:
         - "../meta-virtualization"
@@ -157,19 +151,9 @@ components:
         - *DOMD_DOMU_CONF
         - [XT_DOM_NAME, "domd"]
         - [XT_DEVICE_TREES, "%{XT_DOMD_DTB_NAME} %{XT_XEN_DTB_NAME}"]
-        - [XT_KERNEL_BRANCH, "%{XT_KERNEL_BRANCH}"]
-        - [XT_KERNEL_REV, "%{XT_KERNEL_REV}"]
         - [IMAGE_INSTALL:append, " iperf3"]
         - [IMAGE_INSTALL:append, " smcroute"]
         - [IMAGE_INSTALL:append, " snort"]
-        - [PREFERRED_VERSION_xen-tools, "4.19.0+git%"]
-        - [PREFERRED_VERSION_xen, "4.19.0+git%"]
-
-        - [KERNEL_DEVICETREE:remove, "renesas/r8a779g0-whitehawk-native.dtb"]
-        # we have to use opencv 4.1, but meta-oe provides 4.5.5
-        - [BBMASK:append, "  meta-openembedded/meta-oe/recipes-support/opencv"]
-        # we have to use tbb 2020.2 instead of 2021.5 for opencv 4.1
-        - [BBMASK:append, "  meta-openembedded/meta-oe/recipes-support/tbb"]
 
       build_target: core-image-weston
       layers:
@@ -184,7 +168,6 @@ components:
         - "../meta-xt-common/meta-xt-security"
         - "../meta-xt-rcar/meta-xt-gateway/meta-xt-domd-gen4"
         - "../meta-xt-rcar/meta-xt-gateway/meta-xt-domx-gen4"
-        - "../meta-xt-rcar/meta-xt-rcar-gles_common"
         - "../meta-xt-prod-devel-rcar-gen4/meta-xt-domd-gen4"
         - "../meta-xt-prod-devel-rcar-gen4/meta-xt-domx-gen4"
         - "../meta-xt-prod-devel-rcar-gen4/meta-xt-driver-domain-gen4"
@@ -228,7 +211,6 @@ components:
         - "../meta-xt-common/meta-xt-security"
         - "../meta-xt-prod-devel-rcar-gen4/meta-xt-domx-gen4"
         - "../meta-xt-prod-devel-rcar-gen4/meta-xt-domu-gen4"
-        - "../meta-xt-rcar/meta-xt-rcar-gles_common"
       build_target: core-image-weston
       target_images:
         - "tmp/deploy/images/%{MACHINE}/Image"
@@ -238,7 +220,7 @@ components:
     build-dir: "artifacts"
     builder:
       type: archive
-      name: "s4-%{MACHINE}-boot-artifacts.tar.bz"
+      name: "%{MACHINE}-boot-artifacts.tar.bz"
       items:
         - "%{YOCTOS_WORK_DIR}/%{DOM0_BUILD_DIR}/tmp/deploy/images/generic-armv8-xt/Image"
         - "%{YOCTOS_WORK_DIR}/%{DOM0_BUILD_DIR}/tmp/deploy/images/generic-armv8-xt/uInitramfs"
@@ -310,6 +292,7 @@ parameters:
               - type: git
                 url: https://github.com/rcar-community/meta-sparrow-hawk
                 rev: scarthgap
+                #rev: scarthgapi-dev-gfx
                 #url: https://github.com/yhamamachi/meta-sparrow-hawk
                 #rev: scarthgap-dev-pcie-test
             builder:
@@ -337,7 +320,10 @@ parameters:
                 core-image-thin-initramfs: "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/"
               conf:
                 - [XT_XEN_DTB_NAME, "%{XT_XEN_DTB_NAME}"]
+                # Remove
                 - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-dom0-gen4/recipes-kernel"]
+                # To avoid conlict, disable Xen recipes on meta-xt-prod-devel-rcar-gen4
+                - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-domx-gen4/recipes-extended/xen"]
           domd:
             builder:
               layers:
@@ -346,25 +332,25 @@ parameters:
                 - "../meta-openembedded/meta-multimedia"
               conf:
                 - [IMAGE_INSTALL:append, " iperf3 htop tcpdump coreutils ethtool"]
+                # Remove U-boot bbappend files for v2022.x
                 - [BBMASK:append, "|meta-xt-rcar/meta-xt-gateway/meta-xt-domd-gen4/recipes-bsp/u-boot"]
                 - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-domd-gen4/recipes-bsp/u-boot"]
-                  #- [BBMASK:append, "|meta-renesas-upstream-bsp/recipes-bsp/optee"]
-                  #- [BBMASK:append, "|meta-renesas-upstream-bsp/recipes-bsp/arm-trusted-firmware/"]
-                # GFX doesn't support now
-                - [BBMASK:append, "|recipes-graphics/gles-user-module"]
-                - [BBMASK:append, "|recipes-kernel/kernel-module-gles"]
-                - [BBMASK:append, "|meta-xt-rcar/meta-xt-rcar-gles_common/recipes-graphics/gles-module"]
-                - [BBMASK:append, "|meta-xt-rcar/meta-xt-rcar-gles_common/recipes-kernel/kernel-module-gles"]
-                - [BBMASK:append, "|meta-sparrow-hawk/recipes-core/systemd/"]
-                # rcar-image-XXXX is not prepared in upstream-bsp
+                # rcar-image-XXXX is not prepared in meta-sparrow-hawk
                 - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-domd-gen4/recipes-core/images/rcar-"]
                 - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-driver-domain-gen4/recipes-core/images/rcar-"]
-                # CPU rendering
-                - [IMAGE_INSTALL:append, " mesa glmark2 kernel-devicetree"]
+
+                # This is maybe for kirkstone
+                - [BBMASK:append, "|meta-sparrow-hawk/recipes-core/systemd/"]
+                - [BBMASK:append, "|meta-sparrow-hawk/recipes-multimedia/libcamera"]
+
+                # GFX package doesn't support now. thus use CPU rendering
+                - [IMAGE_INSTALL:append, " mesa glmark2"]
                 - [DISTRO_FEATURES_NATIVESDK:append, "wayland x11"]
                 - [DISTRO_FEATURES:append, " pam wayland"]
                 - [DISTRO_FEATURES:remove, " ptest x11 vulkan"]
-                #- [IMAGE_INSTALL:append, " optee-os"]
+
+                # To avoid conlict, disable Xen recipes on meta-xt-prod-devel-rcar-gen4
+                - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-domx-gen4/recipes-extended/xen"]
               target_images:
                 - "tmp/deploy/images/%{MACHINE}/flash.bin"
           domu:
@@ -377,20 +363,19 @@ parameters:
               conf:
                 - [IMAGE_INSTALL:append, " iperf3 htop tcpdump libaio coreutils rt-tests ethtool fio"]
                 - [EXTRA_IMAGE_FEATURES:append, " ssh-server-openssh"]
-                - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-domu-gen4/recipes-kernel/linux"]
-                - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-domu-gen4/recipes-core"]
-                - [BBMASK:append, "|meta-xt-rcar/meta-xt-rcar-gles_common/recipes-graphics/gles-module"]
-                - [BBMASK:append, "|meta-xt-rcar/meta-xt-rcar-gles_common/recipes-kernel/kernel-module-gles"]
 
+                # ATF is not needed for DomU
                 - [EXTRA_IMAGEDEPENDS:remove, " arm-trusted-firmware"]
+
+                # This is maybe for kirkstone
                 - [BBMASK:append, "|meta-sparrow-hawk/recipes-core/systemd/"]
-                # CPU rendering
-                - [IMAGE_INSTALL:append, " mesa glmark2 kernel-devicetree"]
-                - [DISTRO_FEATURES_NATIVESDK:append, "wayland x11"]
-                - [DISTRO_FEATURES:append, " pam wayland"]
-                - [DISTRO_FEATURES:remove, " ptest x11 vulkan"]
-                # For core-image-minmal
-                - [IMAGE_INSTALL:remove, " libcamera libcamera-pycamera"]
+                - [BBMASK:append, "|meta-sparrow-hawk/recipes-multimedia/libcamera"]
+
+                # CPU rendering for core-image-weston
+                # - [IMAGE_INSTALL:append, " mesa glmark2"]
+                # - [DISTRO_FEATURES_NATIVESDK:append, "wayland x11"]
+                # - [DISTRO_FEATURES:append, " pam wayland"]
+                # - [DISTRO_FEATURES:remove, " ptest x11 vulkan"]
         images:
           full:
             partitions:
@@ -398,4 +383,3 @@ parameters:
                 items:
                   "flash.bin": "%{YOCTOS_WORK_DIR}/build-domd/tmp/deploy/images/%{MACHINE}/flash.bin"
                   "fitImage": "%{YOCTOS_WORK_DIR}/build-dom0/tmp/deploy/images/generic-armv8-xt/fitImage"
-
