@@ -2,4 +2,5 @@
 /work*
 /prod-devel-rcar4.yaml
 /firmware
-
+/proprietary
+/.*
