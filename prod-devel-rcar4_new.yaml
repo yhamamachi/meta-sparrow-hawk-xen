@@ -31,12 +31,6 @@ common_data:
       url: "https://github.com/xen-troops/meta-xt-prod-devel-rcar-gen4.git"
       rev: v4h_demo
 
-  # Sources to be used in DomD and DomU
-  domd_domu_sources: &DOMD_DOMU_SOURCES
-    - type: git
-      url: https://github.com/Deedone/meta-xt-rcar
-      rev: v4h_xt_wip
-
   # Common configuration options for all yocto-based domains
   conf: &COMMON_CONF
     - [DL_DIR, "${TOPDIR}/../common_data/downloads"]
@@ -139,7 +133,6 @@ components:
     build-dir: "%{YOCTOS_WORK_DIR}"
     sources:
       - *COMMON_SOURCES
-      - *DOMD_DOMU_SOURCES
       - type: git
         url: git://git.yoctoproject.org/meta-selinux
         rev: kirkstone
@@ -166,8 +159,6 @@ components:
         - "../meta-xt-common/meta-xt-domx"
         - "../meta-xt-common/meta-xt-driver-domain"
         - "../meta-xt-common/meta-xt-security"
-        - "../meta-xt-rcar/meta-xt-gateway/meta-xt-domd-gen4"
-        - "../meta-xt-rcar/meta-xt-gateway/meta-xt-domx-gen4"
         - "../meta-xt-prod-devel-rcar-gen4/meta-xt-domd-gen4"
         - "../meta-xt-prod-devel-rcar-gen4/meta-xt-domx-gen4"
         - "../meta-xt-prod-devel-rcar-gen4/meta-xt-driver-domain-gen4"
@@ -175,18 +166,14 @@ components:
         - "tmp/deploy/images/%{MACHINE}/Image"
         - "tmp/deploy/images/%{MACHINE}/core-image-weston-%{MACHINE}.ext4"
         - "tmp/deploy/images/%{MACHINE}/bl31-%{MACHINE}.srec"
-        - "tmp/deploy/images/%{MACHINE}/tee-%{MACHINE}.srec"
         - "tmp/deploy/images/%{MACHINE}/u-boot-elf-%{MACHINE}.srec"
         - "tmp/deploy/images/%{MACHINE}/xen-%{MACHINE}"
         - "tmp/deploy/images/%{MACHINE}/xenpolicy-4.19-unstable"
         - "tmp/deploy/images/%{MACHINE}/%{XT_XEN_DTB_NAME}"
-        - "tmp/deploy/images/%{MACHINE}/boot-tftp.uImage"
-        - "tmp/deploy/images/%{MACHINE}/boot-emmc.uImage"
   domu:
     build-dir: "%{YOCTOS_WORK_DIR}"
     sources:
       - *COMMON_SOURCES
-      - *DOMD_DOMU_SOURCES
     builder:
       type: yocto
       work_dir: "%{DOMU_BUILD_DIR}"
@@ -195,7 +182,6 @@ components:
         - *DOMD_DOMU_CONF
         - [XT_DOM_NAME, "domu"]
         - [IMAGE_INSTALL:append, " iperf3 "]
-        # This is temporary workaround required because we use linux-libc-headers 5.10
         # and xt-common provides 6.4 already. So we need this bbmask until upgrade to 6.4
         - [BBMASK:append, " meta-xt-common/meta-xt-domu/recipes-kernel/linux-libc-headers/"]
         # we have to use opencv 4.1, but meta-oe provides 4.5.5
@@ -333,7 +319,6 @@ parameters:
               conf:
                 - [IMAGE_INSTALL:append, " iperf3 htop tcpdump coreutils ethtool"]
                 # Remove U-boot bbappend files for v2022.x
-                - [BBMASK:append, "|meta-xt-rcar/meta-xt-gateway/meta-xt-domd-gen4/recipes-bsp/u-boot"]
                 - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-domd-gen4/recipes-bsp/u-boot"]
                 # rcar-image-XXXX is not prepared in meta-sparrow-hawk
                 - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-domd-gen4/recipes-core/images/rcar-"]
