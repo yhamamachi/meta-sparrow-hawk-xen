@@ -32,9 +32,11 @@ cp -f ../prod-devel-rcar4_new.yaml ./
 
 if [[ "${CLEAN_BUILD_TEST}" == "yes" ]]; then
     sed -i -e 's/"yocto"/"yocto-clean"/' ./prod-devel-rcar4_new.yaml
+    rm -rf yocto-clean/build-dom*/conf
     #rm -rf ./yocto-clean/build-dom*
 fi
 
+rm -rf yocto/build-dom*/conf
 moulin prod-devel-rcar4_new.yaml \
     --MACHINE sparrow-hawk \
     --ENABLE_DOMU ${USING_DOMU} \
