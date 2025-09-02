@@ -159,9 +159,6 @@ components:
         - "../meta-xt-common/meta-xt-domx"
         - "../meta-xt-common/meta-xt-driver-domain"
         - "../meta-xt-common/meta-xt-security"
-        - "../meta-xt-prod-devel-rcar-gen4/meta-xt-domd-gen4"
-        - "../meta-xt-prod-devel-rcar-gen4/meta-xt-domx-gen4"
-        - "../meta-xt-prod-devel-rcar-gen4/meta-xt-driver-domain-gen4"
       target_images:
         - "tmp/deploy/images/%{MACHINE}/Image"
         - "tmp/deploy/images/%{MACHINE}/core-image-weston-%{MACHINE}.ext4"
@@ -316,11 +313,6 @@ parameters:
                 - "../meta-openembedded/meta-multimedia"
               conf:
                 - [IMAGE_INSTALL:append, " iperf3 htop tcpdump coreutils ethtool"]
-                # Remove U-boot bbappend files for v2022.x
-                - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-domd-gen4/recipes-bsp/u-boot"]
-                # rcar-image-XXXX is not prepared in meta-sparrow-hawk
-                - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-domd-gen4/recipes-core/images/rcar-"]
-                - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-driver-domain-gen4/recipes-core/images/rcar-"]
 
                 # This is maybe for kirkstone
                 - [BBMASK:append, "|meta-sparrow-hawk/recipes-core/systemd/"]
@@ -333,8 +325,6 @@ parameters:
                 - [DISTRO_FEATURES:append, " pam wayland"]
                 - [DISTRO_FEATURES:remove, " ptest x11 vulkan"]
 
-                # To avoid conlict, disable Xen recipes on meta-xt-prod-devel-rcar-gen4
-                - [BBMASK:append, "|meta-xt-prod-devel-rcar-gen4/meta-xt-domx-gen4/recipes-extended/xen"]
               target_images:
                 - "tmp/deploy/images/%{MACHINE}/flash.bin"
           domu:

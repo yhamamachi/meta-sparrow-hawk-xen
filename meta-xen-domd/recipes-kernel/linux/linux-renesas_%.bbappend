@@ -7,6 +7,10 @@ SRC_URI:append = " \
     file://r8a779g3-sparrow-hawk-domd.dts;subdir=git/arch/arm64/boot/dts/renesas \
     file://r8a779g3-sparrow-hawk-xen.dts;subdir=git/arch/arm64/boot/dts/renesas \
     file://append.cfg \
+    file://0001-xen-Initial-version-of-Xen-passthrough-helper-driver.patch \
+    file://0002-PCIe-MSI-support.${MACHINE}.patch \
+    file://0003-xen-pciback-allow-compiling-on-other-archs-than-x86.patch \
+    file://0004-HACK-Allow-DomD-enumerate-PCI-devices.patch \
     file://0001-Fix-build-error-for-kernel-6.12.34.patch \
 "
 
