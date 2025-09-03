@@ -7,12 +7,13 @@ EXTERNALSRC_SYMLINKS = ""
 
 generate_uboot_image() {
     uboot-mkimage -A arm64 -O linux -T ramdisk -C gzip -n "uInitramfs" \
-        -d ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.cpio.gz  ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.cpio.gz.uInitramfs
-    ln -sfr  ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.cpio.gz.uInitramfs ${DEPLOY_DIR_IMAGE}/uInitramfs
+        -d ${IMGDEPLOYDIR}/${IMAGE_NAME}.cpio.gz  ${IMGDEPLOYDIR}/${IMAGE_NAME}.cpio.gz.uInitramfs
+    ln -sfr  ${IMGDEPLOYDIR}/${IMAGE_NAME}.cpio.gz.uInitramfs ${DEPLOY_DIR_IMAGE}/uInitramfs
 }
 
 IMAGE_POSTPROCESS_COMMAND += " generate_uboot_image; "
 IMAGE_ROOTFS_SIZE = "65535"
+INITRAMFS_MAXSIZE = "262144"
 
 # do_unpack is not supported with inherit core-image.
 # Thus, we need to copy file manually.
@@ -25,7 +26,7 @@ addtask do_copy_files before do_image_complete
 generate_fit_image() {
     cd ${WORKDIR}
     cp -f ${DEPLOY_DIR_IMAGE}/Image ./Image
-    cp -f ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.cpio.gz ./uInitramfs
+    cp -f ${IMGDEPLOYDIR}/${IMAGE_NAME}.cpio.gz ./uInitramfs
     cp -f ${S}/xen-*.efi ./xen
     cp -f ${S}/xenpolicy-4.* ./xenpolicy
     cp -f ${S}/${XT_XEN_DTB_NAME} ./xen.dtb

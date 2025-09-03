@@ -17,13 +17,13 @@ common_data:
   sources: &COMMON_SOURCES
     - type: git
       url: "git://git.yoctoproject.org/poky"
-      rev: kirkstone
+      rev: scarthgap
     - type: git
       url: "git://git.openembedded.org/meta-openembedded"
-      rev: kirkstone
+      rev: scarthgap
     - type: git
       url: "git://git.yoctoproject.org/meta-virtualization"
-      rev: kirkstone
+      rev: scarthgap
     - type: git
       url: "https://github.com/Deedone/meta-xt-common.git"
       rev: v4h_xt_wip
@@ -52,7 +52,7 @@ common_data:
     - [SOC_FAMILY, "%{SOC_FAMILY}"]
 
     # Add systemd configuration
-    - [DISTRO_FEATURES:append, " systemd"]
+    - [DISTRO_FEATURES:append, " usrmerge systemd"]
     - [VIRTUAL-RUNTIME_init_manager, "systemd"]
 
     # add the static lib to SDK toolchain
@@ -99,7 +99,7 @@ components:
         - [BAD_RECOMMENDATIONS:append, " udev-hwdb"]
 
         # Enable systemd on dom0
-        - [DISTRO_FEATURES:append, " systemd"]
+        - [DISTRO_FEATURES:append, " usrmerge systemd"]
         - [VIRTUAL-RUNTIME_init_manager, "systemd"]
 
         # Do not install kernel image to rootfs to decrease initrd size
@@ -129,7 +129,7 @@ components:
       - *COMMON_SOURCES
       - type: git
         url: git://git.yoctoproject.org/meta-selinux
-        rev: kirkstone
+        rev: scarthgap
     builder:
       type: yocto
       work_dir: "%{DOMD_BUILD_DIR}"
@@ -155,7 +155,7 @@ components:
         - "../meta-xt-common/meta-xt-security"
       target_images:
         - "tmp/deploy/images/%{MACHINE}/Image"
-        - "tmp/deploy/images/%{MACHINE}/core-image-weston-%{MACHINE}.ext4"
+        - "tmp/deploy/images/%{MACHINE}/core-image-weston-%{MACHINE}.rootfs.ext4"
         - "tmp/deploy/images/%{MACHINE}/bl31-%{MACHINE}.srec"
         - "tmp/deploy/images/%{MACHINE}/u-boot-elf-%{MACHINE}.srec"
         - "tmp/deploy/images/%{MACHINE}/xen-%{MACHINE}"
@@ -189,7 +189,7 @@ components:
       build_target: core-image-weston
       target_images:
         - "tmp/deploy/images/%{MACHINE}/Image"
-        - "tmp/deploy/images/%{MACHINE}/core-image-weston-%{MACHINE}.ext4"
+        - "tmp/deploy/images/%{MACHINE}/core-image-weston-%{MACHINE}.rootfs.ext4"
 
   boot_artifacts:
     build-dir: "artifacts"
@@ -223,7 +223,7 @@ images:
       domd_rootfs:
         gpt_type: B921B045-1DF0-41C3-AF44-4C6F280D3FAE # Linux aarch64 root
         type: raw_image
-        image_path: "%{YOCTOS_WORK_DIR}/build-domd/tmp/deploy/images/%{MACHINE}/core-image-weston-%{MACHINE}.ext4"
+        image_path: "%{YOCTOS_WORK_DIR}/build-domd/tmp/deploy/images/%{MACHINE}/core-image-weston-%{MACHINE}.rootfs.ext4"
 
 parameters:
   ENABLE_DOMU:
@@ -250,8 +250,8 @@ parameters:
               domu-rootfs:
                 type: raw_image
                 gpt_type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4 # Linux filesystem data
-                #image_path: "%{YOCTOS_WORK_DIR}/%{DOMU_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/core-image-weston-%{MACHINE}.ext4"
-                image_path: "%{YOCTOS_WORK_DIR}/%{DOMU_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/core-image-minimal-%{MACHINE}.ext4"
+                #image_path: "%{YOCTOS_WORK_DIR}/%{DOMU_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/core-image-weston-%{MACHINE}.rootfs.ext4"
+                image_path: "%{YOCTOS_WORK_DIR}/%{DOMU_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/core-image-minimal-%{MACHINE}.rootfs.ext4"
 # parameters:
   MACHINE:
     desc: "RCAR Gen4-based device"
@@ -295,6 +295,8 @@ parameters:
                 core-image-thin-initramfs: "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/"
               conf:
                 - [XT_XEN_DTB_NAME, "%{XT_XEN_DTB_NAME}"]
+              target_images:
+                - "tmp/deploy/images/generic-armv8-xt/fitImage"
           domd:
             builder:
               layers:
@@ -303,11 +305,6 @@ parameters:
                 - "../meta-openembedded/meta-multimedia"
               conf:
                 - [IMAGE_INSTALL:append, " iperf3 htop tcpdump coreutils ethtool"]
-
-                # This is maybe for kirkstone
-                - [BBMASK:append, "|meta-sparrow-hawk/recipes-core/systemd/"]
-                - [BBMASK:append, "|meta-sparrow-hawk/recipes-multimedia/libcamera"]
-                - [BBMASK:append, "|meta-sparrow-hawk/recipes-core/packagegroups/nativesdk-packagegroup-sdk-host.bbappend"]
 
                 # GFX package doesn't support now. thus use CPU rendering
                 - [IMAGE_INSTALL:append, " mesa glmark2"]
@@ -329,11 +326,6 @@ parameters:
 
                 # ATF is not needed for DomU
                 - [EXTRA_IMAGEDEPENDS:remove, " arm-trusted-firmware"]
-
-                # This is maybe for kirkstone
-                - [BBMASK:append, "|meta-sparrow-hawk/recipes-core/systemd/"]
-                - [BBMASK:append, "|meta-sparrow-hawk/recipes-multimedia/libcamera"]
-                - [BBMASK:append, "|meta-sparrow-hawk/recipes-core/packagegroups/nativesdk-packagegroup-sdk-host.bbappend"]
 
                 - [IMAGE_INSTALL:remove, "libcamera libcamera-pycamera"]
 

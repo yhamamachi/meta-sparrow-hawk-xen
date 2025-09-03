@@ -4,6 +4,7 @@ IMAGE_INSTALL:append = " \
     xen-tools-scripts-network \
     xen-tools-scripts-block \
     xen-tools-xenstore \
+    xen-tools-xencommons \
     xen-network \
     dnsmasq \
 "

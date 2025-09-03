@@ -1,1 +1,1 @@
-FILESEXTRAPATHS:prepend:sparrow-hawk = "${TOPDIR}/../../../../../firmware:"
+FILESEXTRAPATHS:prepend = "${TOPDIR}/../../../firmware:"

@@ -18,5 +18,4 @@ DEPENDS:remove = "pixman virtual/libsdl"
 SRC_URI:remove = "file://0001-arm-Change-GUEST_GICV3_ITS_BASE.patch"
 SRC_URI:remove = "file://0001-pci-Add-support-for-V4H-pcie-host.patch"
 
-SYSTEMD_SERVICE:xen-tools-xencommons:remove = 'var-lib-xenstored.mount'
 FILES:${PN} += "/var/lib /usr/lib/xen/bin/* /boot/*"

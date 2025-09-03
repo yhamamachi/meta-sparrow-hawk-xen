@@ -42,12 +42,5 @@ moulin prod-devel-rcar4_new.yaml \
     --ENABLE_DOMU ${USING_DOMU} \
     --ADD_META_TEST yes \
 
-ninja fetch-domd
-# Fix meta-sparrow-hawk layer for kirkstone
-sed -i -e 's/"scarthgap"/"kirkstone scarthgap"/' yocto/meta-sparrow-hawk/conf/layer.conf
-if [[ "${CLEAN_BUILD_TEST}" == "yes" ]]; then
-    sed -i -e 's/"scarthgap"/"kirkstone scarthgap"/' yocto-clean/meta-sparrow-hawk/conf/layer.conf
-fi
-
 ninja
 ninja full.img.gz
