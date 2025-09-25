@@ -95,10 +95,16 @@
 
 &pciec1 {
 	iommus = <&ipmmu_hc 48>;
+	msi-map = <0x0 &gic_its 0x0 0x1000>;
 	interrupt-map = <0 0 0 1 &gic 0 0 GIC_SPI 456 IRQ_TYPE_LEVEL_HIGH
 					0 0 0 2 &gic 0 0 GIC_SPI 456 IRQ_TYPE_LEVEL_HIGH
 					0 0 0 3 &gic 0 0 GIC_SPI 456 IRQ_TYPE_LEVEL_HIGH
 					0 0 0 4 &gic 0 0 GIC_SPI 456 IRQ_TYPE_LEVEL_HIGH>;
+	iommu-map = <0x000 &ipmmu_hc 48 0x1>,
+		    <0x100 &ipmmu_hc 49 0x1>,
+		    <0x101 &ipmmu_hc 50 0x1>,
+		    <0x102 &ipmmu_hc 51 0x10>,
+		    <0x280 &ipmmu_hc 52 0x1>;
 };
 
 /delete-node/ &pciec0_ep;
