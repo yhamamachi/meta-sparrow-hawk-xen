@@ -16,9 +16,13 @@
 	};
 };
 
-//&gsx {
-//	xen,passthrough;
-//};
+&gsx {
+	xen,passthrough;
+	iommus = <&ipmmu_3dg 0>, <&ipmmu_3dg 1>,
+		<&ipmmu_3dg 2>, <&ipmmu_3dg 3>,
+		<&ipmmu_3dg 4>, <&ipmmu_3dg 5>,
+		<&ipmmu_3dg 6>, <&ipmmu_3dg 7>;
+};
 
 &ipmmu_mm {
 	status = "okay";

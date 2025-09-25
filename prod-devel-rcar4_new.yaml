@@ -266,9 +266,8 @@ parameters:
             sources:
               - type: git
                 url: https://github.com/rcar-community/meta-sparrow-hawk
-                rev: scarthgap
-                #rev: scarthgapi-dev-gfx
-                #url: https://github.com/yhamamachi/meta-sparrow-hawk
+                #rev: scarthgap
+                rev: scarthgap-dev-gfx
                 #rev: scarthgap-dev-pcie-test
             builder:
               layers:
@@ -305,13 +304,8 @@ parameters:
                 - "../meta-openembedded/meta-multimedia"
               conf:
                 - [IMAGE_INSTALL:append, " iperf3 htop tcpdump coreutils ethtool"]
-
-                # GFX package doesn't support now. thus use CPU rendering
-                - [IMAGE_INSTALL:append, " mesa glmark2"]
-                - [DISTRO_FEATURES_NATIVESDK:append, "wayland x11"]
-                - [DISTRO_FEATURES:append, " pam wayland"]
-                - [DISTRO_FEATURES:remove, " ptest x11 vulkan"]
-
+                - [IMAGE_INSTALL:append, " glmark2"]
+                - [IMAGE_INSTALL:remove, "linux-fitimage"]
               target_images:
                 - "tmp/deploy/images/%{MACHINE}/flash.bin"
           domu:
@@ -324,11 +318,17 @@ parameters:
                 - [IMAGE_INSTALL:append, " iperf3 htop tcpdump libaio coreutils rt-tests ethtool fio"]
                 - [EXTRA_IMAGE_FEATURES:append, " ssh-server-openssh"]
 
-                # ATF is not needed for DomU
+                # Remove unneeded pakcages for DomU
                 - [EXTRA_IMAGEDEPENDS:remove, " arm-trusted-firmware"]
-
                 - [IMAGE_INSTALL:remove, "libcamera libcamera-pycamera"]
-
+                - [IMAGE_INSTALL:remove, "linux-fitimage"]
+                # Mask graphic Pkgs
+                - [BBMASK, "kernel-module-gles|user-module-gles"]
+                - [BBMASK:append, "|meta-sparrow-hawk/recipes-graphics/wayland/wayland-wsegl"]
+                - [BBMASK:append, "|meta-sparrow-hawk/recipes-graphics/wayland/wayland-kms"]
+                - [BBMASK:append, "|meta-sparrow-hawk/recipes-graphics/wayland/libgbm"]
+                - [BBMASK:append, "|meta-sparrow-hawk/recipes-graphics/wayland/weston_%.bbappend"]
+                - [BBMASK:append, "|meta-sparrow-hawk/recipes-graphics/packagegroups/packagegroup-renesas-graphics.bb"]
                 # CPU rendering for core-image-weston
                 # - [IMAGE_INSTALL:append, " mesa glmark2"]
                 # - [DISTRO_FEATURES_NATIVESDK:append, "wayland x11"]
@@ -341,3 +341,48 @@ parameters:
                 items:
                   "flash.bin": "%{YOCTOS_WORK_DIR}/build-domd/tmp/deploy/images/%{MACHINE}/flash.bin"
                   "fitImage": "%{YOCTOS_WORK_DIR}/build-dom0/tmp/deploy/images/generic-armv8-xt/fitImage"
+
+  USE_GRAPHICS_PACKAGE:
+    desc: "Enable GPU on DomD"
+    "no":
+      desc: "Nothing to do"
+      overrides:
+        components:
+          domd:
+            builder:
+              conf:
+                # Use CPU rendering
+                - [IMAGE_INSTALL:append, " mesa glmark2"]
+                - [DISTRO_FEATURES_NATIVESDK:append, "wayland x11"]
+                - [DISTRO_FEATURES:append, " pam wayland"]
+                - [DISTRO_FEATURES:remove, " ptest x11 vulkan"]
+                # Mask graphic Pkgs
+                - [BBMASK, "kernel-module-gles|user-module-gles"]
+                - [BBMASK:append, "|meta-sparrow-hawk/recipes-graphics/wayland/wayland-wsegl"]
+                - [BBMASK:append, "|meta-sparrow-hawk/recipes-graphics/wayland/wayland-kms"]
+                - [BBMASK:append, "|meta-sparrow-hawk/recipes-graphics/wayland/libgbm"]
+                - [BBMASK:append, "|meta-sparrow-hawk/recipes-graphics/wayland/weston_%.bbappend"]
+                - [BBMASK:append, "|meta-sparrow-hawk/recipes-graphics/packagegroups/packagegroup-renesas-graphics.bb"]
+    "yes":
+      default: true
+      overrides:
+        components:
+          domd:
+            builder:
+              layers:
+                - "../../../meta-xen-domd-gfx"
+              conf:
+                # Enable Gfx Pkgs
+                - [MACHINE_FEATURES:append, " gsx"]
+                # Enable Wayland/Weston
+                - [DISTRO_FEATURES_NATIVESDK:append, " wayland"]
+                - [DISTRO_FEATURES:append, " pam"]
+                - [BB_MULTI_PROVIDER_ALLOWED:append, "virtual/libgl virtual/egl virtual/libgles1 virtual/libgles2"]
+                - [PREFERRED_PROVIDER_virtual/libgles1, ""]
+                - [PREFERRED_PROVIDER_virtual/libgles2, "user-module-gles"]
+                - [PREFERRED_PROVIDER_virtual/egl, "libegl"]
+                - [PREFERRED_PROVIDER_virtual/libgl, ""]
+                - [PREFERRED_PROVIDER_virtual/mesa, ""]
+                - [PREFERRED_PROVIDER_virtual/libgbm, "libgbm"]
+                - [PREFERRED_PROVIDER_libgbm-dev, "libgbm"]
+

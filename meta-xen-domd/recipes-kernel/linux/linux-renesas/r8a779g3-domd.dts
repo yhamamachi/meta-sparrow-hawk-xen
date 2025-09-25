@@ -62,9 +62,9 @@
 // 	};
 };
 
-//&gsx {
-//	status = "okay";
-//};
+&gsx {
+	status = "okay";
+};
 
 &gic {
 	compatible = "";
