@@ -52,8 +52,10 @@ common_data:
     - [SOC_FAMILY, "%{SOC_FAMILY}"]
 
     # Add systemd configuration
-    - [DISTRO_FEATURES:append, " usrmerge systemd"]
-    - [VIRTUAL-RUNTIME_init_manager, "systemd"]
+    - [INIT_MANAGER, "systemd"]
+    - [DISTRO_FEATURES:append, " usrmerge"]
+    - [TRO_FEATURES:remove:xen-tools, "systemd"]
+    #- [VIRTUAL-RUNTIME_init_manager, "systemd"]
 
     # add the static lib to SDK toolchain
     - [SDKIMAGE_FEATURES:append, " staticdev-pkgs"]
@@ -92,7 +94,6 @@ components:
         - [XT_DOMD_CONFIG_NAME, "%{XT_DOMD_CONFIG_NAME}"]
         - [XT_DOMU_CONFIG_NAME, "%{XT_DOMU_CONFIG_NAME}"]
         - [XT_DOMD_DTB_NAME, "%{XT_DOMD_DTB_NAME}"]
-        - [XT_DOMU_DTB_NAME, "%{XT_DOMU_DTB_NAME}"]
         - [XT_GUEST_INSTALL, "%{XT_GENERIC_DOMU_TAG} domd"]
 
         # Disable HWDB which quite huge (around 15MB) and is not required at all
@@ -171,6 +172,7 @@ components:
       conf:
         - *COMMON_CONF
         - *DOMD_DOMU_CONF
+        - [MACHINE, "%{DOMU_MACHINE}"]
         - [XT_DOM_NAME, "domu"]
         - [IMAGE_INSTALL:append, " iperf3 "]
         # and xt-common provides 6.4 already. So we need this bbmask until upgrade to 6.4
@@ -188,8 +190,8 @@ components:
         - "../meta-xt-common/meta-xt-security"
       build_target: core-image-weston
       target_images:
-        - "tmp/deploy/images/%{MACHINE}/Image"
-        - "tmp/deploy/images/%{MACHINE}/core-image-weston-%{MACHINE}.rootfs.ext4"
+        - "tmp/deploy/images/%{DOMU_MACHINE}/Image"
+        - "tmp/deploy/images/%{DOMU_MACHINE}/core-image-weston-%{DOMU_MACHINE}.rootfs.ext4"
 
   boot_artifacts:
     build-dir: "artifacts"
@@ -238,12 +240,9 @@ parameters:
           dom0:
             builder:
               additional_deps:
-                - "%{DOMU_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/Image"
+                - "%{DOMU_BUILD_DIR}/tmp/deploy/images/%{DOMU_MACHINE}/Image"
               external_src:
-                domu: "%{YOCTOS_WORK_DIR}/%{DOMU_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/"
-          domu:
-            builder:
-              build_target: core-image-minimal
+                domu: "%{YOCTOS_WORK_DIR}/%{DOMU_BUILD_DIR}/tmp/deploy/images/%{DOMU_MACHINE}/"
         images:
           full:
             partitions:
@@ -353,7 +352,7 @@ parameters:
               conf:
                 # Use CPU rendering
                 - [IMAGE_INSTALL:append, " mesa glmark2"]
-                - [DISTRO_FEATURES_NATIVESDK:append, "wayland x11"]
+                - [DISTRO_FEATURES_NATIVESDK:append, " wayland x11"]
                 - [DISTRO_FEATURES:append, " pam wayland"]
                 - [DISTRO_FEATURES:remove, " ptest x11 vulkan"]
                 # Mask graphic Pkgs
@@ -376,7 +375,7 @@ parameters:
                 - [MACHINE_FEATURES:append, " gsx"]
                 # Enable Wayland/Weston
                 - [DISTRO_FEATURES_NATIVESDK:append, " wayland"]
-                - [DISTRO_FEATURES:append, " pam"]
+                - [DISTRO_FEATURES:append, " pam wayland"]
                 - [BB_MULTI_PROVIDER_ALLOWED:append, "virtual/libgl virtual/egl virtual/libgles1 virtual/libgles2"]
                 - [PREFERRED_PROVIDER_virtual/libgles1, ""]
                 - [PREFERRED_PROVIDER_virtual/libgles2, "user-module-gles"]
@@ -385,4 +384,76 @@ parameters:
                 - [PREFERRED_PROVIDER_virtual/mesa, ""]
                 - [PREFERRED_PROVIDER_virtual/libgbm, "libgbm"]
                 - [PREFERRED_PROVIDER_libgbm-dev, "libgbm"]
+
+  ENABLE_VIRTIO:
+    desc: "Add meta-test layer and some configs"
+    "no":
+      desc: "Nothing to do"
+      default: true
+      overrides:
+        variables:
+          DOMU_MACHINE: "sparrow-hawk"
+        components:
+          dom0:
+            builder:
+              conf:
+                - [XT_DOMU_DTB_NAME, "%{XT_DOMU_DTB_NAME}"]
+          domu:
+            builder:
+              build_target: core-image-minimal
+    "yes":
+      overrides:
+        variables:
+          DOMU_MACHINE: "virtio-armv8-xt"
+        components:
+          dom0:
+            builder:
+              layers:
+                - "../meta-xt-common/meta-xt-control-domain-virtio"
+                - "../meta-xt-common/meta-xt-qemu"
+              conf:
+                - [OVERRIDES:append, ":enable_virtio"]
+                - [DISTRO_FEATURES:append, " enable_virtio"]
+                - [DISTRO_FEATURES:append, " xen vmsep"]
+                - [IMAGE_INSTALL:remove, " qemu"]
+                - [XT_DOMU_CONFIG_NAME, "domu-virtio.cfg"]
+          domd:
+            builder:
+              layers:
+                - "../meta-xt-common/meta-xt-driver-domain-virtio"
+                - "../meta-xt-common/meta-xt-qemu"
+                - "../../../meta-xen-domd-virtio"
+              conf:
+                - [DISTRO_FEATURES:append, " enable_virtio"]
+                - [DISTRO_FEATURES:append, " xen vmsep"]
+                - [QEMUVERSION, "7.0%"]
+                - [BBMASK:append, " meta-xt-common/meta-xt-driver-domain-virtio/recipes-extended/xen/"]
+                - [IMAGE_INSTALL:append, " qemu-system-aarch64 qemu-keymaps"]
+          domu:
+            builder:
+              layers:
+                - "../meta-xt-common/meta-xt-domu-virtio"
+              conf:
+                - [EXTRA_IMAGEDEPENDS:remove, "u-boot"]
+                - [IMAGE_INSTALL:remove, "u-boot"]
+                - [IMAGE_INSTALL:remove, "kernel-devicetree"]
+                - [IMAGE_INSTALL:remove, "kernel-module-qos"]
+                - [IMAGE_INSTALL:remove, "qosif-user-module"]
+                - [IMAGE_INSTALL:remove, "qosif-tp-user-module"]
+                # Use CPU rendering
+                - [IMAGE_INSTALL:append, " mesa glmark2"]
+                - [DISTRO_FEATURES_NATIVESDK:append, " wayland x11"]
+                - [DISTRO_FEATURES:append, " pam wayland"]
+                - [DISTRO_FEATURES:remove, " ptest x11 vulkan"]
+                - [IMAGE_INSTALL:remove, " kernel-devicetree"]
+            builder:
+              build_target: core-image-weston
+        images:
+          full:
+            partitions:
+              domu-rootfs:
+                type: raw_image
+                gpt_type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4 # Linux filesystem data
+                image_path: "%{YOCTOS_WORK_DIR}/%{DOMU_BUILD_DIR}/tmp/deploy/images/virtio-armv8-xt/core-image-weston-virtio-armv8-xt.rootfs.ext4"
+
 

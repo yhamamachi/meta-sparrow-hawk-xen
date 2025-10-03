@@ -5,6 +5,7 @@ WORK_DIR=${SCRIPT_DIR}/work_v4hsbc_xen
 mkdir -p ${WORK_DIR}
 USING_DOMU=no
 USE_GRAPHICS_PACKAGE=no
+ENABLE_VIRTIO=no
 CLEAN_BUILD_TEST=no
 
 CheckGraphicsPackage () {
@@ -25,17 +26,19 @@ Usage() {
     echo "    -c: Clean Build test(Default is disable)"
     echo "    -g: Use graphics package(Default is not used)"
     echo "    -u: Using DomU(Default is disable)"
+    echo "    -v: Enable Virtio backend on DomD(Default is disabled)"
     echo "    -h: Show this usage"
 }
 
 # Proc arguments
 OPTIND=1
-while getopts "cghu" OPT
+while getopts "cghuv" OPT
 do
     case $OPT in
         c) CLEAN_BUILD_TEST=yes;;
         g) USE_GRAPHICS_PACKAGE=yes;;
         u) USING_DOMU=yes;;
+        v) ENABLE_VIRTIO=yes;;
         h) Usage; exit;;
         *) echo -e "\e[31mERROR: Unsupported option\e[m"; Usage; exit;;
     esac
@@ -60,6 +63,7 @@ moulin prod-devel-rcar4_new.yaml \
     --MACHINE sparrow-hawk \
     --ENABLE_DOMU ${USING_DOMU} \
     --USE_GRAPHICS_PACKAGE ${USE_GRAPHICS_PACKAGE} \
+    --ENABLE_VIRTIO ${ENABLE_VIRTIO} \
     --ADD_META_TEST yes \
 
 ninja

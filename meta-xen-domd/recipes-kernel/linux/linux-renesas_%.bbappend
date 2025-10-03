@@ -7,6 +7,7 @@ SRC_URI:append = " \
     file://r8a779g3-sparrow-hawk-domd.dts;subdir=git/arch/arm64/boot/dts/renesas \
     file://r8a779g3-sparrow-hawk-xen.dts;subdir=git/arch/arm64/boot/dts/renesas \
     file://append.cfg \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'enable_virtio', ' file://vsock.cfg', '', d)} \
     file://0001-xen-Initial-version-of-Xen-passthrough-helper-driver.patch \
     file://0002-PCIe-MSI-support.${MACHINE}.patch \
     file://0003-xen-pciback-allow-compiling-on-other-archs-than-x86.patch \

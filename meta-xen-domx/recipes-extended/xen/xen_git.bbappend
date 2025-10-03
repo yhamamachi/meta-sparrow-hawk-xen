@@ -1,7 +1,9 @@
 require xen-source.inc
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
-SRC_URI:append = " file://config.cfg"
+SRC_URI:append = " \
+    file://config.cfg \
+"
 
 # We are dropping TUNE_CCARGS from for Xen because it won't build for armv8.2, as
 # it conflicts with -mcpu=generic provided by own Xen build system
