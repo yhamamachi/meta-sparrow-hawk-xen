@@ -25,8 +25,8 @@ common_data:
       url: "git://git.yoctoproject.org/meta-virtualization"
       rev: scarthgap
     - type: git
-      url: "https://github.com/Deedone/meta-xt-common.git"
-      rev: v4h_xt_wip
+      url: "https://github.com/xen-troops/meta-xt-common.git"
+      rev: master
 
   # Common configuration options for all yocto-based domains
   conf: &COMMON_CONF
