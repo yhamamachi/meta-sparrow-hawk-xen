@@ -12,6 +12,18 @@ variables:
   XT_GENERIC_DOMU_TAG: ""
   XT_DOMD_CONFIG_NAME: "domd-%{MACHINE}.cfg"
   XT_DOMU_CONFIG_NAME: "domu-%{MACHINE}.cfg"
+  # Android related
+  ANDROID_KERNEL_DIR: "android_kernel"
+  DOMA_DIR: "android"
+  XT_DOMA_TAG: ""
+  XT_DOMA_KERNEL_EXTRA_MODULES: ""
+  XT_DOMA_SOURCE_GROUP: ""
+  XT_DOMA_CONFIG_NAME: "doma-virtio.cfg"
+  ANDROID_KERNEL_BUILD_CONFIG: "//common-modules/xen-virtual-device:xen_virtual_device_aarch64_dist"
+  ANDROID_KERNEL_DEPLOY_DIR: "out/deploy/common-modules/xen-virtual-device/xen_virtual_device_aarch64"
+  ANDROID_DEVICE: "xenvm_trout_arm64"
+  ANDROID_LUNCH_TARGET: "aosp_xenvm_trout_arm64-trunk_staging-userdebug"
+
 common_data:
   # Sources used by all yocto-based domains
   sources: &COMMON_SOURCES
@@ -94,7 +106,7 @@ components:
         - [XT_DOMD_CONFIG_NAME, "%{XT_DOMD_CONFIG_NAME}"]
         - [XT_DOMU_CONFIG_NAME, "%{XT_DOMU_CONFIG_NAME}"]
         - [XT_DOMD_DTB_NAME, "%{XT_DOMD_DTB_NAME}"]
-        - [XT_GUEST_INSTALL, "%{XT_GENERIC_DOMU_TAG} domd"]
+        - [XT_GUEST_INSTALL, "%{XT_GENERIC_DOMU_TAG} %{XT_DOMA_TAG} domd"]
 
         # Disable HWDB which quite huge (around 15MB) and is not required at all
         - [BAD_RECOMMENDATIONS:append, " udev-hwdb"]
@@ -138,7 +150,8 @@ components:
         - *COMMON_CONF
         - *DOMD_DOMU_CONF
         - [XT_DOM_NAME, "domd"]
-        - [XT_DEVICE_TREES, "%{XT_DOMD_DTB_NAME} %{XT_XEN_DTB_NAME}"]
+        - [XT_DEVICE_TREES, "%{XT_DOMD_DTB_NAME} %{XT_XEN_DTB_NAME} %{XT_DOMA_DTB_NAME}"]
+        - [XT_GUEST_INSTALL, "%{XT_GENERIC_DOMU_TAG} %{XT_DOMA_TAG}"]
         - [IMAGE_INSTALL:append, " iperf3"]
         - [IMAGE_INSTALL:append, " smcroute"]
         - [IMAGE_INSTALL:append, " snort"]
@@ -192,6 +205,60 @@ components:
       target_images:
         - "tmp/deploy/images/%{DOMU_MACHINE}/Image"
         - "tmp/deploy/images/%{DOMU_MACHINE}/core-image-weston-%{DOMU_MACHINE}.rootfs.ext4"
+
+  doma_kernel:
+    build-dir: "%{ANDROID_KERNEL_DIR}"
+    sources:
+      - type: repo
+        url: https://github.com/xen-troops/android_kernel_manifest.git
+        rev: 23e08b76317bfb41d4ec4f68a891fb00bf591b0b
+        manifest: default.xml
+        depth: 1
+        groups: "%{XT_DOMA_SOURCE_GROUP}"
+        dir: "."
+    builder:
+      type: bazel
+      tool: "tools/bazel"
+      command: run
+      args:
+        - "--verbose_failures"
+        - "--sandbox_debug"
+      target: "%{ANDROID_KERNEL_BUILD_CONFIG}"
+      target-patterns:
+        - "--dist_dir=%{ANDROID_KERNEL_DEPLOY_DIR}"
+      target_images:
+        - "%{ANDROID_KERNEL_DEPLOY_DIR}/Image"
+
+  doma:
+    build-dir: "%{DOMA_DIR}"
+    sources:
+      - type: repo
+        url: https://github.com/xen-troops/android_manifest.git
+        rev: f364d0bee02c7ab4f0ecdb293fda15bd00e75816 # android-15-xenvm-trout-ih-main
+        manifest: default.xml
+        depth: 1
+        groups: "%{XT_DOMA_SOURCE_GROUP}"
+        dir: "."
+    builder:
+      type: android
+      env:
+        - "TARGET_BOARD_PLATFORM=%{SOC_FAMILY}"
+        - "TARGET_PREBUILT_KERNEL=../%{ANDROID_KERNEL_DIR}/%{ANDROID_KERNEL_DEPLOY_DIR}/Image"
+        - "TARGET_PREBUILT_MODULES_DIR=../%{ANDROID_KERNEL_DIR}/%{ANDROID_KERNEL_DEPLOY_DIR}/"
+      lunch_target: "%{ANDROID_LUNCH_TARGET}"
+      target_images:
+        - "out/target/product/%{ANDROID_DEVICE}/boot.img"
+        - "out/target/product/%{ANDROID_DEVICE}/init_boot.img"
+        - "out/target/product/%{ANDROID_DEVICE}/vendor_boot.img"
+        - "out/target/product/%{ANDROID_DEVICE}/vendor_dlkm.img"
+        - "out/target/product/%{ANDROID_DEVICE}/vbmeta.img"
+        - "out/target/product/%{ANDROID_DEVICE}/vbmeta_system.img"
+        - "out/target/product/%{ANDROID_DEVICE}/vbmeta_system_dlkm.img"
+        - "out/target/product/%{ANDROID_DEVICE}/vbmeta_vendor_dlkm.img"
+        - "out/target/product/%{ANDROID_DEVICE}/userdata.img"
+        - "out/target/product/%{ANDROID_DEVICE}/super.img"
+      additional_deps:
+        - "../%{ANDROID_KERNEL_DIR}/%{ANDROID_KERNEL_DEPLOY_DIR}/Image"
 
   boot_artifacts:
     build-dir: "artifacts"
@@ -429,6 +496,28 @@ parameters:
                 - [QEMUVERSION, "7.0%"]
                 - [BBMASK:append, " meta-xt-common/meta-xt-driver-domain-virtio/recipes-extended/xen/"]
                 - [IMAGE_INSTALL:append, " qemu-system-aarch64 qemu-keymaps"]
+
+  ENABLE_DOMU_VIRTIO:
+    desc: "Build Linux as a guest VM using Virtio backend"
+    "no":
+      desc: "Nothing to do"
+      default: true
+      overrides:
+        variables:
+          DOMU_MACHINE: "sparrow-hawk"
+        components:
+          dom0:
+            builder:
+              conf:
+                - [XT_DOMU_DTB_NAME, "%{XT_DOMU_DTB_NAME}"]
+          domu:
+            builder:
+              build_target: core-image-minimal
+    "yes":
+      overrides:
+        variables:
+          DOMU_MACHINE: "virtio-armv8-xt"
+        components:
           domu:
             builder:
               layers:
@@ -456,4 +545,139 @@ parameters:
                 gpt_type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4 # Linux filesystem data
                 image_path: "%{YOCTOS_WORK_DIR}/%{DOMU_BUILD_DIR}/tmp/deploy/images/virtio-armv8-xt/core-image-weston-virtio-armv8-xt.rootfs.ext4"
 
+  ENABLE_ANDROID:
+    desc: "Build Android as a guest VM"
+    "no":
+      overrides:
+        variables:
+          XT_DOMA_TAG: ""
+        components:
+          dom0:
+            builder:
+              conf:
+                - [BBMASK:append, " doma.bb*"]
+    "yes":
+      default: true
+      overrides:
+        variables:
+          XT_DOMA_TAG: "doma"
+          XT_DOMA_DTB_NAME: "doma-virtio.dtb"
+        components:
+          dom0:
+            builder:
+              conf:
+                - [XT_DOMA_DTB_NAME, "%{XT_DOMA_DTB_NAME}"]
+                - [XT_DOMA_CONFIG_NAME, "%{XT_DOMA_CONFIG_NAME}"]
+                # Flag, which allows to override parameters on the Yocto level.
+                # E.g. amount of used RAM for driver domain.
+                - [OVERRIDES:append, ":enable_android"]
+              additional_deps:
+                # This is not actually a hard dep. We just want to force Android build
+                - "../%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/boot.img"
+              external_src:
+                # Android uses DTB generated by DomD
+                doma: "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/"
+          domd:
+            sources:
+              - type: git
+                url: https://github.com/kraj/meta-clang.git
+                rev: 9fbfa9db33131abdf3870a94f00199eb53e276e5 # scarthgap
+            builder:
+              conf:
+                - [BBMASK:append, " google-trout-agl-services"]
+              layers:
+                - "../meta-clang"
+                #- "../../%{DOMA_DIR}/device/epam/aosp-xenvm-trout/agl_services_build/yocto-layer/meta-google"
+              additional_deps:
+                # We need some dependency to AOSP artifacts as we are using the "meta-google"
+                # layer directly from its source code. Thus DomA should be built before DomD.
+                - "../%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/boot.img"
+        images:
+          android_only: &ANDROID_IMAGE
+            desc: "Android sub-image (this image is passed to Android VM as a separate block device)"
+            gpt_type:  A326898F-C893-4A64-9990-6F6B7BFDEF18 # GPT type for the upper GPT
+            type: gpt
+            partitions:
+              boot_a:
+                gpt_type: 49A4D17F-93A3-45C1-A0DE-F50B2EBE2599 # Android boot 1
+                type: raw_image
+                image_path: "%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/boot.img"
+              boot_b:
+                gpt_type: 20117F86-E985-4357-B9EE-374BC1D8487D # Android boot 2
+                type: empty
+                size: 70 MiB
+              init_boot_a:
+                gpt_type: 49A4D17F-93A3-45C1-A0DE-F50B2EBE2599 # Android boot 1
+                type: raw_image
+                image_path: "%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/init_boot.img"
+              init_boot_b:
+                gpt_type: 20117F86-E985-4357-B9EE-374BC1D8487D # Android boot 2
+                type: empty
+                size: 10 MiB
+              vendor_boot_a:
+                gpt_type: DF24E5ED-8C96-4B86-B00B-79667DC6DE11 # Android sparse 1
+                type: raw_image
+                image_path: "%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/vendor_boot.img"
+              vendor_boot_b:
+                gpt_type: 7C29D3AD-78B9-452E-9DEB-D098D542F092 # Android sparse 2
+                type: empty
+                size: 70 MiB
+              vbmeta_a:
+                gpt_type: 19A710A2-B3CA-11E4-B026-10604B889DCF # Android meta
+                type: raw_image
+                image_path: "%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/vbmeta.img"
+              vbmeta_b:
+                gpt_type: 19A710A2-B3CA-11E4-B026-10604B889DCF # Android meta
+                type: empty
+                size: 1 MiB
+              vbmeta_system_a:
+                gpt_type: E7C06570-9FDC-11E8-8C15-0A580A200C13 # Android meta
+                type: raw_image
+                image_path: "%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/vbmeta_system.img"
+              vbmeta_system_b:
+                gpt_type: E7C06570-9FDC-11E8-8C15-0A580A200C13 # Android meta
+                type: empty
+                size: 1 MiB
+              vbmeta_system_dlkm_a:
+                gpt_type: E7C06570-9FDC-11E8-8C15-0A580A200C13 # Android meta
+                type: raw_image
+                image_path: "%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/vbmeta_system_dlkm.img"
+              vbmeta_system_dlkm_b:
+                gpt_type: E7C06570-9FDC-11E8-8C15-0A580A200C13 # Android meta
+                type: empty
+                size: 1 MiB
+              vbmeta_vendor_dlkm_a:
+                gpt_type: E7C06570-9FDC-11E8-8C15-0A580A200C13 # Android meta
+                type: raw_image
+                image_path: "%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/vbmeta_vendor_dlkm.img"
+              vbmeta_vendor_dlkm_b:
+                gpt_type: E7C06570-9FDC-11E8-8C15-0A580A200C13 # Android meta
+                type: empty
+                size: 1 MiB
+              misc:
+                gpt_type: EF32A33B-A409-486C-9141-9FFB711F6266 # Android misc
+                type: empty
+                filled: zeroes
+                size: 1 MiB
+              metadata:
+                gpt_type: 20AC26BE-20B7-11E3-84C5-6CFDB94711E9 # Android metadata
+                type: ext4
+                size: 20 MiB
+              rpmbemul:
+                gpt_type: DC76DDA9-5AC1-491C-AF42-A82591580C0D # Android data
+                type: empty
+                filled: zeroes
+                size: 1 MiB
+              super:
+                gpt_type: 4627AE27-CFEF-48A1-88FE-99C3509ADE26 # Android raw resources
+                type: android_sparse
+                image_path: "%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/super.img"
+              userdata:
+                gpt_type: 1B81E7E6-F50D-419B-A739-2AEEF8DA3335 # Android userdata
+                type: android_sparse
+                image_path: "%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/userdata.img"
+          full:
+            partitions:
+              android:
+                *ANDROID_IMAGE
 

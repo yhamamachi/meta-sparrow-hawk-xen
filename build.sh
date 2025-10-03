@@ -3,6 +3,7 @@
 SCRIPT_DIR=$(cd `dirname $0` && pwd)
 WORK_DIR=${SCRIPT_DIR}/work_v4hsbc_xen
 mkdir -p ${WORK_DIR}
+USING_DOMA=no
 USING_DOMU=no
 USE_GRAPHICS_PACKAGE=no
 ENABLE_VIRTIO=no
@@ -23,6 +24,7 @@ Usage() {
     echo "Usage:"
     echo "    $0 [option]"
     echo "option:"
+    echo "    -a: Using DomA(Default is disable. Virtio is forcely enabled.)"
     echo "    -c: Clean Build test(Default is disable)"
     echo "    -g: Use graphics package(Default is not used)"
     echo "    -u: Using DomU(Default is disable)"
@@ -32,9 +34,10 @@ Usage() {
 
 # Proc arguments
 OPTIND=1
-while getopts "cghuv" OPT
+while getopts "acghuv" OPT
 do
     case $OPT in
+        a) USING_DOMA=yes; ENABLE_VIRTIO=yes ;;
         c) CLEAN_BUILD_TEST=yes;;
         g) USE_GRAPHICS_PACKAGE=yes;;
         u) USING_DOMU=yes;;
@@ -58,9 +61,17 @@ if [[ "${CLEAN_BUILD_TEST}" == "yes" ]]; then
     rm -rf ./yocto-clean/build-dom*
 fi
 
+# repo command setup
+if [[ ${USING_DOMA} == "yes" ]]; then
+    curl https://storage.googleapis.com/git-repo-downloads/repo > repo
+    chmod a+x ./repo
+    export PATH=$PWD:$PATH
+fi
+
 rm -rf yocto/build-dom*/conf
 moulin prod-devel-rcar4_new.yaml \
     --MACHINE sparrow-hawk \
+    --ENABLE_ANDROID ${USING_DOMA} \
     --ENABLE_DOMU ${USING_DOMU} \
     --USE_GRAPHICS_PACKAGE ${USE_GRAPHICS_PACKAGE} \
     --ENABLE_VIRTIO ${ENABLE_VIRTIO} \
