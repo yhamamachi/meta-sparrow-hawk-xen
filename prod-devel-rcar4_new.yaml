@@ -584,8 +584,6 @@ parameters:
                 url: https://github.com/kraj/meta-clang.git
                 rev: 9fbfa9db33131abdf3870a94f00199eb53e276e5 # scarthgap
             builder:
-              conf:
-                - [BBMASK:append, " google-trout-agl-services"]
               layers:
                 - "../meta-clang"
                 #- "../../%{DOMA_DIR}/device/epam/aosp-xenvm-trout/agl_services_build/yocto-layer/meta-google"
