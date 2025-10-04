@@ -1,0 +1,10 @@
+[Unit]
+Description=Install files to DomA
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/install-files-doma.sh
+
+[Install]
+WantedBy=multi-user.target
+
