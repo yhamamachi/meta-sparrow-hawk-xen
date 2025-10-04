@@ -16,6 +16,7 @@ variables:
   ANDROID_KERNEL_DIR: "android_kernel"
   DOMA_DIR: "android"
   XT_DOMA_TAG: ""
+  XT_DOMA_DTB_NAME: ""
   XT_DOMA_KERNEL_EXTRA_MODULES: ""
   XT_DOMA_SOURCE_GROUP: ""
   XT_DOMA_CONFIG_NAME: "doma-virtio.cfg"
