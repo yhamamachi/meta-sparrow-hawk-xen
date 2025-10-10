@@ -7,6 +7,7 @@ USING_DOMA=no
 USING_DOMU=no
 USE_GRAPHICS_PACKAGE=no
 ENABLE_VIRTIO=no
+ENABLE_DOMU_VIRTIO=no
 CLEAN_BUILD_TEST=no
 
 CheckGraphicsPackage () {
@@ -46,6 +47,9 @@ do
         *) echo -e "\e[31mERROR: Unsupported option\e[m"; Usage; exit;;
     esac
 done
+if [[ "${USING_DOMU}" == "yes" ]] && [[ "${ENABLE_VIRTIO}" == "yes" ]]; then
+    ENABLE_DOMU_VIRTIO=yes
+fi
 
 cd ${WORK_DIR}
 cp -f ../prod-devel-rcar4_new.yaml ./
@@ -73,6 +77,7 @@ moulin prod-devel-rcar4_new.yaml \
     --MACHINE sparrow-hawk \
     --ENABLE_ANDROID ${USING_DOMA} \
     --ENABLE_DOMU ${USING_DOMU} \
+    --ENABLE_DOMU_VIRTIO ${ENABLE_DOMU_VIRTIO} \
     --USE_GRAPHICS_PACKAGE ${USE_GRAPHICS_PACKAGE} \
     --ENABLE_VIRTIO ${ENABLE_VIRTIO} \
     --ADD_META_TEST yes \
