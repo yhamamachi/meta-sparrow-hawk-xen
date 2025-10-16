@@ -22,3 +22,8 @@ IMAGE_INSTALL:append = " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'enable_virtio wayland', ' virglrenderer libsdl2', '', d)} \
 "
 
+# Add package if DomA is available
+IMAGE_INSTALL:append = " \
+    ${@bb.utils.contains('XT_GUEST_INSTALL', 'doma', ' android-tools install-files-doma', '', d)} \
+"
+

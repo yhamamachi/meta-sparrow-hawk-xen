@@ -588,8 +588,6 @@ parameters:
               layers:
                 - "../meta-clang"
                 #- "../../%{DOMA_DIR}/device/epam/aosp-xenvm-trout/agl_services_build/yocto-layer/meta-google"
-              conf:
-                - [IMAGE_INSTALL:append, " android-tools install-files-doma"]
               additional_deps:
                 # We need some dependency to AOSP artifacts as we are using the "meta-google"
                 # layer directly from its source code. Thus DomA should be built before DomD.
