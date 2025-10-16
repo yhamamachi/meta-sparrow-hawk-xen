@@ -371,7 +371,6 @@ parameters:
                 - "../meta-openembedded/meta-multimedia"
               conf:
                 - [IMAGE_INSTALL:append, " iperf3 htop tcpdump coreutils ethtool"]
-                - [IMAGE_INSTALL:append, " glmark2"]
                 - [IMAGE_INSTALL:remove, "linux-fitimage"]
               target_images:
                 - "tmp/deploy/images/%{MACHINE}/flash.bin"
@@ -419,7 +418,7 @@ parameters:
             builder:
               conf:
                 # Use CPU rendering
-                - [IMAGE_INSTALL:append, " mesa glmark2"]
+                - [IMAGE_INSTALL:append, " mesa"]
                 - [DISTRO_FEATURES_NATIVESDK:append, " wayland x11"]
                 - [DISTRO_FEATURES:append, " pam wayland"]
                 - [DISTRO_FEATURES:remove, " ptest x11 vulkan"]
@@ -531,7 +530,7 @@ parameters:
                 - [IMAGE_INSTALL:remove, "qosif-user-module"]
                 - [IMAGE_INSTALL:remove, "qosif-tp-user-module"]
                 # Use CPU rendering
-                - [IMAGE_INSTALL:append, " mesa glmark2"]
+                - [IMAGE_INSTALL:append, " mesa"]
                 - [DISTRO_FEATURES_NATIVESDK:append, " wayland x11"]
                 - [DISTRO_FEATURES:append, " pam wayland"]
                 - [DISTRO_FEATURES:remove, " ptest x11 vulkan"]
