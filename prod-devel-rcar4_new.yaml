@@ -485,6 +485,7 @@ parameters:
                 - [DISTRO_FEATURES:append, " xen vmsep"]
                 - [IMAGE_INSTALL:remove, " qemu"]
                 - [XT_DOMU_CONFIG_NAME, "domu-virtio.cfg"]
+                - [QEMUVERSION, "7.0%"]
           domd:
             builder:
               layers:
