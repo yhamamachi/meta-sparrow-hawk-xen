@@ -48,3 +48,6 @@ do_install:append() {
 # END OF TEMPORARY HACK
 ###
 
+# Add addtional fixes
+include ${@bb.utils.contains('XEN_REV', '2011e6c6fd35f564444983331296f5df7d154373', 'xen-tools_fixes.inc', '', d)}
+
