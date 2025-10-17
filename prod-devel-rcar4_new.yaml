@@ -433,6 +433,11 @@ parameters:
       default: true
       overrides:
         components:
+          dom0:
+            builder:
+              conf:
+                # Enable Gfx Pkgs
+                - [MACHINE_FEATURES:append, " gsx"]
           domd:
             builder:
               layers:
