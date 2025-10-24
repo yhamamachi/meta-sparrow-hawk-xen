@@ -47,3 +47,7 @@ STORAGE_PART="${BOOT_STORAGE}${PART_PREFIX}"
 echo "Mangling domain configuration: setting storage to ${BOOT_STORAGE}"
 sed -i "s/STORAGE_PART/${STORAGE_PART}/g" $DOMD_CFG_FILE
 
+# Remove ramdisk when using MMC
+if echo "${BOOT_STORAGE}" | grep -q -e 'mmc'; then
+   sed -i "s/ramdisk.*//g" $DOMD_CFG_FILE
+fi
