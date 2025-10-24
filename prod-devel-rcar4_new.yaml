@@ -481,7 +481,7 @@ parameters:
                 - [OVERRIDES:append, ":enable_virtio"]
                 - [DISTRO_FEATURES:append, " enable_virtio"]
                 - [DISTRO_FEATURES:append, " xen vmsep"]
-                - [IMAGE_INSTALL:remove, " qemu"]
+                - [IMAGE_INSTALL:remove, "qemu-system-aarch64"]
                 - [XT_DOMU_CONFIG_NAME, "domu-virtio.cfg"]
                 - [QEMUVERSION, "7.0%"]
           domd:
