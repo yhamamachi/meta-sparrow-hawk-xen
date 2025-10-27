@@ -1,8 +1,7 @@
-From e35ec59cda0f794433933a821d03d04c0a66c8ae Mon Sep 17 00:00:00 2001
-Message-Id: <e35ec59cda0f794433933a821d03d04c0a66c8ae.1724919246.git.mykyta_poturai@epam.com>
+From bc3ad65241276437e9cd8d5ffbbe5e88ddcf0469 Mon Sep 17 00:00:00 2001
 From: Mykyta Poturai <mykyta_poturai@epam.com>
 Date: Thu, 29 Aug 2024 11:13:51 +0300
-Subject: [PATCH] [HACK] v4h: Configure IPMMU registers
+Subject: [PATCH 1/2] v4h: Configure IPMMU registers
 
 Enable second stage translation in IPMMU.
 
@@ -12,12 +11,12 @@ Signed-off-by: Mykyta Poturai <mykyta_poturai@epam.com>
  1 file changed, 18 insertions(+)
 
 diff --git a/plat/renesas/rcar_gen4/bl31_plat_setup.c b/plat/renesas/rcar_gen4/bl31_plat_setup.c
-index a174868b3..720b214e8 100644
+index d9eb56882..f1fbd0794 100644
 --- a/plat/renesas/rcar_gen4/bl31_plat_setup.c
 +++ b/plat/renesas/rcar_gen4/bl31_plat_setup.c
-@@ -72,6 +72,23 @@ void bl31_plat_arch_setup(void)
- 	rcar_pwrc_code_copy_to_system_ram();
- }
+@@ -62,6 +62,23 @@ static const uintptr_t gicr_base_addrs[2] = {
+ 	0U			/* Zero Termination */
+ };
  
 +static void rcar_ipmmu_setup(void)
 +{
@@ -38,10 +37,10 @@ index a174868b3..720b214e8 100644
 +}
  void bl31_platform_setup(void)
  {
- 	rcar_mssr_setup();
-@@ -91,6 +108,7 @@ void bl31_platform_setup(void)
+ 	/* Initialize generic timer */
+@@ -79,6 +96,7 @@ void bl31_platform_setup(void)
+ 	gic_set_gicr_frames(gicr_base_addrs);
  
- 	plat_rcar_scmi_setup();
  	rcar_pwrc_setup();
 +	rcar_ipmmu_setup();
  	rcar_ptp_setup();
