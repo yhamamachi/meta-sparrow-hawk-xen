@@ -29,3 +29,44 @@ saveenv
 run flash_loader_mmc
 ```
 
+## USB/PCIe booting
+
+現時点で、Yocto側での対応、FWの配布が行われていないため、内容は未保証。
+ローカルでのブートでは問題ないことを確認済み。
+
+1. U-Bootの環境変数の準備
+```
+setenv flash_pcie_fw_to_qspi_from_xen_mmc 'load mmc 0:2 ${loadaddr} lib/firmware/rcar_gen4_pcie.bin && sf probe; sf update ${loadaddr} 0x300000 ${filesize}'
+setenv renesas_rcar_gen4_load_firmware `run set_pcie_firmware_info && sf probe; sf read ${renesas_rcar_gen4_load_firmware_addr} 0x300000 ${renesas_rcar_gen4_load_firmware_size}`
+setenv set_pcie_firmware_info 'setenv renesas_rcar_gen4_load_firmware_addr 0x54000000 && setenv renesas_rcar_gen4_load_firmware_size 0x8000'
+
+setenv flash_nvme_xen 'pci e && nvme scan && tftp ${loadaddr} full.img.gz && gzwrite nvme 0 ${loadaddr} ${filesize} 400000 0'
+setenv flash_usb_xen 'pci e && usb start && tftp ${loadaddr} full.img.gz && gzwrite usb 0 ${loadaddr} ${filesize} 100000 0'
+
+setenv xen_nvme 'pci e && nvme scan && load nvme 0:1 ${loadaddr} fitImage && bootm ${loadaddr}#default#boot_dev=nvme0n1'
+setenv xen_usb 'pci e && usb start && load usb 0:1 ${loadaddr} fitImage && bootm ${loadaddr}#default#boot_dev=sda'
+```
+
+2. (一度だけ実行で大丈夫なはず)QSPI flashへのPCIe firmwareの書き込み
+
+下記コマンドで書き込む場合は事前にXenを書き込んだSDを接続しておくこと。
+上級者の方は任意の手段でQSPIにFWバイナリを書き込んで頂いて大丈夫です。
+
+```
+run flash_pcie_fw_to_qspi_from_xen_mmc
+```
+
+3. NVMe SSDの例) Xenのバイナリをtftp経由で書き込む。
+
+```
+run flash_nvme_xen
+```
+
+4. NVMe SSDの例) NVMeからXenをブートする
+
+```
+run xen_nvme
+```
+
+
+
