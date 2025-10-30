@@ -51,3 +51,10 @@ sed -i "s/STORAGE_PART/${STORAGE_PART}/g" $DOMD_CFG_FILE
 if echo "${BOOT_STORAGE}" | grep -q -e 'mmc'; then
    sed -i "s/ramdisk.*//g" $DOMD_CFG_FILE
 fi
+
+# Memory setup
+TOTAL_MEMORY=$(xl info | grep total_memory | sed "s/.*: //")
+if [[ "${TOTAL_MEMORY}" == "16384" ]]; then
+    sed -i "s/memory = .*/memory = 6144/g" $DOMD_CFG_FILE
+fi
+

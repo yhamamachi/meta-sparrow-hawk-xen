@@ -32,3 +32,10 @@ STORAGE_PART="${BOOT_STORAGE}${PART_PREFIX}"
 # now make up the configuration
 echo "Mangling domain configuration: setting storage to ${BOOT_STORAGE}"
 sed -i "s/STORAGE_PART/${STORAGE_PART}/g" $DOMA_CFG_FILE
+
+# Memory setup
+TOTAL_MEMORY=$(xl info | grep total_memory | sed "s/.*: //")
+if [[ "${TOTAL_MEMORY}" == "16384" ]]; then
+    sed -i "s/memory = .*/memory = 8192/g" $DOMA_CFG_FILE
+fi
+
