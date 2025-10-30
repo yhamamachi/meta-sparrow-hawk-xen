@@ -26,6 +26,7 @@ SRC_URI:append = " \
     file://xen_patchset/0007-vhost_xen-Adapt-net-for-Xen-specific-mappings.patch \
     file://xen_patchset/0008-vhost_xen-Change-a-logic-to-get-the-guest-domid.patch \
     file://xen_patchset/0009-Use-mhp_get_pluggable_range-in-balloon-as-well.patch \
+    file://xen_patchset/0011-vhost_xen-Fix-build-error.patch \
 "
 
 SRC_URI:remove = "file://0002-PCIe-MSI-support.sparrow-hawk.patch"
