@@ -15,6 +15,19 @@ SRC_URI:append = " \
     file://0001-Fix-build-error-for-kernel-6.12.34.patch \
 "
 
+# Port Xen patch from v6.1.102/rcar-6.0.0.rc5-xt on xen-troops/linux
+SRC_URI:append = " \
+    file://xen_patchset/0001-xen-unpopulated-alloc-Introduce-helpers-for-contiguo.patch \
+    file://xen_patchset/0002-xen-grant-table-Use-unpopulated-contiguous-pages-ins.patch \
+    file://xen_patchset/0003-unpopulated-alloc.c-Drop-restriction-for-DMA_BIT_MAS.patch \
+    file://xen_patchset/0004-vhost_xen-Implement-Xen-grant-mappings-module-for-vh.patch \
+    file://xen_patchset/0005-vhost_xen-Get-the-guest-domid-from-Xenstore.patch \
+    file://xen_patchset/0006-vhost_xen-Implement-Xen-foreign-mappings-along-with-.patch \
+    file://xen_patchset/0007-vhost_xen-Adapt-net-for-Xen-specific-mappings.patch \
+    file://xen_patchset/0008-vhost_xen-Change-a-logic-to-get-the-guest-domid.patch \
+    file://xen_patchset/0009-Use-mhp_get_pluggable_range-in-balloon-as-well.patch \
+"
+
 SRC_URI:remove = "file://0002-PCIe-MSI-support.sparrow-hawk.patch"
 SRC_URI:remove = "file://0003-xen-pciback-allow-compiling-on-other-archs-than-x86.patch"
 
