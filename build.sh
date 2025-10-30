@@ -83,4 +83,8 @@ moulin prod-devel-rcar4_new.yaml \
     --ADD_META_TEST yes \
 
 ninja
-ninja full.img.gz
+ninja full.img.gz android_only.img.gz
+
+END_SECTOR=$(fdisk -l full.img | tail -2 | head -1 | awk '{print $3}')
+dd if=full.img bs=512 count=$(( $END_SECTOR + 1 )) | gzip -c > domd_full.img.gz
+
