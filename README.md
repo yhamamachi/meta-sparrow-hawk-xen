@@ -68,5 +68,22 @@ run flash_nvme_xen
 run xen_nvme
 ```
 
+## Android(DomA)のユーザーイメージ領域の拡大
+
+android/device/epam/aosp-xenvm-trout/xenvm_trout_arm64/BoardConfig.mkの
+TARGET_USERDATAIMAGE_PARTITION_SIZEを任意の値に変更する
+
+```
+Ex.)
+TARGET_USERDATAIMAGE_PARTITION_SIZE := 7516192768 # 7 GB
+↓
+TARGET_USERDATAIMAGE_PARTITION_SIZE := 19327352832 # 18 GB
+```
+
+boot.imgを削除してAndroidを再ビルドする。
+```
+rm work_v4hsbc_xen/android/out/target/product/xenvm_trout_arm64/boot.img
+```
+
 
 
