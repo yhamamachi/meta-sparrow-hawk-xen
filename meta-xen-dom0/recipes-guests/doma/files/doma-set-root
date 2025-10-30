@@ -39,3 +39,9 @@ if [[ "${TOTAL_MEMORY}" == "16384" ]]; then
     sed -i "s/memory = .*/memory = 8192/g" $DOMA_CFG_FILE
 fi
 
+# Override DomA boot device
+DOMA_STORAGE=`grep 'doma_dev=' /proc/device-tree/chosen/u-boot,bootconf | sed -e 's/.*doma_dev=//' -e 's/#.*//'`
+if [ -n "$DOMA_STORAGE" ] ; then
+    sed -i "s|/dev/${STORAGE_PART}3|${DOMA_STORAGE}|g" $DOMA_CFG_FILE
+fi
+
