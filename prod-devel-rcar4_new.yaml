@@ -328,7 +328,7 @@ parameters:
               - type: git
                 url: https://github.com/rcar-community/meta-sparrow-hawk
                 #rev: scarthgap
-                rev: scarthgap-dev-gfx
+                rev: scarthgap-dev-gfx2
                 #rev: scarthgap-dev-pcie-test
             builder:
               layers:
