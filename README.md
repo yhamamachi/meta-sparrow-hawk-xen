@@ -1,6 +1,14 @@
 # meta-rcar-demo
 Demo correction for R-Car
 
+# Boot
+
+## U-Boot
+
+```
+env default -a && env delete bootargs && load mmc 0:1 ${loadaddr} fitImage && bootm ${loadaddr}
+```
+
 # Tips
 
 ## タッチパネルが動作しない
