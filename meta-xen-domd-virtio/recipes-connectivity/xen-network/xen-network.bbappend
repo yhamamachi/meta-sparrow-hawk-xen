@@ -19,5 +19,9 @@ do_install:append() {
 
     # Remove duplicated network file
     rm -f ${D}/${sysconfdir}/systemd/network/end0.network
+
+    # Disable wait for network online
+    sed -i -e 's|ExecStart=/|# ExecStart=/|' \
+        ${D}${sysconfdir}/systemd/system/systemd-networkd-wait-online.service.d/systemd-networkd-wait-online.conf
 }
 
