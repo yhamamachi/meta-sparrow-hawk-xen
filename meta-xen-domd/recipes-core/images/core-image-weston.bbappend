@@ -7,6 +7,7 @@ IMAGE_INSTALL:append = " \
     xen-tools-xencommons \
     xen-network \
     dnsmasq \
+    nftables \
 "
 
 # For Xen-network
