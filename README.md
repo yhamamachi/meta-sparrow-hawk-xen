@@ -45,7 +45,7 @@ run flash_loader_mmc
 1. U-Bootの環境変数の準備
 ```
 setenv flash_pcie_fw_to_qspi_from_xen_mmc 'load mmc 0:2 ${loadaddr} lib/firmware/rcar_gen4_pcie.bin && sf probe; sf update ${loadaddr} 0x300000 ${filesize}'
-setenv renesas_rcar_gen4_load_firmware `run set_pcie_firmware_info && sf probe; sf read ${renesas_rcar_gen4_load_firmware_addr} 0x300000 ${renesas_rcar_gen4_load_firmware_size}`
+setenv renesas_rcar_gen4_load_firmware 'run set_pcie_firmware_info && sf probe; sf read ${renesas_rcar_gen4_load_firmware_addr} 0x300000 ${renesas_rcar_gen4_load_firmware_size}'
 setenv set_pcie_firmware_info 'setenv renesas_rcar_gen4_load_firmware_addr 0x54000000 && setenv renesas_rcar_gen4_load_firmware_size 0x8000'
 
 setenv flash_nvme_xen 'pci e && nvme scan && tftp ${loadaddr} full.img.gz && gzwrite nvme 0 ${loadaddr} ${filesize} 400000 0'
