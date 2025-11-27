@@ -5,21 +5,10 @@ WORK_DIR=${SCRIPT_DIR}/work_v4hsbc_xen
 mkdir -p ${WORK_DIR}
 USING_DOMA=no
 USING_DOMU=no
-USE_GRAPHICS_PACKAGE=no
+USE_GRAPHICS_PACKAGE=yes
 ENABLE_VIRTIO=no
 ENABLE_DOMU_VIRTIO=no
 CLEAN_BUILD_TEST=no
-
-CheckGraphicsPackage () {
-    PROP_DIR=$SCRIPT_DIR/proprietary
-    ITEM_LIST=("GSX_KM_V4H_SparrowHawk.tar.bz2" "r8a779g3_linux_gsx_binaries_gles.tar.bz2")
-    for item in ${ITEM_LIST[@]}; do
-        if [[ ! -e ${PROP_DIR}/${item} ]]; then
-            echo "${PROP_DIR}/${item} is not found !!"
-            exit -1
-        fi
-    done
-}
 
 Usage() {
     echo "Usage:"
@@ -27,7 +16,6 @@ Usage() {
     echo "option:"
     echo "    -a: Using DomA(Default is disable. Virtio is forcely enabled.)"
     echo "    -c: Clean Build test(Default is disable)"
-    echo "    -g: Use graphics package(Default is not used)"
     echo "    -u: Using DomU(Default is disable)"
     echo "    -v: Enable Virtio backend on DomD(Default is disabled)"
     echo "    -h: Show this usage"
@@ -40,7 +28,6 @@ do
     case $OPT in
         a) USING_DOMA=yes; ENABLE_VIRTIO=yes ;;
         c) CLEAN_BUILD_TEST=yes;;
-        g) USE_GRAPHICS_PACKAGE=yes;;
         u) USING_DOMU=yes;;
         v) ENABLE_VIRTIO=yes;;
         h) Usage; exit;;
@@ -53,11 +40,6 @@ fi
 
 cd ${WORK_DIR}
 cp -f ../prod-devel-rcar4_new.yaml ./
-
-# Check and copy graphics packages
-if [[ ${USE_GRAPHICS_PACKAGE} == "yes" ]]; then
-    CheckGraphicsPackage
-fi
 
 if [[ "${CLEAN_BUILD_TEST}" == "yes" ]]; then
     sed -i -e 's/"yocto"/"yocto-clean"/' ./prod-devel-rcar4_new.yaml

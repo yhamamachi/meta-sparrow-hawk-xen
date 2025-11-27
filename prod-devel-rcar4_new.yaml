@@ -327,9 +327,7 @@ parameters:
             sources:
               - type: git
                 url: https://github.com/rcar-community/meta-sparrow-hawk
-                #rev: scarthgap
-                rev: scarthgap-dev-gfx2
-                #rev: scarthgap-dev-pcie-test
+                rev: v2025-11-28
             builder:
               layers:
                 - "../meta-sparrow-hawk"
@@ -365,7 +363,7 @@ parameters:
                 - "../meta-openembedded/meta-multimedia"
               conf:
                 - [IMAGE_INSTALL:append, " iperf3 htop tcpdump coreutils ethtool"]
-                - [IMAGE_INSTALL:remove, "linux-fitimage"]
+                - [MACHINE_EXTRA_RRECOMMENDS:remove, "linux-fitimage"]
               target_images:
                 - "tmp/deploy/images/%{MACHINE}/flash.bin"
           domu:
@@ -381,7 +379,7 @@ parameters:
                 # Remove unneeded pakcages for DomU
                 - [EXTRA_IMAGEDEPENDS:remove, " arm-trusted-firmware"]
                 - [IMAGE_INSTALL:remove, "libcamera libcamera-pycamera"]
-                - [IMAGE_INSTALL:remove, "linux-fitimage"]
+                - [MACHINE_EXTRA_RRECOMMENDS:remove, "linux-fitimage"]
                 # Mask graphic Pkgs
                 - [BBMASK, "kernel-module-gles|user-module-gles"]
                 - [BBMASK:append, "|meta-sparrow-hawk/recipes-graphics/wayland/wayland-wsegl"]
