@@ -58,3 +58,12 @@ if [[ "${TOTAL_MEMORY}" == "16384" ]]; then
     sed -i "s/memory = .*/memory = 6144/g" $DOMD_CFG_FILE
 fi
 
+# Setup devicetree overlay files
+DT_OVERLAY=`grep 'dt_overlay=' /proc/device-tree/chosen/u-boot,bootconf | sed -e 's/.*dt_overlay=//' -e 's/#.*//'`
+if [ -n "$DT_OVERLAY" ] ; then
+    pushd /lib/xen/boot
+    fdtoverlay -i domd.dtb -o domd-fixed.dtb `echo "${DT_OVERLAY}" |sed 's/,/ /g'`
+    sed -i "s|/domd.dtb|/domd-fixed.dtb|g" $DOMD_CFG_FILE
+    popd
+fi
+
