@@ -53,3 +53,7 @@ python __anonymous () {
         dtb = fname[:-3] + "dtb"
         d.appendVar("KERNEL_DEVICETREE", " renesas/%s"%dtb)
 }
+
+# For dt-overlay
+KERNEL_DTC_FLAGS += "-@"
+
