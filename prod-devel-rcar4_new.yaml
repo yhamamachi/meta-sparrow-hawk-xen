@@ -195,6 +195,10 @@ components:
         - [BBMASK:append, "  meta-openembedded/meta-oe/recipes-support/opencv"]
         # we have to use tbb 2020.2 instead of 2021.5 for opencv 4.1
         - [BBMASK:append, "  meta-openembedded/meta-oe/recipes-support/tbb"]
+        # BSP packages is not needed for DomU
+        - [IMAGE_INSTALL:remove, "packagegroup-resesas-bsp"]
+        - [IMAGE_INSTALL:remove, "packagegroup-renesas-bsp-tools"]
+        - [IMAGE_INSTALL:remove, "packagegroup-renesas-bsp-demo"]
 
       layers:
         - "../meta-openembedded/meta-oe"
