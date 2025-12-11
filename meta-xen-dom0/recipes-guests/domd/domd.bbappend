@@ -8,7 +8,9 @@ SRC_URI:append = "\
 FILES:${PN}:append = " \
     ${libdir}/xen/bin/domd-set-root \
     ${libdir}/xen/boot/initramfs-domd.cpio.gz \
+    ${libdir}/xen/boot/*.dtbo \
 "
+
 CFG_FILE="${D}${sysconfdir}/xen/domd.cfg"
 
 do_install:append() {
@@ -35,5 +37,11 @@ do_install:append() {
 
     # Add initramfs
     install -m 0644 ${S}/initramfs-domd.cpio.gz ${D}${libdir}/xen/boot/initramfs-domd.cpio.gz
+
+    # install dtbo for DomD
+    for f in ${S}/*.dtbo; do
+        [ -e "$f" ] || continue
+        install -m 0644 "$f" ${D}${libdir}/xen/boot/
+    done
 }
 
