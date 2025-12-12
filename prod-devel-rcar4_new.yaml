@@ -498,7 +498,6 @@ parameters:
                 - [DISTRO_FEATURES:append, " xen vmsep"]
                 - [QEMUVERSION, "7.0%"]
                 - [BBMASK:append, " meta-xt-common/meta-xt-driver-domain-virtio/recipes-extended/xen/"]
-                - [PREFERRED_VERSION_virglrenderer, "0.9.1%"]
 
   ENABLE_DOMU_VIRTIO:
     desc: "Build Linux as a guest VM using Virtio backend"
