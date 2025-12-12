@@ -19,6 +19,7 @@ IMAGE_INSTALL:append = " \
 
 IMAGE_INSTALL:append = " \
     glmark2 \
+    coreutils \
 "
 
 IMAGE_INSTALL:append = " \
