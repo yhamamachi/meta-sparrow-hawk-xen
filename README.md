@@ -94,4 +94,14 @@ rm work_v4hsbc_xen/android/out/target/product/xenvm_trout_arm64/boot.img
 ```
 
 
+## DomD dtbへのdt-overlayの有効化
+
+bootmに対するconfigを使うことでdtbにdtboを当てた状態でDomDを起動することができる。
+dt_overlayに対して、カンマ「,」区切りにdtboファイル名を指定する必要あり。
+ToDo: U-Boot側での自動判別機能、Yocto BSPと同等の入力機能の追加。
+
+例: j1-imx219 + j2-imx708
+```
+bootm ${loadaddr}#default#dt_overlay=r8a779g3-sparrow-hawk-camera-j1-imx219.dtbo,r8a779g3-sparrow-hawk-camera-j2-imx708.dtbo
+```
 
