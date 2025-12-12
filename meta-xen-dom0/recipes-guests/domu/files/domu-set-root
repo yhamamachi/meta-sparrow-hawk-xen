@@ -38,6 +38,11 @@ if echo "${BOOT_STORAGE}" | grep -q -e 'mmc' -e 'nvme'; then
 fi
 STORAGE_PART="${BOOT_STORAGE}${PART_PREFIX}"
 
+if [[ -e /etc/xen/doma.cfg ]]; then
+    # if doma is enabled, delay booting DomU.
+    sleep 5s
+fi
+
 # now make up the configuration
 echo "Mangling domain configuration: setting storage to ${BOOT_STORAGE}"
 sed -i "s/STORAGE_PART/${STORAGE_PART}/g" $DOMU_CFG_FILE
