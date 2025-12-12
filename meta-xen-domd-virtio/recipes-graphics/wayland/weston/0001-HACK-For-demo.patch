@@ -1,0 +1,96 @@
+From 617c81b32bd2781b31f3427bc90cb08b1795941f Mon Sep 17 00:00:00 2001
+From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+Date: Fri, 12 Dec 2025 12:15:14 +0900
+Subject: [PATCH] HACK: For demo
+
+Upstream-Status: Inappropriate
+
+Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+---
+ kiosk-shell/kiosk-shell.c | 35 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 34 insertions(+), 1 deletion(-)
+
+diff --git a/kiosk-shell/kiosk-shell.c b/kiosk-shell/kiosk-shell.c
+index 28805322..0d56a1b7 100644
+--- a/kiosk-shell/kiosk-shell.c
++++ b/kiosk-shell/kiosk-shell.c
+@@ -165,6 +165,7 @@ static bool
+ kiosk_shell_output_has_app_id(struct kiosk_shell_output *shoutput,
+ 			      const char *app_id);
+ 
++int target_output = 0;
+ static struct weston_output *
+ kiosk_shell_surface_find_best_output(struct kiosk_shell_surface *shsurf)
+ {
+@@ -177,6 +178,27 @@ kiosk_shell_surface_find_best_output(struct kiosk_shell_surface *shsurf)
+ 	if (shsurf->output)
+ 		return shsurf->output;
+ 
++		
++    /* Display count */
++	weston_log("kiosk: outputs counting...\n");
++    int output_num = 0;
++    wl_list_for_each(shoutput, &shsurf->shell->output_list, link) {
++		weston_log("kiosk: output[%d]=%s\n", output_num,
++				   shoutput->output ? shoutput->output->name : "(null)");
++        output_num++;
++	}
++	weston_log("kiosk: g_app_counter(before)=%d, output_num=%d\n", target_output, output_num);
++	/* Check free output for app output */
++	int loop_counter = 0;
++	wl_list_for_each(shoutput, &shsurf->shell->output_list, link) {
++		if (loop_counter == target_output) {
++			target_output = (target_output+1) % output_num;
++			shsurf->appid_output_assigned = true; // Reuse flag to avoid changing display every calling function
++			return shoutput->output;
++		}
++		loop_counter++;
++	}
++
+ 	/* Check if we have a designated output for this app. */
+ 	app_id = weston_desktop_surface_get_app_id(shsurf->desktop_surface);
+ 	if (app_id) {
+@@ -228,21 +250,31 @@ static void
+ kiosk_shell_surface_set_fullscreen(struct kiosk_shell_surface *shsurf,
+ 				   struct weston_output *output)
+ {
++	weston_log("kiosk_fullscreen_func IN: output=%s\n",
++				shsurf->output ? shsurf->output->name : "(null)");
+ 	if (!output)
+ 		output = kiosk_shell_surface_find_best_output(shsurf);
+ 
++	weston_log("  Call: kiosk_shell_surface_set_output\n");
+ 	kiosk_shell_surface_set_output(shsurf, output);
+-
++	
++	weston_log("  Call: weston_desktop_surface_set_fullscreen\n");
+ 	weston_desktop_surface_set_fullscreen(shsurf->desktop_surface, true);
++	weston_log("kiosk_fullscreen_func MID: output=%s\n",
++				shsurf->output ? shsurf->output->name : "(null)");
+ 	if (shsurf->output)
+ 		weston_desktop_surface_set_size(shsurf->desktop_surface,
+ 						shsurf->output->width,
+ 						shsurf->output->height);
++
++	weston_log("kiosk_fullscreen_func OUT: output=%s\n",
++				shsurf->output ? shsurf->output->name : "(null)");
+ }
+ 
+ static void
+ kiosk_shell_surface_set_maximized(struct kiosk_shell_surface *shsurf)
+ {
++	weston_log("kiosk_shell_surface_set_maximized: IN\n");
+ 	struct weston_output *output =
+ 		kiosk_shell_surface_find_best_output(shsurf);
+ 
+@@ -258,6 +290,7 @@ kiosk_shell_surface_set_maximized(struct kiosk_shell_surface *shsurf)
+ static void
+ kiosk_shell_surface_set_normal(struct kiosk_shell_surface *shsurf)
+ {
++	weston_log("kiosk_shell_surface_set_normal: IN\n");
+ 	if (!shsurf->output)
+ 		kiosk_shell_surface_set_output(shsurf,
+ 			kiosk_shell_surface_find_best_output(shsurf));
+-- 
+2.34.1
+

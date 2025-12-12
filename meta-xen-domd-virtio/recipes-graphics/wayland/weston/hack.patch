@@ -1,0 +1,29 @@
+diff --git a/kiosk-shell/kiosk-shell.c b/kiosk-shell/kiosk-shell.c
+index 28805322..a08b9b3b 100644
+--- a/kiosk-shell/kiosk-shell.c
++++ b/kiosk-shell/kiosk-shell.c
+@@ -165,6 +165,7 @@ static bool
+ kiosk_shell_output_has_app_id(struct kiosk_shell_output *shoutput,
+ 			      const char *app_id);
+ 
++int g_app_counter = 0;
+ static struct weston_output *
+ kiosk_shell_surface_find_best_output(struct kiosk_shell_surface *shsurf)
+ {
+@@ -177,6 +178,16 @@ kiosk_shell_surface_find_best_output(struct kiosk_shell_surface *shsurf)
+ 	if (shsurf->output)
+ 		return shsurf->output;
+ 
++		/* Check free output for app output */
++	int loop_counter = 0;
++	wl_list_for_each(output, &shsurf->shell->output_list, link) {
++		if (loop_counter <= g_app_counter) {
++			g_app_counter++;
++			return output;
++		}
++		loop_counter++;
++	}
++
+ 	/* Check if we have a designated output for this app. */
+ 	app_id = weston_desktop_surface_get_app_id(shsurf->desktop_surface);
+ 	if (app_id) {
