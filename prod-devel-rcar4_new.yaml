@@ -239,7 +239,7 @@ components:
     sources:
       - type: repo
         url: https://github.com/yhamamachi/android_manifest.git
-        rev: android-15-xenvm-trout-ih-main
+        rev: aff3224d1515e0fa63effcb37d629edd16ce6c46
         manifest: default.xml
         depth: 1
         groups: "%{XT_DOMA_SOURCE_GROUP}"
