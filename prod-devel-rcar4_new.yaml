@@ -238,7 +238,7 @@ components:
     build-dir: "%{DOMA_DIR}"
     sources:
       - type: repo
-        url: https://github.com/xen-troops/android_manifest.git
+        url: https://github.com/yhamamachi/android_manifest.git
         rev: android-15-xenvm-trout-ih-main
         manifest: default.xml
         depth: 1
