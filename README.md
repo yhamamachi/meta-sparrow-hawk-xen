@@ -51,8 +51,8 @@ setenv set_pcie_firmware_info 'setenv renesas_rcar_gen4_load_firmware_addr 0x540
 setenv flash_nvme_xen 'pci e && nvme scan && tftp ${loadaddr} full.img.gz && gzwrite nvme 0 ${loadaddr} ${filesize} 400000 0'
 setenv flash_usb_xen 'pci e && usb start && tftp ${loadaddr} full.img.gz && gzwrite usb 0 ${loadaddr} ${filesize} 100000 0'
 
-setenv xen_nvme 'pci e && nvme scan && load nvme 0:1 ${loadaddr} fitImage && bootm ${loadaddr}#default#boot_dev=nvme0n1'
-setenv xen_usb 'pci e && usb start && load usb 0:1 ${loadaddr} fitImage && bootm ${loadaddr}#default#boot_dev=sda'
+setenv xen_nvme 'pci e && nvme scan && env delete bootargs && load nvme 0:1 ${loadaddr} fitImage && bootm ${loadaddr}#default#boot_dev=nvme0n1'
+setenv xen_usb 'pci e && usb start && env delete bootargs && load usb 0:1 ${loadaddr} fitImage && bootm ${loadaddr}#default#boot_dev=sda'
 ```
 
 2. (一度だけ実行で大丈夫なはず)QSPI flashへのPCIe firmwareの書き込み
