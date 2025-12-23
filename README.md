@@ -105,3 +105,24 @@ ToDo: U-Boot側での自動判別機能、Yocto BSPと同等の入力機能の�
 bootm ${loadaddr}#default#dt_overlay=r8a779g3-sparrow-hawk-camera-j1-imx219.dtbo,r8a779g3-sparrow-hawk-camera-j2-imx708.dtbo
 ```
 
+## Example: DomU + DomA Multi domain Multi display demo with SSD booting
+
+1. Environment
+   - Raspberry Pi Touch Display 2 7inch
+   - M.2 SSD Boot
+2. Build
+```
+./build.sh -v -u -a
+```
+3. Setup U-boot
+```
+setenv domd_conf '#dt_overlay=r8a779g3-sparrow-hawk-rpi-display-2-7in.dtbo'
+setenv xen_nvme 'pci e && nvme scan && env delete bootargs && load nvme 0:1 ${loadaddr} fitImage && bootm ${loadaddr}#default#boot_dev=nvme0n1#doma_dev=/dev/nvme0n1p4${domd_conf}'
+```
+   - Points
+      - domaのディスクはdoma_devを使ってU-Boot上であらかじめ指定する。
+      - domdのdevicetreeへのdtboの有効化はdt_overlayにdtboファイル名を渡すことでDom0上で自動的に処理される。
+4. Boot
+```
+run xen_nvme
+```
