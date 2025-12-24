@@ -22,6 +22,11 @@ if [ $BOOT_STORAGE = nfs ] ; then
     echo "Using eMMC storage: ${BOOT_STORAGE} instead of NFS"
 fi
 
+if [[ -e /etc/xen/domu.cfg ]]; then
+    # if domu is enabled, Partition will be changed
+    sed -i "s/STORAGE_PART3/STORAGE_PART4/g" $DOMA_CFG_FILE
+fi
+
 # guess partition prefix, e.g. "" for sda2 or "p" for mmcblk1p3
 PART_PREFIX=""
 if echo "${BOOT_STORAGE}" | grep -q -e 'mmc' -e 'nvme'; then
