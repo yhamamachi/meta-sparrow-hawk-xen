@@ -327,6 +327,10 @@ parameters:
           MACHINE: "sparrow-hawk"
           SOC_FAMILY: "r8a779g3"
         components:
+          dom0:
+            builder:
+              layers:
+                - "../meta-sparrow-hawk"
           domd:
             sources:
               - type: git
