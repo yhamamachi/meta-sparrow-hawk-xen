@@ -1,0 +1,266 @@
+From a8d8d639120e54948be8b5e469b321541f817255 Mon Sep 17 00:00:00 2001
+From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+Date: Fri, 31 Jan 2025 22:07:16 +0900
+Subject: [PATCH] Fix deprecated syntax
+
+Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+---
+ GUIModel/ACC/ACC_Animation.qml           |  2 +-
+ GUIModel/CruisingRange/CruisingRange.qml |  2 +-
+ GUIModel/Menu/Menu.qml                   | 14 +++++++-------
+ GUIModel/Meter/ChargeGuage.qml           |  2 +-
+ GUIModel/Meter/DigitalSpeed.qml          |  2 +-
+ GUIModel/Meter/Mask.qml                  |  2 +-
+ GUIModel/Meter/Meter.qml                 |  2 +-
+ GUIModel/Meter/Ready.qml                 |  2 +-
+ GUIModel/Meter/Ring.qml                  |  2 +-
+ GUIModel/Meter/Sideline.qml              |  2 +-
+ GUIModel/Meter/SpeedGuage.qml            |  2 +-
+ GUIModel/Meter/SpeedNeedle.qml           |  2 +-
+ GUIModel/Meter/Tachometer.qml            |  2 +-
+ GUIModel/ShiftPosition/ShiftPosition.qml |  2 +-
+ GUIModel/TurnByTurn/TurnByTurn.qml       |  2 +-
+ 15 files changed, 21 insertions(+), 21 deletions(-)
+
+diff --git a/GUIModel/ACC/ACC_Animation.qml b/GUIModel/ACC/ACC_Animation.qml
+index f87a3c4..92091b8 100644
+--- a/GUIModel/ACC/ACC_Animation.qml
++++ b/GUIModel/ACC/ACC_Animation.qml
+@@ -48,7 +48,7 @@ Item {
+ 
+     Connections{
+         target: rootItem
+-        onTransNormalToAdas:{
++        function onTransNormalToAdas(){
+             if(rootItem.set_state == "set_default"){
+                 fadeout_in_default.start()
+             }else if(rootItem.set_state == "set_middle"){
+diff --git a/GUIModel/CruisingRange/CruisingRange.qml b/GUIModel/CruisingRange/CruisingRange.qml
+index 98986b3..7491d0b 100644
+--- a/GUIModel/CruisingRange/CruisingRange.qml
++++ b/GUIModel/CruisingRange/CruisingRange.qml
+@@ -36,7 +36,7 @@ Item{
+ 
+     Connections{
+         target: rootItem
+-        onTransNormalToAdas:{
++        function onTransNormalToAdas(){
+             normalToAdasAnimationFuel.start()
+         }
+     }
+diff --git a/GUIModel/Menu/Menu.qml b/GUIModel/Menu/Menu.qml
+index 7a6d534..3f48cf9 100644
+--- a/GUIModel/Menu/Menu.qml
++++ b/GUIModel/Menu/Menu.qml
+@@ -22,37 +22,37 @@ Item {
+ 
+     Connections {
+         target: rootItem
+-        onTransNormalToAdas: {
++        function onTransNormalToAdas() {
+             menuMain.startAnimationNormalToAdas();
+             menuContents.startAnimationNormalToAdas();
+             menuShade.startAnimationNormalToAdas();
+         }
+ 
+-        onKeyPressed_Up: {
++        function onKeyPressed_Up() {
+             if (menu.state === "open") {
+                 menuMain.incrementIndex();
+             }
+         }
+ 
+-        onKeyPressed_Down: {
++        function onKeyPressed_Down() {
+             if (menu.state === "open") {
+                 menuMain.decrementIndex();
+             }
+         }
+ 
+-        onKeyPressed_Left: {
++        function onKeyPressed_Left() {
+             if (menu.state === "close") {
+                 menuContents.decrementIndex();
+             }
+         }
+ 
+-        onKeyPressed_Right: {
++        function onKeyPressed_Right() {
+             if (menu.state === "close") {
+                 menuContents.incrementIndex();
+             }
+         }
+ 
+-        onKeyPressed_Enter: {
++        function onKeyPressed_Enter() {
+             if (menu.state === "close") {
+                 menuContents.enter();
+             } else if (menu.state === "open") {
+@@ -62,7 +62,7 @@ Item {
+             }
+         }
+ 
+-        onKeyPressed_Menu: {
++        function onKeyPressed_Menu() {
+             if (menu.state === "close") {
+                 menuContents.open();
+                 menuMain.open();
+diff --git a/GUIModel/Meter/ChargeGuage.qml b/GUIModel/Meter/ChargeGuage.qml
+index ad0c5ac..58d18b0 100644
+--- a/GUIModel/Meter/ChargeGuage.qml
++++ b/GUIModel/Meter/ChargeGuage.qml
+@@ -35,7 +35,7 @@ Item {
+ 
+     Connections {
+         target: rootItem
+-        onTransNormalToAdas: {
++        function onTransNormalToAdas() {
+             normalToAdasAnimation.start();
+         }
+     }
+diff --git a/GUIModel/Meter/DigitalSpeed.qml b/GUIModel/Meter/DigitalSpeed.qml
+index 1cbf56a..9fa659c 100644
+--- a/GUIModel/Meter/DigitalSpeed.qml
++++ b/GUIModel/Meter/DigitalSpeed.qml
+@@ -32,7 +32,7 @@ Item{
+ 
+     Connections{
+         target: rootItem
+-        onTransNormalToAdas:{
++        function onTransNormalToAdas(){
+             normalToAdasAnimation.start()
+         }
+     }
+diff --git a/GUIModel/Meter/Mask.qml b/GUIModel/Meter/Mask.qml
+index 31dcb47..d358b45 100644
+--- a/GUIModel/Meter/Mask.qml
++++ b/GUIModel/Meter/Mask.qml
+@@ -24,7 +24,7 @@ Item{
+ 
+     Connections{
+         target: rootItem
+-        onTransNormalToAdas:{
++        function onTransNormalToAdas(){
+             normalToAdasAnimation.start()
+         }
+     }
+diff --git a/GUIModel/Meter/Meter.qml b/GUIModel/Meter/Meter.qml
+index d79d36f..3cc78c4 100644
+--- a/GUIModel/Meter/Meter.qml
++++ b/GUIModel/Meter/Meter.qml
+@@ -41,7 +41,7 @@ Item {
+ 
+         Connections {
+             target: rootItem
+-            onTransNormalToAdas: {
++            function onTransNormalToAdas() {
+                 / *nop */;
+             }
+         }
+diff --git a/GUIModel/Meter/Ready.qml b/GUIModel/Meter/Ready.qml
+index 11f1a11..a261ed6 100644
+--- a/GUIModel/Meter/Ready.qml
++++ b/GUIModel/Meter/Ready.qml
+@@ -26,7 +26,7 @@ Item {
+     
+     Connections{
+         target: rootItem
+-        onTransNormalToAdas:{
++        function onTransNormalToAdas(){
+             normalToAdasAnimation.start()
+         }
+     }
+diff --git a/GUIModel/Meter/Ring.qml b/GUIModel/Meter/Ring.qml
+index abc34f2..f7b6a76 100644
+--- a/GUIModel/Meter/Ring.qml
++++ b/GUIModel/Meter/Ring.qml
+@@ -26,7 +26,7 @@ Item {
+ 
+     Connections{
+         target: rootItem
+-        onTransNormalToAdas:{
++        function onTransNormalToAdas(){
+             normalToAdasAnimation.start()
+         }
+     }
+diff --git a/GUIModel/Meter/Sideline.qml b/GUIModel/Meter/Sideline.qml
+index fe903a6..58e590c 100644
+--- a/GUIModel/Meter/Sideline.qml
++++ b/GUIModel/Meter/Sideline.qml
+@@ -25,7 +25,7 @@ Item {
+ 
+     Connections {
+         target: rootItem
+-        onTransNormalToAdas: {
++        function onTransNormalToAdas() {
+             normalToAdasAnimation.start();
+         }
+     }
+diff --git a/GUIModel/Meter/SpeedGuage.qml b/GUIModel/Meter/SpeedGuage.qml
+index c268f61..6431269 100644
+--- a/GUIModel/Meter/SpeedGuage.qml
++++ b/GUIModel/Meter/SpeedGuage.qml
+@@ -36,7 +36,7 @@ Item {
+ 
+     Connections {
+         target: rootItem
+-        onTransNormalToAdas: {
++        function onTransNormalToAdas() {
+             normalToAdasAnimation.start();
+         }
+     }
+diff --git a/GUIModel/Meter/SpeedNeedle.qml b/GUIModel/Meter/SpeedNeedle.qml
+index f04ecfa..5be795a 100644
+--- a/GUIModel/Meter/SpeedNeedle.qml
++++ b/GUIModel/Meter/SpeedNeedle.qml
+@@ -36,7 +36,7 @@ Item {
+ 
+     Connections {
+         target: rootItem
+-        onTransNormalToAdas: {
++        function onTransNormalToAdas() {
+             normalToAdasAnimation.start();
+         }
+     }
+diff --git a/GUIModel/Meter/Tachometer.qml b/GUIModel/Meter/Tachometer.qml
+index 9974eea..db9a9ad 100644
+--- a/GUIModel/Meter/Tachometer.qml
++++ b/GUIModel/Meter/Tachometer.qml
+@@ -31,7 +31,7 @@ Item {
+ 
+     Connections {
+         target: rootItem
+-        onTransNormalToAdas: {
++        function onTransNormalToAdas() {
+             normalToAdasAnimation.start();
+         }
+     }
+diff --git a/GUIModel/ShiftPosition/ShiftPosition.qml b/GUIModel/ShiftPosition/ShiftPosition.qml
+index 33e4302..77c9a97 100644
+--- a/GUIModel/ShiftPosition/ShiftPosition.qml
++++ b/GUIModel/ShiftPosition/ShiftPosition.qml
+@@ -27,7 +27,7 @@ Item {
+ 
+     Connections{
+         target: rootItem
+-        onTransNormalToAdas:{
++        function onTransNormalToAdas(){
+             normalToAdasAnimationShift.start()
+         }
+     }
+diff --git a/GUIModel/TurnByTurn/TurnByTurn.qml b/GUIModel/TurnByTurn/TurnByTurn.qml
+index 9f5c7b0..8e2092b 100644
+--- a/GUIModel/TurnByTurn/TurnByTurn.qml
++++ b/GUIModel/TurnByTurn/TurnByTurn.qml
+@@ -45,7 +45,7 @@ Item {
+ 
+         Connections{
+             target: rootItem
+-            onTransNormalToAdas:{
++            function onTransNormalToAdas(){
+                 normalToAdasAnimationTbt.start()
+             }
+         }
+-- 
+2.34.1
+

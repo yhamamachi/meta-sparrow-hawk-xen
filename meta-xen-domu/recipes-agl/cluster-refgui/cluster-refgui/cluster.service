@@ -1,0 +1,15 @@
+[Unit]
+Description=AGL Cluster Reference GUI
+After=weston.service
+Requires=weston.service
+
+[Service]
+#Environment=XDG_RUNTIME_DIR=/run/user/0
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+Environment=LANG=C.UTF-8
+Environment=WAYLAND_DISPLAY=wayland-1
+ExecStartPre=rm -rf /.cache
+ExecStart=/opt/apps/cluster
+
+[Install]
+WantedBy=multi-user.target

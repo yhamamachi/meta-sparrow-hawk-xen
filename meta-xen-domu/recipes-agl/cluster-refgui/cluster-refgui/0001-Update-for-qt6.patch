@@ -1,0 +1,24 @@
+From f7a2001b55b13947e4d72fcaf4b786c0f8d61b78 Mon Sep 17 00:00:00 2001
+From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+Date: Fri, 31 Jan 2025 12:54:52 +0900
+Subject: [PATCH] Update for qt6
+
+Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+---
+ GUIModel/MeterEffect/GaussianBlur.qml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/GUIModel/MeterEffect/GaussianBlur.qml b/GUIModel/MeterEffect/GaussianBlur.qml
+index f729329..4698768 100644
+--- a/GUIModel/MeterEffect/GaussianBlur.qml
++++ b/GUIModel/MeterEffect/GaussianBlur.qml
+@@ -1,4 +1,4 @@
+-//import QtGraphicalEffects 1.0 as E
+-import Qt5Compat.GraphicalEffects as E
++import QtGraphicalEffects 1.0 as E
++//import Qt5Compat.GraphicalEffects as E
+ 
+ E.GaussianBlur {}
+-- 
+2.34.1
+

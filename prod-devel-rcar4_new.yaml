@@ -551,6 +551,32 @@ parameters:
                 gpt_type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4 # Linux filesystem data
                 image_path: "%{YOCTOS_WORK_DIR}/%{DOMU_BUILD_DIR}/tmp/deploy/images/virtio-armv8-xt/core-image-weston-virtio-armv8-xt.rootfs.ext4"
 
+  ENABLE_DOMU_AGL_CLUSTER:
+    desc: "Install AGL Cluster reference applicatin to DomU"
+    "no":
+      desc: "Nothing to do"
+      default: true
+      overrides:
+        components:
+          domu:
+            builder:
+              conf:
+                - [BBMASK:append, "|meta-xen-domu/recipes-agl/"]
+    "yes":
+      overrides:
+        components:
+          domu:
+            sources:
+              - type: git
+                url: git://code.qt.io/yocto/meta-qt6.git
+                rev: 9bd2c2ae4b4fb536975904fe494813408a2282a3
+                # dev branch
+            builder:
+              layers:
+                - "../meta-qt6"
+              conf:
+                - [IMAGE_INSTALL:append, " cluster-refgui"]
+
   ENABLE_ANDROID:
     desc: "Build Android as a guest VM"
     "no":
