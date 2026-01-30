@@ -59,6 +59,10 @@ common_data:
     - [PREFERRED_VERSION_xen-tools, "4.19.0+git%"]
     - [PREFERRED_VERSION_xen, "4.19.0+git%"]
 
+    # Specify the linux kernel version
+    - [PREFERRED_VERSION_linux-renesas, "6.12%"]
+    - [LINUXLIBCVERSION, "6.12%"]
+
   # Conf options for domain that are built used renesas layer
   domd_domu_conf: &DOMD_DOMU_CONF
     - [MACHINE, "%{MACHINE}"]
