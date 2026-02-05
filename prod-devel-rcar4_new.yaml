@@ -94,6 +94,7 @@ common_data:
     - [RENESAS_EXTRA_IMAGE_FEATURES:remove, "tools-profile"]
     - [CORE_IMAGE_EXTRA_INSTALL:remove, "perf"]
     #- [MACHINE_FEATURES:append, " gsx"]
+    - [IMAGE_INSTALL:append, " socat"]
 
 components:
   dom0:
