@@ -59,11 +59,34 @@ if [[ "${TOTAL_MEMORY}" == "16384" ]]; then
 fi
 
 # Setup devicetree overlay files
-DT_OVERLAY=`grep 'dt_overlay=' /proc/device-tree/chosen/u-boot,bootconf | sed -e 's/.*dt_overlay=//' -e 's/#.*//'`
-if [ -n "$DT_OVERLAY" ] ; then
+BOOTCONF=$(cat /proc/device-tree/chosen/u-boot,bootconf)
+if [ -n "$BOOTCONF" ] ; then
     pushd /lib/xen/boot
+    DT_OVERLAY=""
+    for conf in i $(echo $BOOTCONF | sed 's/#/ /g'); do
+        case ${conf} in
+            # J1
+            "j1-imx219") DT_OVERLAY+=" r8a779g3-sparrow-hawk-camera-j1-imx219.dtbo";;
+            "j1-imx462") DT_OVERLAY+=" r8a779g3-sparrow-hawk-camera-j1-imx462.dtbo";;
+            "j1-imx708") DT_OVERLAY+=" r8a779g3-sparrow-hawk-camera-j1-imx708.dtbo";;
+            # J2
+            "j2-imx219") DT_OVERLAY+=" r8a779g3-sparrow-hawk-camera-j2-imx219.dtbo";;
+            "j2-imx462") DT_OVERLAY+=" r8a779g3-sparrow-hawk-camera-j2-imx462.dtbo";;
+            "j2-imx708") DT_OVERLAY+=" r8a779g3-sparrow-hawk-camera-j2-imx708.dtbo";;
+            # J4
+            "rpi-display-2-7in") DT_OVERLAY+=" r8a779g3-sparrow-hawk-rpi-display-2-7in.dtbo";;
+            "rpi-display-2-5in") DT_OVERLAY+=" r8a779g3-sparrow-hawk-rpi-display-2-5in.dtbo";;
+            "wavesharei-panel") DT_OVERLAY+=" r8a779g3-sparrow-hawk-dsi-waveshare-panal.dtbo";;
+            # Others
+            "fan-pwm") DT_OVERLAY+=" r8a779g3-sparrow-hawk-fan-pwm.dtbo";;
+            "fan-argon40") DT_OVERLAY+=" r8a779g3-sparrow-hawk-fan-argon40.dtbo";;
+        esac
+    done
+
     fdtoverlay -i domd.dtb -o domd-fixed.dtb `echo "${DT_OVERLAY}" |sed 's/,/ /g'`
-    sed -i "s|/domd.dtb|/domd-fixed.dtb|g" $DOMD_CFG_FILE
+    if [[ -e ./domd-fixed.dtb ]]; then
+        sed -i "s|/domd.dtb|/domd-fixed.dtb|g" $DOMD_CFG_FILE
+    fi
     popd
 fi
 

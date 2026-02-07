@@ -20,6 +20,7 @@ INITRAMFS_MAXSIZE = "262144"
 BBAPPEND_FILE_PATH := "${THISDIR}"
 do_copy_files () {
     cp -f ${BBAPPEND_FILE_PATH}/files/fit-image.its -t ${WORKDIR}/
+    cp -f ${BBAPPEND_FILE_PATH}/files/boot.cmd -t ${WORKDIR}/
 }
 addtask do_copy_files before do_image_complete
 
