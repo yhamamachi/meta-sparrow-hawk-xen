@@ -76,7 +76,7 @@ if [ -n "$BOOTCONF" ] ; then
             # J4
             "rpi-display-2-7in") DT_OVERLAY+=" r8a779g3-sparrow-hawk-rpi-display-2-7in.dtbo";;
             "rpi-display-2-5in") DT_OVERLAY+=" r8a779g3-sparrow-hawk-rpi-display-2-5in.dtbo";;
-            "wavesharei-panel") DT_OVERLAY+=" r8a779g3-sparrow-hawk-dsi-waveshare-panal.dtbo";;
+            "waveshare-panel") DT_OVERLAY+=" r8a779g3-sparrow-hawk-dsi-waveshare-panel.dtbo";;
             # Others
             "fan-pwm") DT_OVERLAY+=" r8a779g3-sparrow-hawk-fan-pwm.dtbo";;
             "fan-argon40") DT_OVERLAY+=" r8a779g3-sparrow-hawk-fan-argon40.dtbo";;
