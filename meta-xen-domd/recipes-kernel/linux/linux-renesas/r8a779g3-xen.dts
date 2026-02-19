@@ -113,6 +113,80 @@
 /delete-node/ &pciec0_ep;
 /delete-node/ &pciec1_ep;
 
+&vin00 {
+	iommus = <&ipmmu_vi0 0>;
+};
+&vin01 {
+	iommus = <&ipmmu_vi0 0>;
+};
+&vin02 {
+	iommus = <&ipmmu_vi0 0>;
+};
+&vin03 {
+	iommus = <&ipmmu_vi0 0>;
+};
+&vin04 {
+	iommus = <&ipmmu_vi0 0>;
+};
+&vin05 {
+	iommus = <&ipmmu_vi0 0>;
+};
+&vin06 {
+	iommus = <&ipmmu_vi0 0>;
+};
+&vin07 {
+	iommus = <&ipmmu_vi0 0>;
+};
+&vin08 {
+	iommus = <&ipmmu_vi0 1>;
+};
+&vin09 {
+	iommus = <&ipmmu_vi0 1>;
+};
+&vin10 {
+	iommus = <&ipmmu_vi0 1>;
+};
+&vin11 {
+	iommus = <&ipmmu_vi0 1>;
+};
+&vin12 {
+	iommus = <&ipmmu_vi0 1>;
+};
+&vin13 {
+	iommus = <&ipmmu_vi0 1>;
+};
+&vin14 {
+	iommus = <&ipmmu_vi0 1>;
+};
+&vin15 {
+	iommus = <&ipmmu_vi0 1>;
+};
+
+&vspd0 {
+	iommus = <&ipmmu_vi1 6>;
+};
+&vspd1 {
+	iommus = <&ipmmu_vi1 7>;
+};
+
+&vspx0 {
+	iommus = <&ipmmu_vi1 24>;
+};
+&vspx1 {
+	iommus = <&ipmmu_vi1 25>;
+};
+
+&isp0 {
+	iommus = <&ipmmu_vi0 10>, <&ipmmu_vi0 14>,
+		 <&ipmmu_vi0 18>, <&ipmmu_vi0 22>,
+		 <&ipmmu_vi0 26>;
+};
+&isp1 {
+	iommus = <&ipmmu_vi0 11>, <&ipmmu_vi0 15>,
+		 <&ipmmu_vi0 19>, <&ipmmu_vi0 23>,
+		 <&ipmmu_vi0 27>;
+};
+
 &avb0		{ xen,passthrough; };
 &canfd		{ xen,passthrough; };
 &ssi0		{ xen,passthrough; };

@@ -110,6 +110,14 @@
 	/delete-property/iommus;
 };
 
+&fcpvx0 {
+	/delete-property/iommus;
+};
+
+&fcpvx1 {
+	/delete-property/iommus;
+};
+
 &dmac0 {
 	/delete-property/iommus;
 };
