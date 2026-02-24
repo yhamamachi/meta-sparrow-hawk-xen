@@ -1,0 +1,6 @@
+[Match]
+Name=vif-emu2
+
+[Network]
+Bridge=xenbr0
+
