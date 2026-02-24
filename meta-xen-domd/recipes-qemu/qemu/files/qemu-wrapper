@@ -1,0 +1,13 @@
+#!/bin/bash
+
+REAL_QEMU="/usr/bin/qemu-system-aarch64.bin"
+
+for i in "$@"; do
+    if [ "$prev" = "-name" ]; then
+        export SDL_VIDEO_WAYLAND_WMCLASS="$i"
+    fi
+    prev="$i"
+done
+
+exec "${REAL_QEMU}" "$@"
+

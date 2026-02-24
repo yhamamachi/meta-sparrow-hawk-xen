@@ -5,5 +5,13 @@ PACKAGECONFIG:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'enable_virtio',
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI:append = " \
     file://0001-virtio-input-hid-send-BTN_TOUCH-event-for-virtio-tab.patch \
+    file://qemu-wrapper \
 "
+
+# Install qemu binary wrapper
+FILES:${PN}-aarch64:class-target += " ${bindir}/qemu-system-aarch64.bin"
+do_install:append () {
+    mv -f ${D}/${bindir}/qemu-system-aarch64 ${D}/${bindir}/qemu-system-aarch64.bin
+    install -m 755 ${WORKDIR}/qemu-wrapper ${D}/${bindir}/qemu-system-aarch64
+}
 
