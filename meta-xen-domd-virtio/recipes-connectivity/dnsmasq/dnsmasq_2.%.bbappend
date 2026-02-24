@@ -1,5 +1,5 @@
 XT_DOMA_ETH0_MAC = "02:15:b2:00:00:00"
-XT_DOMA_ETH1_MAC = "08:00:27:ff:cb:cf"
+XT_DOMA_ETH1_MAC = "08:00:27:ff:cb:ce"
 
 do_install:append() {
     # Configure IP addresses for DomA, DomU.
