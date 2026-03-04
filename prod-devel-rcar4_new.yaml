@@ -246,7 +246,7 @@ components:
     sources:
       - type: repo
         url: https://github.com/yhamamachi/android_manifest.git
-        rev: 58ee49a36871c522ba0fae676e5b133960f7734f
+        rev: 66e0959d32f2c3c146153b703ba57b900a1ef325
         manifest: default.xml
         depth: 1
         groups: "%{XT_DOMA_SOURCE_GROUP}"
