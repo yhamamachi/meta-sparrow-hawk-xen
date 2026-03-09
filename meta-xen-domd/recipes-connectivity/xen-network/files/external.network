@@ -1,0 +1,5 @@
+[Network]
+DHCP=yes
+
+[DHCP]
+CriticalConnection=true

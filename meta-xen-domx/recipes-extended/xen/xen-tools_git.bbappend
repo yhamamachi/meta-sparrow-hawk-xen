@@ -1,53 +1,51 @@
-require xen-source.inc
-
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-FILES:${PN}-test = "\
-    ${libdir}/xen/bin/test-xenstore \
-    ${libdir}/xen/bin/test-resource \
-"
+require xen-source.inc
+LIC_FILES_CHKSUM ?= "file://COPYING;md5=d1a1e216f80b6d8da95fec897d0dbec9"
 
-do_install:append() {
-    rm -f ${D}/${libdir}/xen/bin/init-dom0less
-    rm -f ${D}/${systemd_unitdir}/system/var-lib-xenstored.mount
-    rm -rf ${D}/var
-}
-
-FILES:${PN}-xencommons:remove = "\
-    "${systemd_unitdir}/system/var-lib-xenstored.mount" \
-"
-
-SYSTEMD_SERVICE:${PN}-xencommons:remove = " \
-    var-lib-xenstored.mount \
+FILES:${PN} = "\
+    ${libdir}/xen/bin/test-* \
 "
 
 # Remove the recommendation for Qemu for non-hvm x86 added in meta-virtualization layer
 RRECOMMENDS:${PN}:remove = "qemu"
 
-# Avoid redundant runtime dependency on python3-core
-RDEPENDS:${PN}:remove:class-target = "${PYTHON_PN}-core"
+RDEPENDS:${PN} += "${PN}-devd"
+RDEPENDS:${PN}:remove = "${PN}-xendomains"
 
-DEPENDS:remove = "pixman virtual/libsdl"
+### START:  WA for Xen 4.21: from master branch of meta-virtualization
+PACKAGES +=  " ${PN}-libxenmanage ${PN}-libxenmanage-dev"
+RDEPENDS:${PN} = "\
+    ${PN}-libxenmanage \
+"
+FILES:${PN}-libxenmanage = "${libdir}/libxenmanage.so.*"
+FILES:${PN}-libxenmanage-dev = " \
+    ${libdir}/libxenmanage.so \
+    ${libdir}/pkgconfig/xenmanage.pc \
+    ${datadir}/pkgconfig/xenmanage.pc \
+"
+# libxenmanage is only in xen-4.21+
+ALLOW_EMPTY:${PN}-libxenmanage = "1"
 
-SRC_URI:remove = "file://0001-arm-Change-GUEST_GICV3_ITS_BASE.patch"
-SRC_URI:remove = "file://0001-pci-Add-support-for-V4H-pcie-host.patch"
+FILES:${PN}-test += "\
+    ${libdir}/xen/tests/test-xenstore \
+    ${libdir}/xen/tests/test-resource \
+    ${libdir}/xen/tests/test-domid \
+    ${libdir}/xen/tests/test-paging-mempool \
+    ${libdir}/xen/tests/test_vpci \
+    ${libdir}/xen/tests/test-pdx-mask \
+    ${libdir}/xen/tests/test-pdx-offset \
+    ${libdir}/xen/tests/test-rangeset \
+"
 
-FILES:${PN} += "/var/lib /usr/lib/xen/bin/* /boot/*"
+FILES:${PN}-xen-watchdog += "\
+    ${systemd_unitdir}/system-sleep/xen-watchdog-sleep.sh \
+"
 
-SYSTEMD_SERVICE:xen-tools:remove = "systemd-remount-fs.service"
+FILES:${PN} += "\
+    ${sysconfdir}/xen/auto \
+    ${sysconfdir}/xen/cpupool \
+"
 
-###
-# TEMPORARY HACK
-SRC_URI:append = " file://hack-xdg_runtime_dir.conf"
-FILES:${PN}-devd += " ${sysconfdir}/systemd/system/xendriverdomain.service.d/hack-xdg_runtime_dir.conf"
-do_install:append() {
-    # Install drop-in file to define required environment variable
-    install -d ${D}${sysconfdir}/systemd/system/xendriverdomain.service.d/
-    install -m 0644 ${WORKDIR}/hack-xdg_runtime_dir.conf ${D}${sysconfdir}/systemd/system/xendriverdomain.service.d
-}
-# END OF TEMPORARY HACK
-###
-
-# Add addtional fixes
-include ${@bb.utils.contains('XEN_REV', '2011e6c6fd35f564444983331296f5df7d154373', 'xen-tools_fixes.inc', '', d)}
+### END:  WA for Xen 4.21: from master branch of meta-virtualization
 

@@ -28,7 +28,6 @@ variables:
 common_data:
   # Sources used by all yocto-based domains
   # poky, meta-openembedded, meta-virtualization uses AGL verified revision.
-  # meta-xt-common pins to head of master.
   sources: &COMMON_SOURCES
     - type: git
       url: "git://git.yoctoproject.org/poky"
@@ -39,9 +38,6 @@ common_data:
     - type: git
       url: "git://git.yoctoproject.org/meta-virtualization"
       rev: "f92518e20530edfebca45e4170e11460949a5303"
-    - type: git
-      url: "https://github.com/xen-troops/meta-xt-common.git"
-      rev: "1164ec5123bfe687503b79126cbd2d86dfa39eaf"
 
   # Common configuration options for all yocto-based domains
   conf: &COMMON_CONF
@@ -58,8 +54,8 @@ common_data:
             bluetooth irda zeroconf 3g sysvinit acl alsa argp pcmcia usbgadget
             usbhost  ptest multiarch  vulkan sysvinit pulseaudio"]
 
-    - [PREFERRED_VERSION_xen-tools, "4.19.0+git%"]
-    - [PREFERRED_VERSION_xen, "4.19.0+git%"]
+    - [PREFERRED_VERSION_xen-tools, "4.21%"]
+    - [PREFERRED_VERSION_xen, "4.21%"]
 
     # Specify the linux kernel version
     - [PREFERRED_VERSION_linux-renesas, "6.12%"]
@@ -133,9 +129,6 @@ components:
         - "../meta-openembedded/meta-filesystems"
         - "../meta-openembedded/meta-python"
         - "../meta-openembedded/meta-networking"
-        - "../meta-xt-common/meta-xt-control-domain"
-        - "../meta-xt-common/meta-xt-dom0"
-        - "../meta-xt-common/meta-xt-domx"
       build_target: core-image-thin-initramfs
       external_src:
         domd: "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/"
@@ -172,16 +165,13 @@ components:
         - "../meta-openembedded/meta-networking"
         - "../meta-openembedded/meta-python"
         - "../meta-openembedded/meta-filesystems"
-        - "../meta-xt-common/meta-xt-domx"
-        - "../meta-xt-common/meta-xt-driver-domain"
-        - "../meta-xt-common/meta-xt-security"
       target_images:
         - "tmp/deploy/images/%{MACHINE}/Image"
         - "tmp/deploy/images/%{MACHINE}/core-image-weston-%{MACHINE}.rootfs.ext4"
         - "tmp/deploy/images/%{MACHINE}/bl31-%{MACHINE}.srec"
         - "tmp/deploy/images/%{MACHINE}/u-boot-elf-%{MACHINE}.srec"
         - "tmp/deploy/images/%{MACHINE}/xen-%{MACHINE}"
-        - "tmp/deploy/images/%{MACHINE}/xenpolicy-4.19-unstable"
+        - "tmp/deploy/images/%{MACHINE}/xenpolicy-4.21-unstable"
         - "tmp/deploy/images/%{MACHINE}/%{XT_XEN_DTB_NAME}"
   domu:
     build-dir: "%{YOCTOS_WORK_DIR}"
@@ -196,8 +186,6 @@ components:
         - [MACHINE, "%{DOMU_MACHINE}"]
         - [XT_DOM_NAME, "domu"]
         - [IMAGE_INSTALL:append, " iperf3 "]
-        # and xt-common provides 6.4 already. So we need this bbmask until upgrade to 6.4
-        - [BBMASK:append, " meta-xt-common/meta-xt-domu/recipes-kernel/linux-libc-headers/"]
         # we have to use opencv 4.1, but meta-oe provides 4.5.5
         - [BBMASK:append, "  meta-openembedded/meta-oe/recipes-support/opencv"]
         # we have to use tbb 2020.2 instead of 2021.5 for opencv 4.1
@@ -211,8 +199,6 @@ components:
         - "../meta-openembedded/meta-oe"
         - "../meta-openembedded/meta-filesystems"
         - "../meta-openembedded/meta-python"
-        - "../meta-xt-common/meta-xt-domu"
-        - "../meta-xt-common/meta-xt-security"
       build_target: core-image-weston
       target_images:
         - "tmp/deploy/images/%{DOMU_MACHINE}/Image"
@@ -283,7 +269,7 @@ components:
         - "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/bl31-%{MACHINE}.srec"
         - "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/u-boot-elf-%{MACHINE}.srec"
         - "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/xen-%{MACHINE}"
-        - "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/xenpolicy-4.19-unstable"
+        - "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/xenpolicy-4.21-unstable"
         - "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/%{XT_XEN_DTB_NAME}"
 
 images:
@@ -490,27 +476,20 @@ parameters:
         components:
           dom0:
             builder:
-              layers:
-                - "../meta-xt-common/meta-xt-control-domain-virtio"
-                - "../meta-xt-common/meta-xt-qemu"
               conf:
                 - [OVERRIDES:append, ":enable_virtio"]
                 - [DISTRO_FEATURES:append, " enable_virtio"]
                 - [DISTRO_FEATURES:append, " xen vmsep"]
                 - [IMAGE_INSTALL:remove, "qemu-system-aarch64"]
+                - [PACKAGE_EXCLUDE:append, " qemu"]
                 - [XT_DOMU_CONFIG_NAME, "domu-virtio.cfg"]
-                - [QEMUVERSION, "7.0%"]
           domd:
             builder:
               layers:
-                - "../meta-xt-common/meta-xt-driver-domain-virtio"
-                - "../meta-xt-common/meta-xt-qemu"
                 - "../../../meta-xen-domd-virtio"
               conf:
                 - [DISTRO_FEATURES:append, " enable_virtio"]
                 - [DISTRO_FEATURES:append, " xen vmsep"]
-                - [QEMUVERSION, "7.0%"]
-                - [BBMASK:append, " meta-xt-common/meta-xt-driver-domain-virtio/recipes-extended/xen/"]
 
   ENABLE_DOMU_VIRTIO:
     desc: "Build Linux as a guest VM using Virtio backend"
@@ -535,8 +514,6 @@ parameters:
         components:
           domu:
             builder:
-              layers:
-                - "../meta-xt-common/meta-xt-domu-virtio"
               conf:
                 - [EXTRA_IMAGEDEPENDS:remove, "u-boot"]
                 - [IMAGE_INSTALL:remove, "u-boot"]

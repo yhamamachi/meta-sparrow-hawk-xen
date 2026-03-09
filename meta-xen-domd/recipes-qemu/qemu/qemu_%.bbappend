@@ -4,7 +4,6 @@ PACKAGECONFIG:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'enable_virtio',
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI:append = " \
-    file://0001-virtio-input-hid-send-BTN_TOUCH-event-for-virtio-tab.patch \
     file://qemu-wrapper \
 "
 
