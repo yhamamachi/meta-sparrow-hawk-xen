@@ -1,3 +1,10 @@
+# Plepare cpio.gz
+IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
+
+# Add Xen related packages
+IMAGE_INSTALL:append = " xen-tools xen-tools-xencommons"
+IMAGE_INSTALL:append = " ${XT_GUEST_INSTALL}"
+
 DEPENDS += "u-boot-mkimage-native dtc-native"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"

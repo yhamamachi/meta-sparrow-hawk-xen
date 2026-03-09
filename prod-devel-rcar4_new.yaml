@@ -129,7 +129,7 @@ components:
         - "../meta-openembedded/meta-filesystems"
         - "../meta-openembedded/meta-python"
         - "../meta-openembedded/meta-networking"
-      build_target: core-image-thin-initramfs
+      build_target: core-image-minimal
       external_src:
         domd: "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/"
       additional_deps:
@@ -320,10 +320,6 @@ parameters:
           MACHINE: "sparrow-hawk"
           SOC_FAMILY: "r8a779g3"
         components:
-          dom0:
-            builder:
-              layers:
-                - "../meta-sparrow-hawk"
           domd:
             sources:
               - type: git
@@ -351,7 +347,7 @@ parameters:
                 - "../../../meta-xen-domx"
                 - "../meta-openembedded/meta-multimedia"
               external_src:
-                core-image-thin-initramfs: "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/"
+                core-image-minimal: "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/"
               conf:
                 - [XT_XEN_DTB_NAME, "%{XT_XEN_DTB_NAME}"]
               target_images:
