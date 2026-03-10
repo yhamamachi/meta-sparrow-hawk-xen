@@ -63,9 +63,6 @@ common_data:
 
   # Conf options for domain that are built used renesas layer
   domd_domu_conf: &DOMD_DOMU_CONF
-    - [MACHINE, "%{MACHINE}"]
-    - [SOC_FAMILY, "%{SOC_FAMILY}"]
-
     # Add systemd configuration
     - [INIT_MANAGER, "systemd"]
     - [DISTRO_FEATURES:append, " usrmerge"]
@@ -150,6 +147,8 @@ components:
       conf:
         - *COMMON_CONF
         - *DOMD_DOMU_CONF
+        - [MACHINE, "%{MACHINE}"]
+        - [SOC_FAMILY, "%{SOC_FAMILY}"]
         - [XT_DOM_NAME, "domd"]
         - [XT_DEVICE_TREES, "%{XT_DOMD_DTB_NAME} %{XT_XEN_DTB_NAME} %{XT_DOMA_DTB_NAME}"]
         - [XT_GUEST_INSTALL, "%{XT_GENERIC_DOMU_TAG} %{XT_DOMA_TAG}"]
@@ -461,6 +460,7 @@ parameters:
           dom0:
             builder:
               conf:
+                - [SOC_FAMILY, "%{SOC_FAMILY}"]
                 - [XT_DOMU_DTB_NAME, "%{XT_DOMU_DTB_NAME}"]
           domu:
             builder:
@@ -468,7 +468,7 @@ parameters:
     "yes":
       overrides:
         variables:
-          DOMU_MACHINE: "virtio-armv8-xt"
+          DOMU_MACHINE: "generic-armv8-xt"
         components:
           dom0:
             builder:
@@ -506,7 +506,7 @@ parameters:
     "yes":
       overrides:
         variables:
-          DOMU_MACHINE: "virtio-armv8-xt"
+          DOMU_MACHINE: "generic-armv8-xt"
         components:
           domu:
             builder:
@@ -531,7 +531,7 @@ parameters:
               domu-rootfs:
                 type: raw_image
                 gpt_type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4 # Linux filesystem data
-                image_path: "%{YOCTOS_WORK_DIR}/%{DOMU_BUILD_DIR}/tmp/deploy/images/virtio-armv8-xt/core-image-weston-virtio-armv8-xt.rootfs.ext4"
+                image_path: "%{YOCTOS_WORK_DIR}/%{DOMU_BUILD_DIR}/tmp/deploy/images/%{DOMU_MACHINE}/core-image-weston-%{DOMU_MACHINE}.rootfs.ext4"
 
   ENABLE_DOMU_AGL_CLUSTER:
     desc: "Install AGL Cluster reference applicatin to DomU"
