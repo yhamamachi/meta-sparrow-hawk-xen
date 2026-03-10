@@ -1,7 +1,7 @@
 From a75646f113917003831005aaba9564122935545b Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Tue, 25 Jul 2023 18:58:50 +0300
-Subject: [PATCH 20/21] Revert "libxl: Run Qemu if there is at least one virtio
+Subject: [PATCH 20/22] Revert "libxl: Run Qemu if there is at least one virtio
  backend in Dom0"
 
 This reverts commit 1226af42c794280f456b9943d15e0051cd227b21.

@@ -1,7 +1,7 @@
 From 318c559411930f734f67d60165f271e7aede9b0c Mon Sep 17 00:00:00 2001
 From: Volodymyr Babchuk <volodymyr_babchuk@epam.com>
 Date: Tue, 7 May 2019 19:00:24 +0300
-Subject: [PATCH 06/21] configs: introduce xt_defconfig
+Subject: [PATCH 06/22] configs: introduce xt_defconfig
 
 This is default configuration file for xen-troops Renesas boards
 

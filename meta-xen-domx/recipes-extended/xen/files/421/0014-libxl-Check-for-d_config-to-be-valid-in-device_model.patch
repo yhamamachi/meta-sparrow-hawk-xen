@@ -1,7 +1,7 @@
 From 7e0cc0fd6aa2c035f5c4da71735046d158a2219d Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Thu, 21 Jul 2022 14:54:07 +0300
-Subject: [PATCH 14/21] libxl: Check for d_config to be valid in
+Subject: [PATCH 14/22] libxl: Check for d_config to be valid in
  device_model_spawn_outcome()
 
 Check that d_config is not NULL before dereferencing it. For instance,

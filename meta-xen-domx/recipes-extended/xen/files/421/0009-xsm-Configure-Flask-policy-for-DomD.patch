@@ -1,7 +1,7 @@
 From 519b19b5eb133c743146da34b4fd182e3ced1db8 Mon Sep 17 00:00:00 2001
 From: Valerii Chubar <valerii_chubar@epam.com>
 Date: Fri, 14 May 2021 23:36:05 +0300
-Subject: [PATCH 09/21] xsm: Configure Flask policy for DomD
+Subject: [PATCH 09/22] xsm: Configure Flask policy for DomD
 
 Add security policy file for DomD. Based on the default DomU
 configuration and extended with the following access control and

@@ -1,7 +1,7 @@
 From 655dbd1df912e14298ba26030d09a372bf03fade Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Thu, 22 Aug 2019 13:06:33 +0300
-Subject: [PATCH 03/21] xen: Use large pages for MMIO mappings on ARM
+Subject: [PATCH 03/22] xen: Use large pages for MMIO mappings on ARM
 
 To avoid using only 4K pages for establishing mappings for
 large MMIO regions.

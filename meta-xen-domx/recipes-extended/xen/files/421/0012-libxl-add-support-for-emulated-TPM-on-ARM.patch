@@ -1,7 +1,7 @@
 From 158b9cd571ab38cc9ae966df21e7242f04e1bd73 Mon Sep 17 00:00:00 2001
 From: Stefano Stabellini <stefano.stabellini@amd.com>
 Date: Sun, 11 Sep 2022 19:44:00 +0300
-Subject: [PATCH 12/21] libxl: add support for emulated TPM on ARM
+Subject: [PATCH 12/22] libxl: add support for emulated TPM on ARM
 
 QEMU gained support for running as IOREQ server to do device emulation
 for ARM guests. It is done using a "xenpv" emulated machine for aarch64

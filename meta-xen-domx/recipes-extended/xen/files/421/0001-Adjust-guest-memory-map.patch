@@ -1,7 +1,7 @@
 From 7a67f9b33bb1e7dd9a1544b130d15604d33ab2f4 Mon Sep 17 00:00:00 2001
 From: Andrii Anisov <andrii_anisov@epam.com>
 Date: Wed, 6 Jun 2018 12:33:13 +0300
-Subject: [PATCH 01/21] Adjust guest memory map
+Subject: [PATCH 01/22] Adjust guest memory map
 
 In order to get running guests with access to IO we have to adjust
 XEN guest domain memory map to one specific for an exact platform.

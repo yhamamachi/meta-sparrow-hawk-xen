@@ -1,7 +1,7 @@
 From ec24e75e72188f843380c9df6463736eeabdcd71 Mon Sep 17 00:00:00 2001
 From: Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>
 Date: Wed, 4 Apr 2018 20:15:50 +0300
-Subject: [PATCH 07/21] libxl: Add DTB compatible list to config file
+Subject: [PATCH 07/22] libxl: Add DTB compatible list to config file
 
 Some platforms need more compatible property values in device
 tree root node in addition to "xen,xenvm-%d.%d" and "xen,xenvm"

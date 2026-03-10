@@ -1,7 +1,7 @@
 From 28018adeb7fbbfd60654222fffe488593a06f636 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Sun, 11 Sep 2022 20:03:53 +0300
-Subject: [PATCH 17/21] libxl/arm: Add basic virtio-pci support
+Subject: [PATCH 17/22] libxl/arm: Add basic virtio-pci support
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit

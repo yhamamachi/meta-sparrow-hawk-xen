@@ -1,7 +1,7 @@
 From 4d45b771936f2d63e108d242feb906bc122f55a9 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Thu, 27 Jul 2023 20:12:47 +0300
-Subject: [PATCH 21/21] libxl: Add "backend_type" property for the Virtio
+Subject: [PATCH 21/22] libxl: Add "backend_type" property for the Virtio
  devices
 
 Introduce new configuration option "backend_type" for the Virtio

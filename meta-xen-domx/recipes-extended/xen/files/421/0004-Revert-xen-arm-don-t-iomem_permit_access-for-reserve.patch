@@ -1,7 +1,7 @@
 From f3f8bd1ce733043f95231523923c4c1c91d621f2 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Tue, 20 Aug 2019 16:57:32 +0300
-Subject: [PATCH 04/21] Revert "xen/arm: don't iomem_permit_access for
+Subject: [PATCH 04/22] Revert "xen/arm: don't iomem_permit_access for
  reserved-memory regions"
 
 This reverts commit f9335bd4b89ba398ae993a0655c40c545b75d7c1

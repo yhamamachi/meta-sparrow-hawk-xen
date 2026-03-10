@@ -29,4 +29,5 @@ SRC_URI:append = "\
     file://421/0019-xen-arm-Emulate-level-for-legacy-PCI-interrupts-with.patch \
     file://421/0020-Revert-libxl-Run-Qemu-if-there-is-at-least-one-virti.patch \
     file://421/0021-libxl-Add-backend_type-property-for-the-Virtio-devic.patch \
+    file://421/0022-iommu-ipmmu-vmsa-Skip-preinit-for-R8A779G0-as-well.patch \
 "
