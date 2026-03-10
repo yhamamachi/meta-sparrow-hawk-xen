@@ -1,0 +1,37 @@
+From f2f9e81e46c774dbf8afe0d5292f4a374ac626ec Mon Sep 17 00:00:00 2001
+From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
+Date: Fri, 22 Jul 2022 15:31:32 +0300
+Subject: [PATCH 16/21] ioreq: Drop Arm restriction for buffered ioreq
+
+The restriction is in place because it was decided to not let
+the buffered I/O feature to be used on other than x86 arches
+in Xen for now.
+
+But Qemu setups buffered ioreq to be used on x86. It is fine
+to drop the check here as it is not really used on Arm for
+the communication at the runtime, it is just initialized and all.
+But the proper solution would be to update the Qemu to not setup
+buffered ioreq on Arm.
+
+Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
+---
+ xen/common/ioreq.c | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/xen/common/ioreq.c b/xen/common/ioreq.c
+index f5fd30ce12..7f7dd9459a 100644
+--- a/xen/common/ioreq.c
++++ b/xen/common/ioreq.c
+@@ -647,9 +647,6 @@ static int ioreq_server_create(struct domain *d, int bufioreq_handling,
+     unsigned int i;
+     int rc;
+ 
+-    if ( !IS_ENABLED(CONFIG_X86) && bufioreq_handling )
+-        return -EINVAL;
+-
+     if ( bufioreq_handling > HVM_IOREQSRV_BUFIOREQ_ATOMIC )
+         return -EINVAL;
+ 
+-- 
+2.34.1
+

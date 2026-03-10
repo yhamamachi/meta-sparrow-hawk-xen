@@ -13,6 +13,11 @@ RRECOMMENDS:${PN}:remove = "qemu"
 RDEPENDS:${PN} += "${PN}-devd"
 RDEPENDS:${PN}:remove = "${PN}-xendomains"
 
+# WA for xen-init-dom0 service
+do_install:append () {
+    install -d 755 ${D}/${localstatedir}/lib/xen
+}
+
 ### START:  WA for Xen 4.21: from master branch of meta-virtualization
 PACKAGES +=  " ${PN}-libxenmanage ${PN}-libxenmanage-dev"
 RDEPENDS:${PN} = "\
