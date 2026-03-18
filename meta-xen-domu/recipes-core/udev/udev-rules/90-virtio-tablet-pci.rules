@@ -1,0 +1,6 @@
+SUBSYSTEM=="input", KERNEL=="event*", \
+    ATTRS{name}=="QEMU Virtio Tablet", \
+    ENV{ID_INPUT}="1", \
+    ENV{ID_INPUT_MOUSE}="0", \
+    ENV{ID_INPUT_TOUCHSCREEN}="1"
+
