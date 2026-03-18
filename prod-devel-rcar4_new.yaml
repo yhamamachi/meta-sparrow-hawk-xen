@@ -378,6 +378,7 @@ parameters:
                 - "../meta-openembedded/meta-multimedia"
               conf:
                 - [IMAGE_INSTALL:append, " iperf3 htop tcpdump coreutils ethtool"]
+                - [IMAGE_INSTALL:append, " udev-rules"]
                 - [MACHINE_EXTRA_RRECOMMENDS:remove, "linux-fitimage"]
               target_images:
                 - "tmp/deploy/images/%{MACHINE}/flash.bin"
@@ -389,6 +390,7 @@ parameters:
                 - "../../../meta-xen-domu"
               conf:
                 - [IMAGE_INSTALL:append, " iperf3 htop tcpdump libaio coreutils rt-tests ethtool fio"]
+                - [IMAGE_INSTALL:append, " udev-rules"]
                 - [EXTRA_IMAGE_FEATURES:append, " ssh-server-openssh"]
 
                 # Remove unneeded pakcages for DomU
