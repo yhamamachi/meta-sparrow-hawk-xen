@@ -1,0 +1,4 @@
+# Raspberry Pi Touch panel v2
+ATTRS{name}=="Goodix Capacitive TouchScreen", ENV{WL_OUTPUT}="DSI-1"
+# Others
+ATTRS{name}=="ILITEK Multi-Touch-V5100", ENV{WL_OUTPUT}="DP-1"
