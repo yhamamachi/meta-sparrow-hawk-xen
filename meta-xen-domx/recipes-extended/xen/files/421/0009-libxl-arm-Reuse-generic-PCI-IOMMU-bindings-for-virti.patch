@@ -1,7 +1,7 @@
-From 2fd5c00ba05be99aac5cb3e3d5ff5f5f3c47db26 Mon Sep 17 00:00:00 2001
+From 65bba476d4ccc823d8081cb6d91bc4259dca53a0 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Mon, 17 Jul 2023 19:03:30 +0300
-Subject: [PATCH 18/22] libxl/arm: Reuse generic PCI-IOMMU bindings for
+Subject: [PATCH 09/21] libxl/arm: Reuse generic PCI-IOMMU bindings for
  virtio-pci devices
 
 Use the same "xen-grant-dma" device concept for the PCI devices
@@ -28,10 +28,10 @@ Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
  1 file changed, 66 insertions(+)
 
 diff --git a/tools/libs/light/libxl_arm.c b/tools/libs/light/libxl_arm.c
-index fc47d4a20c..1c1fa196d4 100644
+index ffd963736f..7fa3fa73a4 100644
 --- a/tools/libs/light/libxl_arm.c
 +++ b/tools/libs/light/libxl_arm.c
-@@ -972,6 +972,7 @@ static int make_vpci_node_common(libxl__gc *gc, void *fdt,
+@@ -946,6 +946,7 @@ static int make_vpci_node_common(libxl__gc *gc, void *fdt,
  
  #define PCI_NUM_IRQ   4
  #define PCI_IRQ_MAP_STRIDE   8
@@ -39,7 +39,7 @@ index fc47d4a20c..1c1fa196d4 100644
  
  static int create_vpci_irq_map(libxl__gc *gc, void *fdt)
  {
-@@ -1019,6 +1020,67 @@ static int create_vpci_irq_map(libxl__gc *gc, void *fdt)
+@@ -993,6 +994,67 @@ static int create_vpci_irq_map(libxl__gc *gc, void *fdt)
      return 0;
  }
  
@@ -107,7 +107,7 @@ index fc47d4a20c..1c1fa196d4 100644
  static int make_vpci_node_virtio(libxl__gc *gc, void *fdt,
                                   libxl_domain_config *d_config)
  {
-@@ -1032,6 +1094,10 @@ static int make_vpci_node_virtio(libxl__gc *gc, void *fdt,
+@@ -1006,6 +1068,10 @@ static int make_vpci_node_virtio(libxl__gc *gc, void *fdt,
      res = create_vpci_irq_map(gc, fdt);
      if (res) return res;
  

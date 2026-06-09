@@ -1,7 +1,7 @@
-From 2cad2bb62a30981317aac0f8c383605dc5e0f371 Mon Sep 17 00:00:00 2001
+From d6e39d75b4bb41b87d73afd4e50b28840bf104b4 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Sun, 18 Sep 2022 17:38:39 +0300
-Subject: [PATCH 19/22] xen/arm: Emulate level for legacy PCI interrupts with
+Subject: [PATCH 10/21] xen/arm: Emulate level for legacy PCI interrupts with
  current vGIC
 
 This is needed for supporting virtio-pci.
@@ -13,17 +13,18 @@ interrupts (GIC v2 only) or to create fake level interrupts if NEW_VGIC
 cannot be enabled (GIC v3).
 
 Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
+Signed-off-by: Dmytro Firsov <dmytro_firsov@epam.com>
 ---
- xen/arch/arm/gic-vgic.c         | 12 ++++++++++++
+ xen/arch/arm/gic-vgic.c         | 10 ++++++++++
  xen/arch/arm/include/asm/vgic.h |  8 ++++++++
  xen/arch/arm/vgic.c             |  4 ++++
- 3 files changed, 24 insertions(+)
+ 3 files changed, 22 insertions(+)
 
 diff --git a/xen/arch/arm/gic-vgic.c b/xen/arch/arm/gic-vgic.c
-index ea48c5375a..ba9b2f53e3 100644
+index ea48c5375a..76efebb271 100644
 --- a/xen/arch/arm/gic-vgic.c
 +++ b/xen/arch/arm/gic-vgic.c
-@@ -235,6 +235,18 @@ static void gic_update_one_lr(struct vcpu *v, int i)
+@@ -235,6 +235,16 @@ static void gic_update_one_lr(struct vcpu *v, int i)
                  irq_set_affinity(p->desc, cpumask_of(v_target->processor));
                  clear_bit(GIC_IRQ_GUEST_MIGRATING, &p->status);
              }
@@ -32,8 +33,6 @@ index ea48c5375a..ba9b2f53e3 100644
 +                 irq <= GUEST_VIRTIO_PCI_SPI_LAST &&
 +                 vgic_pci_irq_level(v->domain, irq) )
 +            {
-+                /*printk(">>> %s [%d] Raise IRQ %d\n", __func__, __LINE__, irq);*/
-+
 +                set_bit(GIC_IRQ_GUEST_QUEUED, &p->status);
 +                if ( test_bit(GIC_IRQ_GUEST_ENABLED, &p->status) )
 +                    gic_raise_guest_irq(v, irq, p->priority);

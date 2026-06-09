@@ -1,7 +1,7 @@
-From 4d45b771936f2d63e108d242feb906bc122f55a9 Mon Sep 17 00:00:00 2001
+From f644bd20b197fc74652cb3fd8c1db141b7dbd20e Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Thu, 27 Jul 2023 20:12:47 +0300
-Subject: [PATCH 21/22] libxl: Add "backend_type" property for the Virtio
+Subject: [PATCH 11/21] libxl: Add "backend_type" property for the Virtio
  devices
 
 Introduce new configuration option "backend_type" for the Virtio
@@ -29,10 +29,10 @@ Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
  4 files changed, 47 insertions(+), 1 deletion(-)
 
 diff --git a/docs/man/xl.cfg.5.pod.in b/docs/man/xl.cfg.5.pod.in
-index 74915e8bce..4573bcf76a 100644
+index 9894c8ebe2..0546b75438 100644
 --- a/docs/man/xl.cfg.5.pod.in
 +++ b/docs/man/xl.cfg.5.pod.in
-@@ -1685,6 +1685,15 @@ are supported. This option is mandatory.
+@@ -1680,6 +1680,15 @@ are supported. This option is mandatory.
  The Virtio device with transport "pci" must be identified by its B<BDF>.
  See L<xl-pci-configuration(5)> for more details about the format for B<BDF>.
  
@@ -49,7 +49,7 @@ index 74915e8bce..4573bcf76a 100644
  
  If this option is B<true>, the Xen grants are always enabled.
 diff --git a/tools/libs/light/libxl_types.idl b/tools/libs/light/libxl_types.idl
-index 4a3134f26c..2541b5ad1b 100644
+index d6fe85b02c..f5a6acd097 100644
 --- a/tools/libs/light/libxl_types.idl
 +++ b/tools/libs/light/libxl_types.idl
 @@ -291,6 +291,12 @@ libxl_virtio_transport = Enumeration("virtio_transport", [
@@ -65,7 +65,7 @@ index 4a3134f26c..2541b5ad1b 100644
  libxl_passthrough = Enumeration("passthrough", [
      (0, "default"),
      (1, "disabled"),
-@@ -791,6 +797,7 @@ libxl_device_vkb = Struct("device_vkb", [
+@@ -789,6 +795,7 @@ libxl_device_vkb = Struct("device_vkb", [
  libxl_device_virtio = Struct("device_virtio", [
      ("backend_domid", libxl_domid),
      ("backend_domname", string),
@@ -145,7 +145,7 @@ index b593fd45de..6593152423 100644
                             libxl__set_xenstore_virtio,
      .from_xenstore = (device_from_xenstore_fn_t)libxl__virtio_from_xenstore,
 diff --git a/tools/xl/xl_parse.c b/tools/xl/xl_parse.c
-index ec5430eacb..b93b68bb41 100644
+index 34da436040..4c32506ba5 100644
 --- a/tools/xl/xl_parse.c
 +++ b/tools/xl/xl_parse.c
 @@ -1217,6 +1217,9 @@ static int parse_virtio_config(libxl_device_virtio *virtio, char *token)
