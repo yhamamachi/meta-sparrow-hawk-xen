@@ -1,7 +1,7 @@
 From 4cad4e4c2f54ea0ec35d9739275fdf96767a64cb Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Tue, 17 Oct 2023 13:35:05 +0300
-Subject: [PATCH 17/21] libxl: Allow virtio-pci backends from different domains
+Subject: [PATCH 17/22] libxl: Allow virtio-pci backends from different domains
 
 As we already expose PCI host bridge per virtio backend domain,
 we can now drop the limitation that denies having virtio-pci backends

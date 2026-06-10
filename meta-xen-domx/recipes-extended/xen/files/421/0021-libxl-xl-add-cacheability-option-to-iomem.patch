@@ -1,7 +1,7 @@
 From 0336f9726366cb483a18d7cb8cab8dedc833ba4f Mon Sep 17 00:00:00 2001
 From: Stefano Stabellini <sstabellini@kernel.org>
 Date: Tue, 26 Feb 2019 15:00:28 -0800
-Subject: [PATCH 21/21] libxl/xl: add cacheability option to iomem
+Subject: [PATCH 21/22] libxl/xl: add cacheability option to iomem
 
 Parse a new cacheability option for the iomem parameter, it can be
 "devmem" for device memory mappings, which is the default, or "memory"

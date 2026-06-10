@@ -1,7 +1,7 @@
 From 3938c39d5247ae09c00ae2318f7145b1569f6b0b Mon Sep 17 00:00:00 2001
 From: Stefano Stabellini <sstabellini@kernel.org>
 Date: Fri, 4 Jan 2019 12:47:02 -0800
-Subject: [PATCH 19/21] xen: extend XEN_DOMCTL_memory_mapping to handle
+Subject: [PATCH 19/22] xen: extend XEN_DOMCTL_memory_mapping to handle
  cacheability
 
 Reuse the existing padding field to pass cacheability information about

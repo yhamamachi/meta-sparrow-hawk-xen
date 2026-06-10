@@ -1,7 +1,7 @@
 From 873fac6408eef65d300c3652b84db85b5476a68e Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Thu, 21 Jul 2022 14:51:01 +0300
-Subject: [PATCH 07/21] libxl: Pass max_vcpus to Qemu in case of PVH domain
+Subject: [PATCH 07/22] libxl: Pass max_vcpus to Qemu in case of PVH domain
  (Arm) as well
 
 The number of vCPUs used for the IOREQ configuration (machine->smp.cpus)

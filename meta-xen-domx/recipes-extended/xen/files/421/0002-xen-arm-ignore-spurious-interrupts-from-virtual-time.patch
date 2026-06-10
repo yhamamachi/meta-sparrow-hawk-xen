@@ -1,7 +1,7 @@
 From 60564791fe323f5f8421ef85596d04bf3cf4badb Mon Sep 17 00:00:00 2001
 From: Mykola Kvach <mykola_kvach@epam.com>
 Date: Fri, 9 Jan 2026 02:14:31 +0200
-Subject: [PATCH 02/21] xen/arm: ignore spurious interrupts from virtual timer
+Subject: [PATCH 02/22] xen/arm: ignore spurious interrupts from virtual timer
 
 If a spurious virtual timer interrupt occurs (i.e. the interrupt fires
 but CNTV_CTL_EL0 does not report it as pending), Xen masks the virtual

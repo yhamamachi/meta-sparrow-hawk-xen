@@ -27,4 +27,5 @@ SRC_URI:append = "\
     file://421/0019-xen-extend-XEN_DOMCTL_memory_mapping-to-handle-cache.patch \
     file://421/0020-libxc-introduce-xc_domain_memory_mapping_cache-to-ha.patch \
     file://421/0021-libxl-xl-add-cacheability-option-to-iomem.patch \
+    file://421/0022-Fix-machine-type.patch \
 "

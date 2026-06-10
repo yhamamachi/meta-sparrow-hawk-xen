@@ -1,7 +1,7 @@
 From 0eda75826588d6da62b6b87e5531ff08c97839d0 Mon Sep 17 00:00:00 2001
 From: Stefano Stabellini <sstabellini@kernel.org>
 Date: Tue, 26 Feb 2019 15:00:25 -0800
-Subject: [PATCH 20/21] libxc: introduce xc_domain_memory_mapping_cache to
+Subject: [PATCH 20/22] libxc: introduce xc_domain_memory_mapping_cache to
  handle cachebility
 
 Introduce a new xc_domain_memory_mapping_cache which takes

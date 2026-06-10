@@ -1,7 +1,7 @@
 From b47b1698daf1d7b1003872987d757a55295d4b32 Mon Sep 17 00:00:00 2001
 From: Sergiy Kibrik <Sergiy_Kibrik@epam.com>
 Date: Fri, 22 Sep 2023 14:11:08 +0000
-Subject: [PATCH 14/21] libxl/arm: adjust vpci IRQ map according to vgic config
+Subject: [PATCH 14/22] libxl/arm: adjust vpci IRQ map according to vgic config
 
 Calculate size of interrupt-map property and fill it taking into account
 address cells property of parent interrupt controller.

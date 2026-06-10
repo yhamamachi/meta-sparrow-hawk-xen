@@ -1,7 +1,7 @@
 From 7dbd3466a78abd7169aca2a1a9f27cf5364bb79d Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Thu, 31 Aug 2023 15:09:33 +0300
-Subject: [PATCH 13/21] libxl: Wait for Qemu spawned by xl devd to be ready
+Subject: [PATCH 13/22] libxl: Wait for Qemu spawned by xl devd to be ready
  before continue
 
 The toolstack shouldn't unpause guest until "non local" device-model

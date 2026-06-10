@@ -1,7 +1,7 @@
 From d6e39d75b4bb41b87d73afd4e50b28840bf104b4 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Sun, 18 Sep 2022 17:38:39 +0300
-Subject: [PATCH 10/21] xen/arm: Emulate level for legacy PCI interrupts with
+Subject: [PATCH 10/22] xen/arm: Emulate level for legacy PCI interrupts with
  current vGIC
 
 This is needed for supporting virtio-pci.

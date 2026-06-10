@@ -1,6 +1,7 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 require xen-source.inc
+
 LIC_FILES_CHKSUM ?= "file://COPYING;md5=d1a1e216f80b6d8da95fec897d0dbec9"
 
 FILES:${PN} = "\
@@ -17,6 +18,14 @@ RDEPENDS:${PN}:remove = "${PN}-xendomains"
 do_install:append () {
     install -d 755 ${D}/${localstatedir}/lib/xen
 }
+
+# QEMU: Fix for aarch64
+QEMU_HVM_DEFAULT = "qemu ${@bb.utils.contains('DISTRO_FEATURES', 'vmsep', 'qemu-system-i386', '', d)}"
+QEMU = "${@bb.utils.contains('PACKAGECONFIG', 'hvm', '${QEMU_HVM_DEFAULT}', '', d)}"
+QEMU:aarch64 = "qemu ${@bb.utils.contains('DISTRO_FEATURES', 'vmsep', 'qemu-system-aarch64', '', d)}"
+QEMU_ARCH:aarch64 = "aarch64"
+EXTRA_OECONF:remove = " --with-system-qemu=${bindir}/qemu-system-i386"
+EXTRA_OECONF:append = " --with-system-qemu=${bindir}/qemu-system-${QEMU_ARCH}"
 
 ### START:  WA for Xen 4.21: from master branch of meta-virtualization
 PACKAGES +=  " ${PN}-libxenmanage ${PN}-libxenmanage-dev"

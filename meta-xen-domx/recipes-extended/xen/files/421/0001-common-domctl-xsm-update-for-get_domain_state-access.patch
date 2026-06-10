@@ -1,7 +1,7 @@
 From a0a977af9aaad7f169ddbcd82a85fe82ad130b9a Mon Sep 17 00:00:00 2001
 From: "Daniel P. Smith" <dpsmith@apertussolutions.com>
 Date: Mon, 16 Feb 2026 16:57:48 -0500
-Subject: [PATCH 01/21] common/domctl: xsm update for get_domain_state access
+Subject: [PATCH 01/22] common/domctl: xsm update for get_domain_state access
 
 When using XSM Flask, passing DOMIND_INVALID will result in a NULL pointer
 reference from the passing of NULL as the target domain to

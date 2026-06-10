@@ -1,7 +1,7 @@
 From 7d85cbb4a64f7e3f109f0864fdcda504ce5d5af7 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Thu, 3 Aug 2023 15:25:09 +0300
-Subject: [PATCH 12/21] libxl: Update xl devd to also spawn Qemu for Virtio
+Subject: [PATCH 12/22] libxl: Update xl devd to also spawn Qemu for Virtio
  devices
 
 Currently xl devd only supports Qdisk backend in that regard.
