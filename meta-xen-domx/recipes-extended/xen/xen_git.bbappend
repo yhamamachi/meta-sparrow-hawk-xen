@@ -10,7 +10,7 @@ SRC_URI:append = " \
 HOST_CC_ARCH:remove="-march=armv8.2-a+crypto"
 HOST_CC_ARCH:remove="-mcpu=cortex-a55"
 
-DEPENDS += "u-boot-mkimage-native"
+DEPENDS += "u-boot-mkimage-native checkpolicy-native"
 
 do_configure:append () {
     cd ${S}
