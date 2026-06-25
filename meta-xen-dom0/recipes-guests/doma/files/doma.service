@@ -11,8 +11,8 @@ Description=Android VM
 # Dependencies (After=, Requires=) cannot be reset to an empty list,
 # so dependencies can only be added in drop-ins. If you want to
 # remove dependencies, you have to override the entire unit.
-Requires=backend-ready@bridge.service
-After=backend-ready@bridge.service
+Requires=backend-ready@bridge.service backend-ready@weston-up.service
+After=backend-ready@bridge.service backend-ready@weston-up.service
 
 [Service]
 Type=oneshot
