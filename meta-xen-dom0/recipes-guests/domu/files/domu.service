@@ -1,7 +1,7 @@
 [Unit]
 Description=DomU
-Requires=backend-ready@bridge.service
-After=backend-ready@bridge.service
+Requires=backend-ready@bridge.service backend-ready@weston-up.service
+After=backend-ready@bridge.service backend-ready@weston-up.service
 
 [Service]
 Type=oneshot
