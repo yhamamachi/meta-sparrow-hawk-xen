@@ -8,6 +8,7 @@ IMAGE_INSTALL:append = " \
     xen-network \
     dnsmasq \
     nftables \
+    weston-notification \
 "
 
 # For Xen-network
