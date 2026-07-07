@@ -1,8 +1,8 @@
-From ae915924fae370a7569ad440b9bb35b7ef77f442 Mon Sep 17 00:00:00 2001
+From d887933eecc84127ba05146df5a06215d0ea701f Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Thu, 18 Nov 2021 21:39:08 +0200
-Subject: [PATCH 2/9] xen/grant-table: Use unpopulated contiguous pages instead
- of real RAM ones
+Subject: [PATCH 02/10] xen/grant-table: Use unpopulated contiguous pages
+ instead of real RAM ones
 
 Depends on CONFIG_XEN_UNPOPULATED_ALLOC. If enabled then unpopulated
 contiguous pages will be allocated for grant mapping into instead of

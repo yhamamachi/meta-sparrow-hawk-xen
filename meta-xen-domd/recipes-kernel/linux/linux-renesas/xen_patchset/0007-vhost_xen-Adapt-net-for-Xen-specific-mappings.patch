@@ -1,7 +1,7 @@
-From 18dd01cbd835a4b7e905b04dccb74b8fef552883 Mon Sep 17 00:00:00 2001
+From 864528cb79f655cca11266d368a7a7e7bf9002ee Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Thu, 15 Jun 2023 17:27:33 +0300
-Subject: [PATCH 7/9] vhost_xen: Adapt net for Xen specific mappings
+Subject: [PATCH 07/10] vhost_xen: Adapt net for Xen specific mappings
 
 Please note, the following configs should be enabled in defconfig:
  CONFIG_VHOST_NET=y

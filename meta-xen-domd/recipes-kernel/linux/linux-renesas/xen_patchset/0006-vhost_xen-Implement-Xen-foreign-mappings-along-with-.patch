@@ -1,7 +1,7 @@
-From 232b9c0ba7f3d4dce69e301abe6f5e1886692e55 Mon Sep 17 00:00:00 2001
+From 8a6ed37218d654922daf64004f7138db73df52e3 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Sat, 3 Jun 2023 18:37:37 +0300
-Subject: [PATCH 6/9] vhost_xen: Implement Xen foreign mappings along with
+Subject: [PATCH 06/10] vhost_xen: Implement Xen foreign mappings along with
  grant mappings
 
 As a prereq for foreign mapping scheme, refactor the module heavily

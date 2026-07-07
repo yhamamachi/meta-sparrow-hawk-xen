@@ -1,7 +1,7 @@
-From ce65699eac7386a27ad62c11d056b953467d6a24 Mon Sep 17 00:00:00 2001
+From 32838163c97b4dffd2d0931ab67686175abcd210 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Fri, 13 May 2022 17:02:01 +0300
-Subject: [PATCH 1/9] xen/unpopulated-alloc: Introduce helpers for contiguous
+Subject: [PATCH 01/10] xen/unpopulated-alloc: Introduce helpers for contiguous
  allocations
 
 Add ability to allocate unpopulated contiguous pages suitable for
@@ -28,7 +28,7 @@ Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
  2 files changed, 179 insertions(+), 71 deletions(-)
 
 diff --git a/drivers/xen/unpopulated-alloc.c b/drivers/xen/unpopulated-alloc.c
-index a39f2d36dd9c..3988480d97be 100644
+index ae46291e99a9..95a44f9e55c4 100644
 --- a/drivers/xen/unpopulated-alloc.c
 +++ b/drivers/xen/unpopulated-alloc.c
 @@ -1,5 +1,7 @@
@@ -51,7 +51,7 @@ index a39f2d36dd9c..3988480d97be 100644
  
  static struct resource *target_resource;
  
-@@ -31,12 +32,12 @@ int __weak __init arch_xen_unpopulated_init(struct resource **res)
+@@ -34,12 +35,12 @@ int __weak __init arch_xen_unpopulated_init(struct resource **res)
  	return 0;
  }
  
@@ -66,7 +66,7 @@ index a39f2d36dd9c..3988480d97be 100644
  	struct range mhp_range;
  	int ret;
  
-@@ -106,6 +107,7 @@ static int fill_list(unsigned int nr_pages)
+@@ -109,6 +110,7 @@ static int fill_list(unsigned int nr_pages)
           * conflict with any devices.
           */
  	if (!xen_feature(XENFEAT_auto_translated_physmap)) {
@@ -74,7 +74,7 @@ index a39f2d36dd9c..3988480d97be 100644
  		xen_pfn_t pfn = PFN_DOWN(res->start);
  
  		for (i = 0; i < alloc_pages; i++) {
-@@ -125,16 +127,17 @@ static int fill_list(unsigned int nr_pages)
+@@ -128,16 +130,17 @@ static int fill_list(unsigned int nr_pages)
  		goto err_memremap;
  	}
  
@@ -98,7 +98,7 @@ index a39f2d36dd9c..3988480d97be 100644
  err_memremap:
  	kfree(pgmap);
  err_pgmap:
-@@ -149,6 +152,108 @@ static int fill_list(unsigned int nr_pages)
+@@ -152,6 +155,108 @@ static int fill_list(unsigned int nr_pages)
  	return ret;
  }
  
@@ -207,7 +207,7 @@ index a39f2d36dd9c..3988480d97be 100644
  /**
   * xen_alloc_unpopulated_pages - alloc unpopulated pages
   * @nr_pages: Number of pages
-@@ -157,52 +262,7 @@ static int fill_list(unsigned int nr_pages)
+@@ -160,52 +265,7 @@ static int fill_list(unsigned int nr_pages)
   */
  int xen_alloc_unpopulated_pages(unsigned int nr_pages, struct page **pages)
  {
@@ -261,7 +261,7 @@ index a39f2d36dd9c..3988480d97be 100644
  }
  EXPORT_SYMBOL(xen_alloc_unpopulated_pages);
  
-@@ -213,23 +273,41 @@ EXPORT_SYMBOL(xen_alloc_unpopulated_pages);
+@@ -216,23 +276,41 @@ EXPORT_SYMBOL(xen_alloc_unpopulated_pages);
   */
  void xen_free_unpopulated_pages(unsigned int nr_pages, struct page **pages)
  {
@@ -317,7 +317,7 @@ index a39f2d36dd9c..3988480d97be 100644
  static int __init unpopulated_init(void)
  {
  	int ret;
-@@ -237,9 +315,19 @@ static int __init unpopulated_init(void)
+@@ -240,9 +318,19 @@ static int __init unpopulated_init(void)
  	if (!xen_domain())
  		return -ENODEV;
  
@@ -338,16 +338,17 @@ index a39f2d36dd9c..3988480d97be 100644
  	}
  
 diff --git a/include/xen/xen.h b/include/xen/xen.h
-index a1e5b3f18d69..efc07949cd64 100644
+index 86fe96fe5183..d042983fefb4 100644
 --- a/include/xen/xen.h
 +++ b/include/xen/xen.h
-@@ -61,9 +61,16 @@ bool xen_biovec_phys_mergeable(const struct bio_vec *vec1,
+@@ -61,10 +61,17 @@ bool xen_biovec_phys_mergeable(const struct bio_vec *vec1,
  extern u64 xen_saved_max_mem_size;
  #endif
  
 +struct device;
 +
  #ifdef CONFIG_XEN_UNPOPULATED_ALLOC
+ extern unsigned long xen_unpopulated_pages;
  int xen_alloc_unpopulated_pages(unsigned int nr_pages, struct page **pages);
  void xen_free_unpopulated_pages(unsigned int nr_pages, struct page **pages);
 +int xen_alloc_unpopulated_contiguous_pages(struct device *dev,
@@ -358,7 +359,7 @@ index a1e5b3f18d69..efc07949cd64 100644
  #include <linux/ioport.h>
  int arch_xen_unpopulated_init(struct resource **res);
  #else
-@@ -78,6 +85,19 @@ static inline void xen_free_unpopulated_pages(unsigned int nr_pages,
+@@ -80,6 +87,19 @@ static inline void xen_free_unpopulated_pages(unsigned int nr_pages,
  {
  	xen_free_ballooned_pages(nr_pages, pages);
  }

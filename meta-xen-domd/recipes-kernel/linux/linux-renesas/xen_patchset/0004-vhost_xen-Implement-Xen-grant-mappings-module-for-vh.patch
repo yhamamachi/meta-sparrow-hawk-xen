@@ -1,7 +1,8 @@
-From 6264c2c7a1fe9eda744bfbf2c4e06087e37dfec9 Mon Sep 17 00:00:00 2001
+From 8edfa9705522a9398666fecf5de703aee55335ce Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Thu, 25 May 2023 19:14:17 +0300
-Subject: [PATCH 4/9] vhost_xen: Implement Xen grant mappings module for vhost
+Subject: [PATCH 04/10] vhost_xen: Implement Xen grant mappings module for
+ vhost
 
 A specific module for accessing descriptors in virtio rings which contain
 guest grant based addresses instead of pseudo-physical addresses.
@@ -56,7 +57,7 @@ index f3e1897cce85..52c1a8e37f19 100644
 +obj-$(CONFIG_VHOST_XEN) += vhost_xen.o
 +vhost_xen-y := xen.o
 diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
-index 71604668e53f..d27c2a2ee8b2 100644
+index 276dded52212..3597d21f3534 100644
 --- a/drivers/vhost/vhost.c
 +++ b/drivers/vhost/vhost.c
 @@ -612,6 +612,9 @@ void vhost_dev_init(struct vhost_dev *dev,
@@ -69,7 +70,7 @@ index 71604668e53f..d27c2a2ee8b2 100644
  		vhost_vq_reset(dev, vq);
  		if (vq->handle_kick)
  			vhost_poll_init(&vq->poll, vq->handle_kick,
-@@ -1205,6 +1208,9 @@ void vhost_dev_cleanup(struct vhost_dev *dev)
+@@ -1207,6 +1210,9 @@ void vhost_dev_cleanup(struct vhost_dev *dev)
  		if (dev->vqs[i]->call_ctx.ctx)
  			eventfd_ctx_put(dev->vqs[i]->call_ctx.ctx);
  		vhost_vq_reset(dev, dev->vqs[i]);
@@ -79,7 +80,7 @@ index 71604668e53f..d27c2a2ee8b2 100644
  	}
  	vhost_dev_free_iovecs(dev);
  	if (dev->log_ctx)
-@@ -1995,6 +2001,14 @@ static long vhost_set_memory(struct vhost_dev *d, struct vhost_memory __user *m)
+@@ -1997,6 +2003,14 @@ static long vhost_set_memory(struct vhost_dev *d, struct vhost_memory __user *m)
  	for (region = newmem->regions;
  	     region < newmem->regions + mem.nregions;
  	     region++) {
@@ -94,7 +95,7 @@ index 71604668e53f..d27c2a2ee8b2 100644
  		if (vhost_iotlb_add_range(newumem,
  					  region->guest_phys_addr,
  					  region->guest_phys_addr +
-@@ -2629,6 +2643,15 @@ static int translate_desc(struct vhost_virtqueue *vq, u64 addr, u32 len,
+@@ -2631,6 +2645,15 @@ static int translate_desc(struct vhost_virtqueue *vq, u64 addr, u32 len,
  	u64 s = 0, last = addr + len - 1;
  	int ret = 0;
  
@@ -110,7 +111,7 @@ index 71604668e53f..d27c2a2ee8b2 100644
  	while ((u64)len > s) {
  		u64 size;
  		if (unlikely(ret >= iov_size)) {
-@@ -2708,7 +2731,12 @@ static int get_indirect(struct vhost_virtqueue *vq,
+@@ -2710,7 +2733,12 @@ static int get_indirect(struct vhost_virtqueue *vq,
  			vq_err(vq, "Translation failure %d in indirect.\n", ret);
  		return ret;
  	}
@@ -123,7 +124,7 @@ index 71604668e53f..d27c2a2ee8b2 100644
  	count = len / sizeof desc;
  	/* Buffers are chained via a 16 bit next field, so
  	 * we can have at most 2^16 of these. */
-@@ -2770,6 +2798,12 @@ static int get_indirect(struct vhost_virtqueue *vq,
+@@ -2772,6 +2800,12 @@ static int get_indirect(struct vhost_virtqueue *vq,
  			*out_num += ret;
  		}
  	} while ((i = next_desc(vq, &desc)) != -1);
@@ -182,10 +183,10 @@ index ab704d84fb34..27f311c5b557 100644
  		pr_debug(pr_fmt(fmt), ##__VA_ARGS__);       \
  		if ((vq)->error_ctx)                               \
 diff --git a/drivers/vhost/vsock.c b/drivers/vhost/vsock.c
-index 66a0f060770e..291ed97f7750 100644
+index 78cc66fbb3dd..ba6dc94c53d1 100644
 --- a/drivers/vhost/vsock.c
 +++ b/drivers/vhost/vsock.c
-@@ -86,6 +86,27 @@ static struct vhost_vsock *vhost_vsock_get(u32 guest_cid)
+@@ -87,6 +87,27 @@ static struct vhost_vsock *vhost_vsock_get(u32 guest_cid)
  	return NULL;
  }
  
@@ -213,7 +214,7 @@ index 66a0f060770e..291ed97f7750 100644
  static void
  vhost_transport_do_send_pkt(struct vhost_vsock *vsock,
  			    struct vhost_virtqueue *vq)
-@@ -156,7 +177,11 @@ vhost_transport_do_send_pkt(struct vhost_vsock *vsock,
+@@ -157,7 +178,11 @@ vhost_transport_do_send_pkt(struct vhost_vsock *vsock,
  			break;
  		}
  
@@ -226,7 +227,7 @@ index 66a0f060770e..291ed97f7750 100644
  		offset = VIRTIO_VSOCK_SKB_CB(skb)->offset;
  		payload_len = skb->len - offset;
  		hdr = virtio_vsock_hdr(skb);
-@@ -213,6 +238,10 @@ vhost_transport_do_send_pkt(struct vhost_vsock *vsock,
+@@ -214,6 +239,10 @@ vhost_transport_do_send_pkt(struct vhost_vsock *vsock,
  		 */
  		virtio_transport_deliver_tap_pkt(skb);
  
@@ -237,7 +238,7 @@ index 66a0f060770e..291ed97f7750 100644
  		vhost_add_used(vq, head, sizeof(*hdr) + payload_len);
  		added = true;
  
-@@ -352,7 +381,11 @@ vhost_vsock_alloc_skb(struct vhost_virtqueue *vq,
+@@ -354,7 +383,11 @@ vhost_vsock_alloc_skb(struct vhost_virtqueue *vq,
  	if (!skb)
  		return NULL;
  

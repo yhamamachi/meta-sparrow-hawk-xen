@@ -1,7 +1,7 @@
-From 64f02ba6f0ae7f563f16fe904ac3019b66756a72 Mon Sep 17 00:00:00 2001
+From 2df9fea39562ed2d9a3fa0b4a7c5b1d955c8fb0e Mon Sep 17 00:00:00 2001
 From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
 Date: Wed, 2 Jul 2025 18:17:37 +0900
-Subject: [PATCH] Fix build error for kernel 6.12.34
+Subject: [PATCH 4/4] Fix build error for kernel 6.12
 
 Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
 ---

@@ -324,7 +324,7 @@ parameters:
             sources:
               - type: git
                 url: https://github.com/rcar-community/meta-sparrow-hawk
-                rev: v2026-01-30
+                rev: v2026-04-13
             builder:
               layers:
                 - "../meta-sparrow-hawk"
@@ -379,6 +379,7 @@ parameters:
                 - [EXTRA_IMAGEDEPENDS:remove, " arm-trusted-firmware"]
                 - [IMAGE_INSTALL:remove, "libcamera libcamera-pycamera"]
                 - [MACHINE_EXTRA_RRECOMMENDS:remove, "linux-fitimage"]
+                - [BBMASK:append, "|recipes-multimedia/opencv/opencv_%.bbappend"]
                 # Mask graphic Pkgs
                 - [BBMASK, "kernel-module-gles|user-module-gles"]
                 - [BBMASK:append, "|meta-sparrow-hawk/recipes-graphics/wayland/wayland-wsegl"]
