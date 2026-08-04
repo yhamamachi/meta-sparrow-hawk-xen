@@ -12,6 +12,12 @@ inherit deploy
 inherit externalsrc
 EXTERNALSRC_SYMLINKS = ""
 
+# Remove QEMU edk2 firmware from rootfs - not needed in dom0 initramfs
+remove_qemu_firmware() {
+    rm -rf ${IMAGE_ROOTFS}/usr/share/qemu
+}
+ROOTFS_POSTPROCESS_COMMAND += " remove_qemu_firmware; "
+
 generate_uboot_image() {
     uboot-mkimage -A arm64 -O linux -T ramdisk -C gzip -n "uInitramfs" \
         -d ${IMGDEPLOYDIR}/${IMAGE_NAME}.cpio.gz  ${IMGDEPLOYDIR}/${IMAGE_NAME}.cpio.gz.uInitramfs
