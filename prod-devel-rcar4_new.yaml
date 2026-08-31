@@ -57,6 +57,7 @@ common_data:
 
     - [PREFERRED_VERSION_xen-tools, "4.22%"]
     - [PREFERRED_VERSION_xen, "4.22%"]
+    - [QEMUVERSION, "7.0%"]
 
     # Specify the linux kernel version
     - [PREFERRED_VERSION_linux-renesas, "6.12%"]
@@ -361,6 +362,7 @@ parameters:
               layers:
                 - "../../../meta-xen-domd"
                 - "../../../meta-xen-domx"
+                - "../../../meta-xt-qemu"
                 - "../meta-openembedded/meta-multimedia"
               conf:
                 - [IMAGE_INSTALL:append, " iperf3 htop tcpdump coreutils ethtool"]
