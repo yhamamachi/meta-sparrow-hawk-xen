@@ -28,10 +28,11 @@ variables:
 common_data:
   # Sources used by all yocto-based domains
   # poky, meta-openembedded, meta-virtualization uses AGL verified revision.
+  # poky is updated for fixing psuedo-native error: https://adaptivesupport.amd.com/s/article/000040533
   sources: &COMMON_SOURCES
     - type: git
       url: "git://git.yoctoproject.org/poky"
-      rev: "72983ac391008ebceb45edc7a8f0f6d5f4fe715c"
+      rev: "1d54d1c4736a114e1cecbe85a0306e3814d5ce70"
     - type: git
       url: "git://git.openembedded.org/meta-openembedded"
       rev: "2759d8870ea387b76c902070bed8a6649ff47b56"
@@ -54,8 +55,8 @@ common_data:
             bluetooth irda zeroconf 3g sysvinit acl alsa argp pcmcia usbgadget
             usbhost  ptest multiarch  vulkan sysvinit pulseaudio"]
 
-    - [PREFERRED_VERSION_xen-tools, "4.21%"]
-    - [PREFERRED_VERSION_xen, "4.21%"]
+    - [PREFERRED_VERSION_xen-tools, "4.22%"]
+    - [PREFERRED_VERSION_xen, "4.22%"]
 
     # Specify the linux kernel version
     - [PREFERRED_VERSION_linux-renesas, "6.12%"]
@@ -170,7 +171,7 @@ components:
         - "tmp/deploy/images/%{MACHINE}/bl31-%{MACHINE}.srec"
         - "tmp/deploy/images/%{MACHINE}/u-boot-elf-%{MACHINE}.srec"
         - "tmp/deploy/images/%{MACHINE}/xen-%{MACHINE}"
-        - "tmp/deploy/images/%{MACHINE}/xenpolicy-4.21-unstable"
+        - "tmp/deploy/images/%{MACHINE}/xenpolicy-4.22-unstable"
         - "tmp/deploy/images/%{MACHINE}/%{XT_XEN_DTB_NAME}"
   domu:
     build-dir: "%{YOCTOS_WORK_DIR}"
@@ -268,7 +269,7 @@ components:
         - "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/bl31-%{MACHINE}.srec"
         - "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/u-boot-elf-%{MACHINE}.srec"
         - "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/xen-%{MACHINE}"
-        - "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/xenpolicy-4.21-unstable"
+        - "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/xenpolicy-4.22-unstable"
         - "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/%{XT_XEN_DTB_NAME}"
 
 images:

@@ -50,6 +50,8 @@ FILES:${PN}-test += "\
     ${libdir}/xen/tests/test-pdx-mask \
     ${libdir}/xen/tests/test-pdx-offset \
     ${libdir}/xen/tests/test-rangeset \
+    ${libdir}/xen/tests/test-mem-claim \
+    ${libdir}/xen/tests/test-numa \
 "
 
 FILES:${PN}-xen-watchdog += "\
