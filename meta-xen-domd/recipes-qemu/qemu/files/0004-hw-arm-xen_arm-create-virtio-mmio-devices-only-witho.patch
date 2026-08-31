@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+Date: Thu, 6 Aug 2026 12:00:00 +0900
+Subject: [PATCH] hw/arm/xen_arm: create virtio-mmio devices only without PCIe
+
+xen_arm_init() unconditionally instantiates NR_VIRTIO_MMIO_DEVICES (10)
+virtio-mmio devices starting at GUEST_VIRTIO_MMIO_BASE (0x02000000) with
+IRQs GUEST_VIRTIO_MMIO_SPI_FIRST..LAST (33..42).
+
+Every such device region is registered to Qemu's IOREQ server by
+xen_set_memory(), because it is not ram_memory. As a result Qemu claims
+the whole 0x02000000..0x020013ff range even when it only serves
+virtio-pci devices.
+
+This collides with standalone virtio-mmio backends (e.g. virtio-disk),
+which libxl also places at GUEST_VIRTIO_MMIO_BASE with IRQ 33. Xen's
+ioreq_server_select() then routes the guest's MMIO accesses to Qemu
+instead of the standalone backend. Qemu's virtio-mmio device has no
+backend attached, so it reports device_id 0 and the guest's
+virtio_mmio_probe() silently fails with -ENODEV, treating the device as
+a dummy placeholder.
+
+The DPRINTF below the PCIe setup already states the intended behaviour
+("PCIe host bridge is not available, only virtio-mmio can be used"), so
+make the two transports mutually exclusive: only create the virtio-mmio
+devices when no PCIe host bridge is available. Configurations that do
+not use virtio-pci keep the previous behaviour.
+
+Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+---
+ hw/arm/xen_arm.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/hw/arm/xen_arm.c b/hw/arm/xen_arm.c
+--- a/hw/arm/xen_arm.c
++++ b/hw/arm/xen_arm.c
+@@ -383,11 +383,12 @@
+     }
+ 
+     xen_init_ram(machine);
+-    xen_create_virtio_mmio_devices(xam);
+-    if (!xen_get_pcie_params(xam))
++    if (!xen_get_pcie_params(xam)) {
+         xen_create_pcie(xam);
+-    else
++    } else {
+         DPRINTF("PCIe host bridge is not available, only virtio-mmio can be used\n");
++        xen_create_virtio_mmio_devices(xam);
++    }
+ 
+     xen_enable_tpm();
+ 
+-- 
+2.43.0

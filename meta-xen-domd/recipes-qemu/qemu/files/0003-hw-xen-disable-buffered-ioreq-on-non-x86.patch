@@ -1,0 +1,156 @@
+From: Xen-Troops <noreply@xen-troops.org>
+Subject: [PATCH] hw/xen: disable buffered ioreq server request on non-x86
+
+Xen's ioreq_server_create() (xen/common/ioreq.c) rejects any non-zero
+handle_bufioreq argument on non-x86 architectures:
+
+    if ( !IS_ENABLED(CONFIG_X86) && bufioreq_handling )
+        return -EINVAL;
+
+qemu's xen_create_ioreq_server() unconditionally requests
+HVM_IOREQSRV_BUFIOREQ_ATOMIC, so on Arm the ioreq server creation
+hypercall always fails with -EINVAL ("xen: failed to create ioreq
+server"), which in turn aborts xen_arm_init() before the virtio-mmio
+devices and PCIe host bridge are created ("Bus 'pcie.0' not found").
+
+Request HVM_IOREQSRV_BUFIOREQ_OFF on non-x86 hosts so the ioreq
+server can be created successfully.
+
+Buffered ioreqs are used throughout hw/xen/xen-hvm-common.c as an
+unconditional requirement (mapping the bufioreq frame, binding its
+event channel), so disabling them on the Xen side alone makes
+xen_map_ioreq_server() fail instead ("failed to map ioreq server
+resources"). Make the bufioreq frame mapping and event channel bind
+conditional on buffered ioreqs actually being available.
+
+---
+ hw/xen/xen-hvm-common.c     | 46 +++++++++++++++++++++++++++++-------
+ include/hw/xen/xen_common.h | 12 +++++++++++-
+ 2 files changed, 47 insertions(+), 11 deletions(-)
+
+--- a/include/hw/xen/xen_common.h
++++ b/include/hw/xen/xen_common.h
+@@ -613,8 +613,18 @@
+ static inline int xen_create_ioreq_server(domid_t dom,
+                                           ioservid_t *ioservid)
+ {
++    /*
++     * Buffered ioreqs are an x86-only concept: Xen's ioreq_server_create()
++     * rejects any non-zero handle_bufioreq on non-x86 (e.g. Arm) with
++     * -EINVAL, so requesting BUFIOREQ_ATOMIC there always fails.
++     */
++#if defined(__i386__) || defined(__x86_64__)
++    int handle_bufioreq = HVM_IOREQSRV_BUFIOREQ_ATOMIC;
++#else
++    int handle_bufioreq = HVM_IOREQSRV_BUFIOREQ_OFF;
++#endif
+     int rc = xendevicemodel_create_ioreq_server(xen_dmod, dom,
+-                                                HVM_IOREQSRV_BUFIOREQ_ATOMIC,
++                                                handle_bufioreq,
+                                                 ioservid);
+ 
+     if (rc == 0) {
+--- a/hw/xen/xen-hvm-common.c
++++ b/hw/xen/xen-hvm-common.c
+@@ -619,6 +619,18 @@
+     int rc;
+ 
+     /*
++     * Buffered ioreqs are an x86-only concept (see xen_create_ioreq_server()
++     * in xen_common.h): Xen's ioreq_server_create() rejects a non-zero
++     * handle_bufioreq on non-x86, so no bufioreq frame/evtchn exists on
++     * e.g. Arm. Only map the ioreq frame there.
++     */
++#if defined(__i386__) || defined(__x86_64__)
++    bool has_bufioreq = true;
++#else
++    bool has_bufioreq = false;
++#endif
++
++    /*
+      * Attempt to map using the resource API and fall back to normal
+      * foreign mapping if this is not supported.
+      */
+@@ -626,13 +638,19 @@
+     QEMU_BUILD_BUG_ON(XENMEM_resource_ioreq_server_frame_ioreq(0) != 1);
+     state->fres = xenforeignmemory_map_resource(xen_fmem, xen_domid,
+                                          XENMEM_resource_ioreq_server,
+-                                         state->ioservid, 0, 2,
++                                         state->ioservid,
++                                         has_bufioreq ? 0 : 1,
++                                         has_bufioreq ? 2 : 1,
+                                          &addr,
+                                          PROT_READ | PROT_WRITE, 0);
+     if (state->fres != NULL) {
+         trace_xen_map_resource_ioreq(state->ioservid, addr);
+-        state->buffered_io_page = addr;
+-        state->shared_page = addr + TARGET_PAGE_SIZE;
++        if (has_bufioreq) {
++            state->buffered_io_page = addr;
++            state->shared_page = addr + TARGET_PAGE_SIZE;
++        } else {
++            state->shared_page = addr;
++        }
+     } else if (errno != EOPNOTSUPP) {
+         error_report("failed to map ioreq server resources: error %d handle=%p",
+                      errno, xen_xc);
+@@ -642,7 +660,7 @@
+     rc = xen_get_ioreq_server_info(xen_domid, state->ioservid,
+                                    (state->shared_page == NULL) ?
+                                    &ioreq_pfn : NULL,
+-                                   (state->buffered_io_page == NULL) ?
++                                   (has_bufioreq && state->buffered_io_page == NULL) ?
+                                    &bufioreq_pfn : NULL,
+                                    &bufioreq_evtchn);
+     if (rc < 0) {
+@@ -663,7 +681,7 @@
+         }
+     }
+ 
+-    if (state->buffered_io_page == NULL) {
++    if (has_bufioreq && state->buffered_io_page == NULL) {
+         DPRINTF("buffered io page at pfn %lx\n", bufioreq_pfn);
+ 
+         state->buffered_io_page = xenforeignmemory_map(xen_fmem, xen_domid,
+@@ -676,13 +694,15 @@
+         }
+     }
+ 
+-    if (state->shared_page == NULL || state->buffered_io_page == NULL) {
++    if (state->shared_page == NULL ||
++        (has_bufioreq && state->buffered_io_page == NULL)) {
+         return -1;
+     }
+ 
+-    DPRINTF("buffered io evtchn is %x\n", bufioreq_evtchn);
+-
+-    state->bufioreq_remote_port = bufioreq_evtchn;
++    if (has_bufioreq) {
++        DPRINTF("buffered io evtchn is %x\n", bufioreq_evtchn);
++        state->bufioreq_remote_port = bufioreq_evtchn;
++    }
+ 
+     return 0;
+ }
+@@ -830,13 +850,15 @@
+         state->ioreq_local_port[i] = rc;
+     }
+ 
+-    rc = xenevtchn_bind_interdomain(state->xce_handle, xen_domid,
+-                                    state->bufioreq_remote_port);
+-    if (rc == -1) {
+-        error_report("buffered evtchn bind error %d", errno);
+-        goto err;
++    if (state->buffered_io_page != NULL) {
++        rc = xenevtchn_bind_interdomain(state->xce_handle, xen_domid,
++                                        state->bufioreq_remote_port);
++        if (rc == -1) {
++            error_report("buffered evtchn bind error %d", errno);
++            goto err;
++        }
++        state->bufioreq_local_port = rc;
+     }
+-    state->bufioreq_local_port = rc;
+ 
+     /* Init RAM management */
+ #ifdef XEN_COMPAT_PHYSMAP
