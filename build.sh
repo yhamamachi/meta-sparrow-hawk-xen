@@ -9,6 +9,7 @@ USE_GRAPHICS_PACKAGE=yes
 ENABLE_VIRTIO=no
 ENABLE_DOMU_VIRTIO=no
 CLEAN_BUILD_TEST=no
+ANDROID_VERSION=15
 
 Usage() {
     echo "Usage:"
@@ -18,18 +19,20 @@ Usage() {
     echo "    -c: Clean Build test(Default is disable)"
     echo "    -u: Using DomU(Default is disable)"
     echo "    -v: Enable Virtio backend on DomD(Default is disabled)"
+    echo "    -A <15|16|17>: AAOS version to build for DomA(Default is 15)"
     echo "    -h: Show this usage"
 }
 
 # Proc arguments
 OPTIND=1
-while getopts "acghuv" OPT
+while getopts "acghuvA:" OPT
 do
     case $OPT in
         a) USING_DOMA=yes; ENABLE_VIRTIO=yes ;;
         c) CLEAN_BUILD_TEST=yes;;
         u) USING_DOMU=yes;;
         v) ENABLE_VIRTIO=yes;;
+        A) ANDROID_VERSION=$OPTARG;;
         h) Usage; exit;;
         *) echo -e "\e[31mERROR: Unsupported option\e[m"; Usage; exit;;
     esac
@@ -62,6 +65,7 @@ moulin prod-devel-rcar4_new.yaml \
     --ENABLE_DOMU_VIRTIO ${ENABLE_DOMU_VIRTIO} \
     --USE_GRAPHICS_PACKAGE ${USE_GRAPHICS_PACKAGE} \
     --ENABLE_VIRTIO ${ENABLE_VIRTIO} \
+    --ANDROID_VERSION ${ANDROID_VERSION} \
     --ADD_META_TEST yes \
 
 ninja

@@ -20,10 +20,14 @@ variables:
   XT_DOMA_KERNEL_EXTRA_MODULES: ""
   XT_DOMA_SOURCE_GROUP: ""
   XT_DOMA_CONFIG_NAME: "doma-virtio.cfg"
+  ANDROID_VERSION: "15"
   ANDROID_KERNEL_BUILD_CONFIG: "//common-modules/xen-virtual-device:xen_virtual_device_aarch64_dist"
-  ANDROID_KERNEL_DEPLOY_DIR: "out/deploy/common-modules/xen-virtual-device/xen_virtual_device_aarch64"
+  ANDROID_KERNEL_DEPLOY_DIR: "../android_%{ANDROID_VERSION}/prebuilt-kernel-modules"
+  ANDROID_KERNEL_MANIFEST_URL: "https://github.com/yhamamachi/android_kernel_manifest.git"
+  ANDROID_KERNEL_MANIFEST_REV: "e2504875ac9cc7a39291b5fe1d8fee7ca41687db" # android-15-xenvm-sh-main: vmw_vsock_virtio_transport.ko dist fix
   ANDROID_DEVICE: "xenvm_trout_arm64"
   ANDROID_LUNCH_TARGET: "aosp_xenvm_trout_arm64-trunk_staging-userdebug"
+  ANDROID_MANIFEST_REV: "10d61f708b95fda09ec6f8050a0fbeb2b21cc908" # android-15-xenvm-trout-sh-main: repoint to rebased xenvm-trout history
 
 common_data:
   # Sources used by all yocto-based domains
@@ -210,11 +214,11 @@ components:
         - "tmp/deploy/images/%{DOMU_MACHINE}/core-image-weston-%{DOMU_MACHINE}.rootfs.ext4"
 
   doma_kernel:
-    build-dir: "%{ANDROID_KERNEL_DIR}"
+    build-dir: "%{ANDROID_KERNEL_DIR}_%{ANDROID_VERSION}"
     sources:
       - type: repo
-        url: https://github.com/xen-troops/android_kernel_manifest.git
-        rev: 23e08b76317bfb41d4ec4f68a891fb00bf591b0b
+        url: "%{ANDROID_KERNEL_MANIFEST_URL}"
+        rev: "%{ANDROID_KERNEL_MANIFEST_REV}"
         manifest: default.xml
         depth: 1
         groups: "%{XT_DOMA_SOURCE_GROUP}"
@@ -228,16 +232,16 @@ components:
         - "--sandbox_debug"
       target: "%{ANDROID_KERNEL_BUILD_CONFIG}"
       target-patterns:
-        - "--dist_dir=%{ANDROID_KERNEL_DEPLOY_DIR}"
+        - "--destdir=%{ANDROID_KERNEL_DEPLOY_DIR}"
       target_images:
         - "%{ANDROID_KERNEL_DEPLOY_DIR}/Image"
 
   doma:
-    build-dir: "%{DOMA_DIR}"
+    build-dir: "%{DOMA_DIR}_%{ANDROID_VERSION}"
     sources:
       - type: repo
         url: https://github.com/yhamamachi/android_manifest.git
-        rev: 66e0959d32f2c3c146153b703ba57b900a1ef325
+        rev: "%{ANDROID_MANIFEST_REV}"
         manifest: default.xml
         depth: 1
         groups: "%{XT_DOMA_SOURCE_GROUP}"
@@ -246,8 +250,9 @@ components:
       type: android
       env:
         - "TARGET_BOARD_PLATFORM=%{SOC_FAMILY}"
-        - "TARGET_PREBUILT_KERNEL=../%{ANDROID_KERNEL_DIR}/%{ANDROID_KERNEL_DEPLOY_DIR}/Image"
-        - "TARGET_PREBUILT_MODULES_DIR=../%{ANDROID_KERNEL_DIR}/%{ANDROID_KERNEL_DEPLOY_DIR}/"
+        - "TARGET_PREBUILT_KERNEL=prebuilt-kernel-modules/Image"
+        - "TARGET_PREBUILT_MODULES_DIR=prebuilt-kernel-modules/"
+        - "OUT_DIR=out"
       lunch_target: "%{ANDROID_LUNCH_TARGET}"
       target_images:
         - "out/target/product/%{ANDROID_DEVICE}/boot.img"
@@ -261,7 +266,7 @@ components:
         - "out/target/product/%{ANDROID_DEVICE}/userdata.img"
         - "out/target/product/%{ANDROID_DEVICE}/super.img"
       additional_deps:
-        - "../%{ANDROID_KERNEL_DIR}/%{ANDROID_KERNEL_DEPLOY_DIR}/Image"
+        - "prebuilt-kernel-modules/Image"
 
   boot_artifacts:
     build-dir: "artifacts"
@@ -292,6 +297,31 @@ images:
         image_path: "%{YOCTOS_WORK_DIR}/build-domd/tmp/deploy/images/%{MACHINE}/core-image-weston-%{MACHINE}.rootfs.ext4"
 
 parameters:
+  ANDROID_VERSION:
+    desc: "AAOS version to build for DomA (xenvm-trout)"
+    "15":
+      default: true
+      overrides:
+        variables:
+          ANDROID_VERSION: "15"
+          ANDROID_LUNCH_TARGET: "aosp_xenvm_trout_arm64-trunk_staging-userdebug"
+          ANDROID_MANIFEST_REV: "10d61f708b95fda09ec6f8050a0fbeb2b21cc908" # android-15-xenvm-trout-sh-main: repoint to rebased xenvm-trout history
+          ANDROID_KERNEL_MANIFEST_REV: "e2504875ac9cc7a39291b5fe1d8fee7ca41687db" # android-15-xenvm-sh-main: vmw_vsock_virtio_transport.ko dist fix
+    "16":
+      overrides:
+        variables:
+          ANDROID_VERSION: "16"
+          ANDROID_LUNCH_TARGET: "aosp_xenvm_trout_arm64-trunk_staging-userdebug"
+          ANDROID_MANIFEST_REV: "c277eebf102b4f02b19fc50a40d18eb1aa430fa2" # android-16-xenvm-sh-main: pin composer.drm_hwcomposer APEX selection fix
+          ANDROID_KERNEL_MANIFEST_REV: "82132f605cc82d877bc01508862d485e563fd32d" # android-16-xenvm-sh-main
+    "17":
+      overrides:
+        variables:
+          ANDROID_VERSION: "17"
+          ANDROID_LUNCH_TARGET: "aosp_xenvm_trout_arm64-trunk_staging-userdebug"
+          ANDROID_MANIFEST_REV: "97bc72216187c83f6fb02a33607d31feab442162" # android-17-xenvm-sh-main: pin mesa 25.3.6 for Android 17 toolchain compat
+          ANDROID_KERNEL_MANIFEST_REV: "ac2ea7005b35c3151af33fa6a7ddac3a775688c6" # android-17-xenvm-sh-main
+
   ENABLE_DOMU:
     desc: "Build generic Yocto-based DomU"
     "no":
@@ -595,7 +625,7 @@ parameters:
                 - [OVERRIDES:append, ":enable_android"]
               additional_deps:
                 # This is not actually a hard dep. We just want to force Android build
-                - "../%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/boot.img"
+                - "../%{DOMA_DIR}_%{ANDROID_VERSION}/out/target/product/%{ANDROID_DEVICE}/boot.img"
               external_src:
                 # Android uses DTB generated by DomD
                 doma: "%{YOCTOS_WORK_DIR}/%{DOMD_BUILD_DIR}/tmp/deploy/images/%{MACHINE}/"
@@ -607,13 +637,13 @@ parameters:
             builder:
               layers:
                 - "../meta-clang"
-                - "../../%{DOMA_DIR}/device/epam/aosp-xenvm-trout/agl_services_build/yocto-layer/meta-google"
+                - "../../%{DOMA_DIR}_%{ANDROID_VERSION}/device/epam/aosp-xenvm-trout/agl_services_build/yocto-layer/meta-google"
               conf:
                 - [BBMASK:append, "|meta-google/recipes-trout/images/rcar-image-adas.bbappend"]
               additional_deps:
                 # We need some dependency to AOSP artifacts as we are using the "meta-google"
                 # layer directly from its source code. Thus DomA should be built before DomD.
-                - "../%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/boot.img"
+                - "../%{DOMA_DIR}_%{ANDROID_VERSION}/out/target/product/%{ANDROID_DEVICE}/boot.img"
         images:
           android_only: &ANDROID_IMAGE
             desc: "Android sub-image (this image is passed to Android VM as a separate block device)"
@@ -623,7 +653,7 @@ parameters:
               boot_a:
                 gpt_type: 49A4D17F-93A3-45C1-A0DE-F50B2EBE2599 # Android boot 1
                 type: raw_image
-                image_path: "%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/boot.img"
+                image_path: "%{DOMA_DIR}_%{ANDROID_VERSION}/out/target/product/%{ANDROID_DEVICE}/boot.img"
               boot_b:
                 gpt_type: 20117F86-E985-4357-B9EE-374BC1D8487D # Android boot 2
                 type: empty
@@ -631,7 +661,7 @@ parameters:
               init_boot_a:
                 gpt_type: 49A4D17F-93A3-45C1-A0DE-F50B2EBE2599 # Android boot 1
                 type: raw_image
-                image_path: "%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/init_boot.img"
+                image_path: "%{DOMA_DIR}_%{ANDROID_VERSION}/out/target/product/%{ANDROID_DEVICE}/init_boot.img"
               init_boot_b:
                 gpt_type: 20117F86-E985-4357-B9EE-374BC1D8487D # Android boot 2
                 type: empty
@@ -639,7 +669,7 @@ parameters:
               vendor_boot_a:
                 gpt_type: DF24E5ED-8C96-4B86-B00B-79667DC6DE11 # Android sparse 1
                 type: raw_image
-                image_path: "%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/vendor_boot.img"
+                image_path: "%{DOMA_DIR}_%{ANDROID_VERSION}/out/target/product/%{ANDROID_DEVICE}/vendor_boot.img"
               vendor_boot_b:
                 gpt_type: 7C29D3AD-78B9-452E-9DEB-D098D542F092 # Android sparse 2
                 type: empty
@@ -647,7 +677,7 @@ parameters:
               vbmeta_a:
                 gpt_type: 19A710A2-B3CA-11E4-B026-10604B889DCF # Android meta
                 type: raw_image
-                image_path: "%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/vbmeta.img"
+                image_path: "%{DOMA_DIR}_%{ANDROID_VERSION}/out/target/product/%{ANDROID_DEVICE}/vbmeta.img"
               vbmeta_b:
                 gpt_type: 19A710A2-B3CA-11E4-B026-10604B889DCF # Android meta
                 type: empty
@@ -655,7 +685,7 @@ parameters:
               vbmeta_system_a:
                 gpt_type: E7C06570-9FDC-11E8-8C15-0A580A200C13 # Android meta
                 type: raw_image
-                image_path: "%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/vbmeta_system.img"
+                image_path: "%{DOMA_DIR}_%{ANDROID_VERSION}/out/target/product/%{ANDROID_DEVICE}/vbmeta_system.img"
               vbmeta_system_b:
                 gpt_type: E7C06570-9FDC-11E8-8C15-0A580A200C13 # Android meta
                 type: empty
@@ -663,7 +693,7 @@ parameters:
               vbmeta_system_dlkm_a:
                 gpt_type: E7C06570-9FDC-11E8-8C15-0A580A200C13 # Android meta
                 type: raw_image
-                image_path: "%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/vbmeta_system_dlkm.img"
+                image_path: "%{DOMA_DIR}_%{ANDROID_VERSION}/out/target/product/%{ANDROID_DEVICE}/vbmeta_system_dlkm.img"
               vbmeta_system_dlkm_b:
                 gpt_type: E7C06570-9FDC-11E8-8C15-0A580A200C13 # Android meta
                 type: empty
@@ -671,7 +701,7 @@ parameters:
               vbmeta_vendor_dlkm_a:
                 gpt_type: E7C06570-9FDC-11E8-8C15-0A580A200C13 # Android meta
                 type: raw_image
-                image_path: "%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/vbmeta_vendor_dlkm.img"
+                image_path: "%{DOMA_DIR}_%{ANDROID_VERSION}/out/target/product/%{ANDROID_DEVICE}/vbmeta_vendor_dlkm.img"
               vbmeta_vendor_dlkm_b:
                 gpt_type: E7C06570-9FDC-11E8-8C15-0A580A200C13 # Android meta
                 type: empty
@@ -693,11 +723,11 @@ parameters:
               super:
                 gpt_type: 4627AE27-CFEF-48A1-88FE-99C3509ADE26 # Android raw resources
                 type: android_sparse
-                image_path: "%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/super.img"
+                image_path: "%{DOMA_DIR}_%{ANDROID_VERSION}/out/target/product/%{ANDROID_DEVICE}/super.img"
               userdata:
                 gpt_type: 1B81E7E6-F50D-419B-A739-2AEEF8DA3335 # Android userdata
                 type: android_sparse
-                image_path: "%{DOMA_DIR}/out/target/product/%{ANDROID_DEVICE}/userdata.img"
+                image_path: "%{DOMA_DIR}_%{ANDROID_VERSION}/out/target/product/%{ANDROID_DEVICE}/userdata.img"
           full:
             partitions:
               android:
