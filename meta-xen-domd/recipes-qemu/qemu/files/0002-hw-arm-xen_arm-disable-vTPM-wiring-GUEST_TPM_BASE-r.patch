@@ -1,0 +1,47 @@
+From: Xen-Troops <noreply@xen-troops.org>
+Subject: [PATCH] hw/arm/xen_arm: disable vTPM wiring, GUEST_TPM_BASE removed
+
+Xen 4.21 dropped GUEST_TPM_BASE from xen/include/public/arch-arm.h
+(the TPM MMIO region was removed from the guest physmap), which
+breaks the qemu 7.0.0 build against the Xen 4.21 headers.
+
+Disable vTPM wiring in xen_enable_tpm() until Xen defines a
+replacement address.
+
+---
+ hw/arm/xen_arm.c | 18 ++----------------
+ 1 file changed, 2 insertions(+), 16 deletions(-)
+
+--- a/hw/arm/xen_arm.c
++++ b/hw/arm/xen_arm.c
+@@ -350,25 +350,11 @@
+
+ static void xen_enable_tpm(void)
+ {
+-#ifdef CONFIG_TPM
+-    Error *errp = NULL;
+-    DeviceState *dev;
+-    SysBusDevice *busdev;
+-
+-    TPMBackend *be = qemu_find_tpm_be("tpm0");
+-    if (be == NULL) {
+-        DPRINTF("Couldn't fine the backend for tpm0\n");
+-        return;
+-    }
+-    dev = qdev_new(TYPE_TPM_TIS_SYSBUS);
+-    object_property_set_link(OBJECT(dev), "tpmdev", OBJECT(be), &errp);
+-    object_property_set_str(OBJECT(dev), "tpmdev", be->id, &errp);
+-    busdev = SYS_BUS_DEVICE(dev);
+-    sysbus_realize_and_unref(busdev, &error_fatal);
+-    sysbus_mmio_map(busdev, 0, GUEST_TPM_BASE);
+-
+-    DPRINTF("Connected tpmdev at address 0x%llx\n", GUEST_TPM_BASE);
+-#endif
++    /*
++     * Xen 4.21 removed GUEST_TPM_BASE from arch-arm.h (TPM MMIO region
++     * dropped from the guest physmap). vTPM wiring is disabled here
++     * until Xen defines a replacement address.
++     */
+ }
+
+ static void xen_arm_init(MachineState *machine)
