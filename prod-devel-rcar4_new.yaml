@@ -157,7 +157,11 @@ components:
         - [IMAGE_INSTALL:append, " smcroute"]
         - [IMAGE_INSTALL:append, " snort"]
 
-      build_target: core-image-weston initramfs-image
+        - [INITRAMFS_IMAGE, "initramfs-image"]
+        - [INITRAMFS_IMAGE_BUNDLE, "0"]
+        - [INITRAMFS_FSTYPES, "cpio.gz"]
+
+      build_target: core-image-weston
       layers:
         - "../meta-virtualization"
         - "../meta-selinux"
