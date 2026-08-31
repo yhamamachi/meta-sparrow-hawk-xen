@@ -1,0 +1,48 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+Subject: arm-xen: rename xenpvh to xenpv and add xenpvh compat alias
+
+QEMU 8.2+ renamed the ARM Xen PV machine type from "xenpv" to
+"xenpvh". Xen 4.22 still passes "-M xenpv" to the QEMU backend.
+Rename the primary type back to "xenpv" and register "xenpvh" as
+a compat alias (child of xenpv) so both names work. Also increase
+max_cpus to 4 for SMP DomU support.
+
+Upstream-Status: Inappropriate [out-of-tree Xen compat]
+diff --git a/hw/arm/xen_arm.c b/hw/arm/xen_arm.c
+--- a/hw/arm/xen_arm.c
++++ b/hw/arm/xen_arm.c
+@@ -35,7 +35,7 @@
+ #include "sysemu/tpm.h"
+ #include "hw/xen/arch_hvm.h"
+ 
+-#define TYPE_XEN_ARM  MACHINE_TYPE_NAME("xenpvh")
++#define TYPE_XEN_ARM  MACHINE_TYPE_NAME("xenpv")
+ OBJECT_DECLARE_SIMPLE_TYPE(XenArmState, XEN_ARM)
+ 
+ static const MemoryListener xen_memory_listener = {
+@@ -231,7 +231,7 @@
+     MachineClass *mc = MACHINE_CLASS(oc);
+     mc->desc = "Xen Para-virtualized PC";
+     mc->init = xen_arm_init;
+-    mc->max_cpus = 1;
++    mc->max_cpus = 4;
+     mc->default_machine_opts = "accel=xen";
+     /* Set explicitly here to make sure that real ram_size is passed */
+     mc->default_ram_size = 0;
+@@ -255,9 +255,16 @@
+     .instance_size = sizeof(XenArmState),
+ };
+ 
++static const TypeInfo xenpvh_compat_machine_type = {
++    .name = MACHINE_TYPE_NAME("xenpvh"),
++    .parent = TYPE_XEN_ARM,
++    .instance_size = sizeof(XenArmState),
++};
++
+ static void xen_arm_machine_register_types(void)
+ {
+     type_register_static(&xen_arm_machine_type);
++    type_register_static(&xenpvh_compat_machine_type);
+ }
+ 
+ type_init(xen_arm_machine_register_types)

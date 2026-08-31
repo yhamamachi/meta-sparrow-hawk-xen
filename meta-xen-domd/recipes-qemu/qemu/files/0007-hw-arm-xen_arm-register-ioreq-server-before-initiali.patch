@@ -1,0 +1,41 @@
+Subject: [PATCH] hw/arm/xen_arm: register ioreq server before initializing RAM
+Upstream-Status: Pending
+
+xen_arm_init() creates the guest RAM regions (xen_init_ram()) before
+calling xen_register_ioreq(). The mapcache is only initialized inside
+xen_register_ioreq() (xen_do_ioreq_register() -> xen_map_cache_init()).
+
+vhost-net backends are created from -netdev in qemu_create_late_backends(),
+i.e. before the machine is initialized, and register a memory listener on
+address_space_memory at that point. When xen_init_ram() then adds the
+xen.ram.lo/hi regions, vhost_region_add_section() resolves the host
+pointer of each section with memory_region_get_ram_ptr() ->
+qemu_map_ram_ptr() -> xen_map_cache(), which dereferences the still NULL
+mapcache and QEMU crashes with SIGSEGV right after the vhost devices are
+initialized.
+
+The xen-troops QEMU 7.0 based tree called xen_register_ioreq() before
+xen_init_ram(), so this did not happen there. Restore that order.
+
+--- a/hw/arm/xen_arm.c
++++ b/hw/arm/xen_arm.c
+@@ -235,10 +235,17 @@
+         return;
+     }
+ 
+-    xen_init_ram(machine);
+-
++    /*
++     * Register the IOREQ server (which also initializes the mapcache) before
++     * creating the RAM regions. Memory listeners registered earlier, e.g. by
++     * vhost-net backends created from -netdev, resolve the host pointer of
++     * each RAM section in region_add via xen_map_cache(), which dereferences
++     * the not-yet-initialized mapcache and crashes QEMU otherwise.
++     */
+     xen_register_ioreq(xam->state, machine->smp.cpus, &xen_memory_listener);
+ 
++    xen_init_ram(machine);
++
+     create_pcie(xam);
+ 
+ #ifdef CONFIG_TPM

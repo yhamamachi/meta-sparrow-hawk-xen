@@ -1,0 +1,28 @@
+Subject: [PATCH] hw/input: virtio-input add BTN_TOUCH for tablet
+Upstream-Status: Inappropriate [embedded specific]
+
+diff --git a/hw/input/virtio-input-hid.c b/hw/input/virtio-input-hid.c
+index 45e4d4c75..d7d62ba11 100644
+--- a/hw/input/virtio-input-hid.c
++++ b/hw/input/virtio-input-hid.c
+@@ -88,6 +88,8 @@ static void virtio_input_handle_event(DeviceState *dev, QemuConsole *src,
+     InputKeyEvent *key;
+     InputMoveEvent *move;
+     InputBtnEvent *btn;
++    bool is_tablet = !strcmp(((QemuInputHandler *)vhid->handler)->name,
++                               VIRTIO_ID_NAME_TABLET);
+     InputMultiTouchEvent *mtt;
+ 
+     switch (evt->type) {
+@@ -120,7 +122,10 @@ static void virtio_input_handle_event(DeviceState *dev, QemuConsole *src,
+             virtio_input_send(vinput, &event);
+         } else if (keymap_button[btn->button]) {
+             event.type  = cpu_to_le16(EV_KEY);
+-            event.code  = cpu_to_le16(keymap_button[btn->button]);
++            if (btn->button == INPUT_BUTTON_LEFT && is_tablet)
++                event.code = cpu_to_le16(BTN_TOUCH);
++            else
++                event.code  = cpu_to_le16(keymap_button[btn->button]);
+             event.value = cpu_to_le32(btn->down ? 1 : 0);
+             virtio_input_send(vinput, &event);
+         } else {

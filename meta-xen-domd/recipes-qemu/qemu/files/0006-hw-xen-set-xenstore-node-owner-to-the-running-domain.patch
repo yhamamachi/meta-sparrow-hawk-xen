@@ -1,0 +1,73 @@
+Subject: [PATCH] hw/xen: set xenstore node owner to the domain running qemu
+Upstream-Status: Pending
+
+xenstore_mkdir() hardcodes dom0 as the owner of the nodes it creates:
+
+    qemu_xen_xs_create(xenstore, 0, 0, xen_domid, p, path)
+                                  ^ owner
+
+libxenstore_create() turns that into an xs_set_permissions() call, and
+xenstored refuses it for an unprivileged connection (tools/xenstored/core.c):
+
+    /* Unprivileged domains may not change the owner. */
+    if (domain_is_unprivileged(conn) &&
+        perms.p[0].id != get_node_owner(node))
+            return EPERM;
+
+In a driver domain setup the device model is spawned by "xl devd" in an
+unprivileged domain, so every xenstore_mkdir() below device-model/<domid>/
+fails (the node is owned by the driver domain, not by dom0) and qemu logs:
+
+    xen be core: xs_mkdir device-model/2: failed
+    xen be core: xs_mkdir device-model/2/backends: failed
+    xen be core: xs_mkdir device-model/2/backends/vkbd: failed
+    xen be core: xs_mkdir device-model/2/backends/9pfs: failed
+
+Note the message is misleading: xs_mkdir() itself succeeds, it is the
+following xs_set_permissions() that fails.
+
+Use the domain qemu is running in as the owner instead. It is read from the
+relative "domid" node, which xenstored resolves against the caller's own
+domain path. When the node is not readable - which is the case for dom0 -
+fall back to 0 and keep the previous behaviour.
+
+diff --git a/hw/xen/xen_pvdev.c b/hw/xen/xen_pvdev.c
+--- a/hw/xen/xen_pvdev.c
++++ b/hw/xen/xen_pvdev.c
+@@ -58,9 +58,32 @@ void xen_config_cleanup(void)
+     }
+ }
+ 
++/*
++ * The domain qemu is running in, which is not necessarily dom0: with a driver
++ * domain the device model is spawned by "xl devd" in an unprivileged domain.
++ */
++static unsigned int xenstore_self_domid(void)
++{
++    static unsigned int self_domid;
++    static bool self_domid_valid;
++    unsigned int len;
++    char *str;
++
++    if (!self_domid_valid) {
++        self_domid_valid = true;
++        str = qemu_xen_xs_read(xenstore, 0, "domid", &len);
++        if (str != NULL) {
++            self_domid = atoi(str);
++            free(str);
++        }
++    }
++    return self_domid;
++}
++
+ int xenstore_mkdir(char *path, int p)
+ {
+-    if (!qemu_xen_xs_create(xenstore, 0, 0, xen_domid, p, path)) {
++    if (!qemu_xen_xs_create(xenstore, 0, xenstore_self_domid(), xen_domid, p,
++                            path)) {
+         xen_pv_printf(NULL, 0, "xs_mkdir %s: failed\n", path);
+         return -1;
+     }
+     xenstore_cleanup_dir(g_strdup(path));
+     return 0;
+ }

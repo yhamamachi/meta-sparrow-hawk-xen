@@ -52,11 +52,9 @@ do_install:append() {
         echo "" >> ${CFG_FILE}
         echo "driver_domain = 1" >> ${CFG_FILE}
 
-        if ${@bb.utils.contains('XT_GUEST_INSTALL', 'doma', 'true', 'false', d)}; then
-            sed -i "s/\[VIRTIO_EXTRA_PARAMETERS\]/ vhost_xen.nogrant=1/g" ${CFG_FILE}
-        else
-            sed -i "s/\[VIRTIO_EXTRA_PARAMETERS\]/ vhost_xen.nogrant=0/g" ${CFG_FILE}
-        fi
+        # Guests use foreign mappings (grant_usage=0): QEMU 8.2.7 cannot
+        # resolve grant based virtio addresses.
+        sed -i "s/\[VIRTIO_EXTRA_PARAMETERS\]/ vhost_xen.nogrant=1/g" ${CFG_FILE}
     else
         sed -i "s/\[VIRTIO_EXTRA_PARAMETERS\]//" ${CFG_FILE}
     fi

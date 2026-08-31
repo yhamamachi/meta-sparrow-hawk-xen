@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REAL_QEMU="/usr/bin/qemu-system-aarch64.bin"
+REAL_QEMU="@LIBEXECDIR@/qemu-system-aarch64.bin"
 
 for i in "$@"; do
     if [ "$prev" = "-name" ]; then
