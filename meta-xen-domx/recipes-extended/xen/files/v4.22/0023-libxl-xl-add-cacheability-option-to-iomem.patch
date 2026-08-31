@@ -1,7 +1,7 @@
-From 0336f9726366cb483a18d7cb8cab8dedc833ba4f Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Stefano Stabellini <sstabellini@kernel.org>
 Date: Tue, 26 Feb 2019 15:00:28 -0800
-Subject: [PATCH 21/22] libxl/xl: add cacheability option to iomem
+Subject: [PATCH] libxl/xl: add cacheability option to iomem
 
 Parse a new cacheability option for the iomem parameter, it can be
 "devmem" for device memory mappings, which is the default, or "memory"
@@ -13,6 +13,7 @@ Pass the cacheability option to xc_domain_memory_mapping.
 
 Signed-off-by: Stefano Stabellini <stefanos@xilinx.com>
 Signed-off-by: Dmytro Firsov <dmytro_firsov@epam.com>
+(cherry picked from commit d4823d5ef97e69e45e97c1a8fd768427df43eec0)
 ---
  docs/man/xl.cfg.5.pod.in         |  4 ++-
  tools/libs/light/libxl_create.c  | 12 +++++++-
@@ -21,10 +22,10 @@ Signed-off-by: Dmytro Firsov <dmytro_firsov@epam.com>
  4 files changed, 64 insertions(+), 8 deletions(-)
 
 diff --git a/docs/man/xl.cfg.5.pod.in b/docs/man/xl.cfg.5.pod.in
-index 0546b75438..ba3d04dbb8 100644
+index 85dfdd39e9..566d9e162f 100644
 --- a/docs/man/xl.cfg.5.pod.in
 +++ b/docs/man/xl.cfg.5.pod.in
-@@ -1319,7 +1319,7 @@ is given in hexadecimal format and may either be a range, e.g. C<2f8-2ff>
+@@ -1342,7 +1342,7 @@ is given in hexadecimal format and may either be a range, e.g. C<2f8-2ff>
  It is recommended to only use this option for trusted VMs under
  administrator's control.
  
@@ -33,7 +34,7 @@ index 0546b75438..ba3d04dbb8 100644
  
  Allow auto-translated domains to access specific hardware I/O memory pages.
  
-@@ -1330,6 +1330,8 @@ B<GFN> is not specified, the mapping will be performed using B<IOMEM_START>
+@@ -1353,6 +1353,8 @@ B<GFN> is not specified, the mapping will be performed using B<IOMEM_START>
  as a start in the guest's address space, therefore performing a 1:1 mapping
  by default.
  All of these values must be given in hexadecimal format.
@@ -43,7 +44,7 @@ index 0546b75438..ba3d04dbb8 100644
  Note that the IOMMU won't be updated with the mappings specified with this
  option. This option therefore should not be used to pass through any
 diff --git a/tools/libs/light/libxl_create.c b/tools/libs/light/libxl_create.c
-index e8819b7502..2bb7e94d32 100644
+index e73c35edde..b71169e506 100644
 --- a/tools/libs/light/libxl_create.c
 +++ b/tools/libs/light/libxl_create.c
 @@ -457,6 +457,14 @@ static void init_console_info(libxl__gc *gc,
@@ -61,7 +62,7 @@ index e8819b7502..2bb7e94d32 100644
  int libxl__domain_build(libxl__gc *gc,
                          libxl_domain_config *d_config,
                          uint32_t domid,
-@@ -1734,7 +1742,9 @@ static void domcreate_launch_dm(libxl__egc *egc, libxl__multidev *multidev,
+@@ -1736,7 +1744,9 @@ static void domcreate_launch_dm(libxl__egc *egc, libxl__multidev *multidev,
          }
          ret = xc_domain_memory_mapping_cache(CTX->xch, domid,
                                         io->gfn, io->start,
@@ -73,7 +74,7 @@ index e8819b7502..2bb7e94d32 100644
              LOGED(ERROR, domid,
                    "failed to map to domain iomem range %"PRIx64"-%"PRIx64
 diff --git a/tools/libs/light/libxl_types.idl b/tools/libs/light/libxl_types.idl
-index eb961e271a..4741455af0 100644
+index 7b75d862e4..75e3b68b03 100644
 --- a/tools/libs/light/libxl_types.idl
 +++ b/tools/libs/light/libxl_types.idl
 @@ -314,6 +314,11 @@ libxl_ioport_range = Struct("ioport_range", [
@@ -98,10 +99,10 @@ index eb961e271a..4741455af0 100644
  
  libxl_vga_interface_info = Struct("vga_interface_info", [
 diff --git a/tools/xl/xl_parse.c b/tools/xl/xl_parse.c
-index 4c32506ba5..34435e6eb5 100644
+index d4fe4feb5a..524ec715e2 100644
 --- a/tools/xl/xl_parse.c
 +++ b/tools/xl/xl_parse.c
-@@ -2277,6 +2277,7 @@ void parse_config_data(const char *config_source,
+@@ -2390,6 +2390,7 @@ void parse_config_data(const char *config_source,
          }
          for (i = 0; i < num_iomem; i++) {
              int used;
@@ -109,7 +110,7 @@ index 4c32506ba5..34435e6eb5 100644
  
              buf = xlu_cfg_get_listitem (iomem, i);
              if (!buf) {
-@@ -2285,20 +2286,56 @@ void parse_config_data(const char *config_source,
+@@ -2398,20 +2399,56 @@ void parse_config_data(const char *config_source,
                  exit(1);
              }
              libxl_iomem_range_init(&b_info->iomem[i]);
@@ -173,5 +174,5 @@ index 4c32506ba5..34435e6eb5 100644
          d_config->num_disks = 0;
          d_config->disks = NULL;
 -- 
-2.34.1
+2.43.0
 

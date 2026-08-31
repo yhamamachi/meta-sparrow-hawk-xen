@@ -1,8 +1,8 @@
-From 0eda75826588d6da62b6b87e5531ff08c97839d0 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Stefano Stabellini <sstabellini@kernel.org>
 Date: Tue, 26 Feb 2019 15:00:25 -0800
-Subject: [PATCH 20/22] libxc: introduce xc_domain_memory_mapping_cache to
- handle cachebility
+Subject: [PATCH] libxc: introduce xc_domain_memory_mapping_cache to handle
+ cachebility
 
 Introduce a new xc_domain_memory_mapping_cache which takes
 the parameter with cacheability information. The same parameter values
@@ -12,6 +12,7 @@ changes in behavior.
 
 Signed-off-by: Stefano Stabellini <stefanos@xilinx.com>
 Signed-off-by: Dmytro Firsov <dmytro_firsov@epam.com>
+(cherry picked from commit 928dac191f9de027df3cd4f8ce1181ea2623dc22)
 ---
  tools/include/xenctrl.h         |  8 ++++++++
  tools/libs/ctrl/xc_domain.c     | 24 ++++++++++++++++++++++--
@@ -38,10 +39,10 @@ index d5dbf69c89..51a2ee255c 100644
                               uint32_t domid,
                               uint32_t first_gport,
 diff --git a/tools/libs/ctrl/xc_domain.c b/tools/libs/ctrl/xc_domain.c
-index 2ddc3f4f42..84880cd544 100644
+index 01c0669c88..0eb21eff1c 100644
 --- a/tools/libs/ctrl/xc_domain.c
 +++ b/tools/libs/ctrl/xc_domain.c
-@@ -1900,6 +1900,24 @@ int xc_domain_memory_mapping(
+@@ -1893,6 +1893,24 @@ int xc_domain_memory_mapping(
      unsigned long first_mfn,
      unsigned long nr_mfns,
      uint32_t add_mapping)
@@ -66,7 +67,7 @@ index 2ddc3f4f42..84880cd544 100644
  {
      struct xen_domctl domctl = {};
      xc_domaininfo_t info;
-@@ -1920,6 +1938,7 @@ int xc_domain_memory_mapping(
+@@ -1913,6 +1931,7 @@ int xc_domain_memory_mapping(
      domctl.cmd = XEN_DOMCTL_memory_mapping;
      domctl.domain = domid;
      domctl.u.memory_mapping.add_mapping = add_mapping;
@@ -74,7 +75,7 @@ index 2ddc3f4f42..84880cd544 100644
      max_batch_sz = nr_mfns;
      do
      {
-@@ -1955,8 +1974,9 @@ int xc_domain_memory_mapping(
+@@ -1948,8 +1967,9 @@ int xc_domain_memory_mapping(
       * Errors here are ignored.
       */
      if ( ret && add_mapping != DPCI_REMOVE_MAPPING )
@@ -87,10 +88,10 @@ index 2ddc3f4f42..84880cd544 100644
      /* We might get E2BIG so many times that we never advance. */
      if ( !done && !ret )
 diff --git a/tools/libs/light/libxl_create.c b/tools/libs/light/libxl_create.c
-index b7b59d4eb8..e8819b7502 100644
+index c55a10798a..e73c35edde 100644
 --- a/tools/libs/light/libxl_create.c
 +++ b/tools/libs/light/libxl_create.c
-@@ -1732,9 +1732,9 @@ static void domcreate_launch_dm(libxl__egc *egc, libxl__multidev *multidev,
+@@ -1734,9 +1734,9 @@ static void domcreate_launch_dm(libxl__egc *egc, libxl__multidev *multidev,
              ret = ERROR_FAIL;
              goto error_out;
          }
@@ -103,5 +104,5 @@ index b7b59d4eb8..e8819b7502 100644
              LOGED(ERROR, domid,
                    "failed to map to domain iomem range %"PRIx64"-%"PRIx64
 -- 
-2.34.1
+2.43.0
 

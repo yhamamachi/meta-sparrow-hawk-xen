@@ -1,7 +1,7 @@
-From b47b1698daf1d7b1003872987d757a55295d4b32 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Sergiy Kibrik <Sergiy_Kibrik@epam.com>
 Date: Fri, 22 Sep 2023 14:11:08 +0000
-Subject: [PATCH 14/22] libxl/arm: adjust vpci IRQ map according to vgic config
+Subject: [PATCH] libxl/arm: adjust vpci IRQ map according to vgic config
 
 Calculate size of interrupt-map property and fill it taking into account
 address cells property of parent interrupt controller.
@@ -15,6 +15,7 @@ we set unit address to 0.
 Signed-off-by: Sergiy Kibrik <Sergiy_Kibrik@epam.com>
 Reviewed-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Acked-by: Volodymyr Babchuk <volodymyr_babchuk@epam.com>
+(cherry picked from commit c51731be8895412bc07c13d4d9aaa9bcb1aedd03)
 ---
  tools/libs/light/libxl_arm.c | 34 ++++++++++++++++++++++++++++------
  1 file changed, 28 insertions(+), 6 deletions(-)
@@ -89,5 +90,5 @@ index 7fa3fa73a4..e4d9775870 100644
  
      res = fdt_property_values(gc, fdt, "interrupt-map-mask", 4,
 -- 
-2.34.1
+2.43.0
 

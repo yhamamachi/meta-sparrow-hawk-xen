@@ -1,7 +1,7 @@
-From 4cad4e4c2f54ea0ec35d9739275fdf96767a64cb Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Tue, 17 Oct 2023 13:35:05 +0300
-Subject: [PATCH 17/22] libxl: Allow virtio-pci backends from different domains
+Subject: [PATCH] libxl: Allow virtio-pci backends from different domains
 
 As we already expose PCI host bridge per virtio backend domain,
 we can now drop the limitation that denies having virtio-pci backends
@@ -12,15 +12,16 @@ For the upstream this should be squashed with:
 and subsequent commits for the toolstack.
 
 Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
+(cherry picked from commit b622387970b00b9ce76dd4e55dbb3535255dabae)
 ---
  tools/libs/light/libxl_create.c | 11 -----------
  1 file changed, 11 deletions(-)
 
 diff --git a/tools/libs/light/libxl_create.c b/tools/libs/light/libxl_create.c
-index 058c8dfd76..b7b59d4eb8 100644
+index c14797f90a..c55a10798a 100644
 --- a/tools/libs/light/libxl_create.c
 +++ b/tools/libs/light/libxl_create.c
-@@ -1077,7 +1077,6 @@ int libxl__domain_config_setdefault(libxl__gc *gc,
+@@ -1079,7 +1079,6 @@ int libxl__domain_config_setdefault(libxl__gc *gc,
      libxl_ctx *ctx = libxl__gc_owner(gc);
      int ret, i;
      bool pod_enabled = false;
@@ -28,7 +29,7 @@ index 058c8dfd76..b7b59d4eb8 100644
      libxl_domain_create_info *c_info = &d_config->c_info;
  
      libxl_physinfo physinfo;
-@@ -1279,16 +1278,6 @@ int libxl__domain_config_setdefault(libxl__gc *gc,
+@@ -1281,16 +1280,6 @@ int libxl__domain_config_setdefault(libxl__gc *gc,
              LOGD(ERROR, domid, "Unable to set virtio defaults for device %d", i);
              goto error_out;
          }
@@ -46,5 +47,5 @@ index 058c8dfd76..b7b59d4eb8 100644
  
      ret = 0;
 -- 
-2.34.1
+2.43.0
 

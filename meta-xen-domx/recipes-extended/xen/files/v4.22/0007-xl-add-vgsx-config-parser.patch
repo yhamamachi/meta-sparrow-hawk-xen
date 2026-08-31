@@ -1,0 +1,93 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Oleksandr Grytsov <oleksandr_grytsov@epam.com>
+Date: Thu, 19 Oct 2017 17:22:57 +0300
+Subject: [PATCH] xl: add vgsx config parser
+
+Signed-off-by: Oleksandr Grytsov <oleksandr_grytsov@epam.com>
+Reviewed-by: Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>
+Reviewed-by: Andrii Anisov <andrii_anisov@epam.com>
+(cherry picked from commit 290e2ef7e07ecd58b1d924d89ed854f9a7650f26)
+---
+ tools/xl/xl_parse.c | 59 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 59 insertions(+)
+
+diff --git a/tools/xl/xl_parse.c b/tools/xl/xl_parse.c
+index 01783731b5..1c2323723c 100644
+--- a/tools/xl/xl_parse.c
++++ b/tools/xl/xl_parse.c
+@@ -1344,6 +1344,64 @@ int parse_xsquota_item(const char *buf, struct libxl_xs_quota_item *item)
+     return 0;
+ }
+ 
++static int parse_vgsx_config(libxl_device_vgsx *vgsx, char *token)
++{
++    char *oparg;
++
++    if (MATCH_OPTION("backend", token, oparg)) {
++        vgsx->backend_domname = strdup(oparg);
++    } else if (MATCH_OPTION("osid", token, oparg)) {
++        vgsx->osid = strtoul(oparg, NULL, 0);
++    } else {
++        fprintf(stderr, "Unknown string \"%s\" in vgsx spec\n", token);
++        return -1;
++    }
++
++    return 0;
++}
++
++static void parse_vgsx_list(const XLU_Config *config,
++                            libxl_domain_config *d_config)
++{
++    XLU_ConfigList *vgsxs;
++    const char *item;
++    char *buf = NULL;
++    int rc;
++
++    if (!xlu_cfg_get_list (config, "vgsx", &vgsxs, 0, 0)) {
++        int entry = 0;
++        while ((item = xlu_cfg_get_listitem(vgsxs, entry)) != NULL) {
++            libxl_device_vgsx *vgsx;
++            char *p;
++
++            vgsx = ARRAY_EXTEND_INIT(d_config->vgsxs,
++                                     d_config->num_vgsxs,
++                                     libxl_device_vgsx_init);
++
++            buf = strdup(item);
++
++            p = strtok (buf, ",");
++            while (p != NULL)
++            {
++                while (*p == ' ') p++;
++
++                rc = parse_vgsx_config(vgsx, p);
++                if (rc) goto out;
++
++                p = strtok (NULL, ",");
++            }
++
++            entry++;
++        }
++    }
++
++    rc = 0;
++
++out:
++    free(buf);
++    if (rc) exit(EXIT_FAILURE);
++}
++
+ void parse_config_data(const char *config_source,
+                        const char *config_data,
+                        int config_len,
+@@ -3088,6 +3146,7 @@ skip_usbdev:
+     }
+ 
+     parse_vkb_list(config, d_config);
++    parse_vgsx_list(config, d_config);
+ 
+     d_config->virtios = NULL;
+     d_config->num_virtios = 0;
+-- 
+2.43.0
+

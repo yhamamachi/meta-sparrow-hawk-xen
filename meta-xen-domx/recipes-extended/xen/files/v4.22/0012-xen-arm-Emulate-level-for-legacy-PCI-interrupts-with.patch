@@ -1,8 +1,8 @@
-From d6e39d75b4bb41b87d73afd4e50b28840bf104b4 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Sun, 18 Sep 2022 17:38:39 +0300
-Subject: [PATCH 10/22] xen/arm: Emulate level for legacy PCI interrupts with
- current vGIC
+Subject: [PATCH] xen/arm: Emulate level for legacy PCI interrupts with current
+ vGIC
 
 This is needed for supporting virtio-pci.
 
@@ -14,6 +14,7 @@ cannot be enabled (GIC v3).
 
 Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Signed-off-by: Dmytro Firsov <dmytro_firsov@epam.com>
+(cherry picked from commit f24fff155f1d9e4b2ca1c935d7a1245d82896d65)
 ---
  xen/arch/arm/gic-vgic.c         | 10 ++++++++++
  xen/arch/arm/include/asm/vgic.h |  8 ++++++++
@@ -21,7 +22,7 @@ Signed-off-by: Dmytro Firsov <dmytro_firsov@epam.com>
  3 files changed, 22 insertions(+)
 
 diff --git a/xen/arch/arm/gic-vgic.c b/xen/arch/arm/gic-vgic.c
-index ea48c5375a..76efebb271 100644
+index fae80e6cd2..c17cf7f338 100644
 --- a/xen/arch/arm/gic-vgic.c
 +++ b/xen/arch/arm/gic-vgic.c
 @@ -235,6 +235,16 @@ static void gic_update_one_lr(struct vcpu *v, int i)
@@ -42,7 +43,7 @@ index ea48c5375a..76efebb271 100644
      }
  }
 diff --git a/xen/arch/arm/include/asm/vgic.h b/xen/arch/arm/include/asm/vgic.h
-index 31b3d3e5ec..bfa3e0835d 100644
+index 6f9ab1c98c..b305a9b89a 100644
 --- a/xen/arch/arm/include/asm/vgic.h
 +++ b/xen/arch/arm/include/asm/vgic.h
 @@ -127,6 +127,12 @@ struct vgic_irq_rank {
@@ -68,10 +69,10 @@ index 31b3d3e5ec..bfa3e0835d 100644
      paddr_t dbase; /* Distributor base address */
      paddr_t cbase; /* CPU interface base address */
 diff --git a/xen/arch/arm/vgic.c b/xen/arch/arm/vgic.c
-index 3ebdf9953f..6172789064 100644
+index e5aca17dcb..95c4bf7195 100644
 --- a/xen/arch/arm/vgic.c
 +++ b/xen/arch/arm/vgic.c
-@@ -757,6 +757,10 @@ void vgic_inject_irq(struct domain *d, struct vcpu *v, unsigned int virq,
+@@ -761,6 +761,10 @@ void vgic_inject_irq(struct domain *d, struct vcpu *v, unsigned int virq,
      struct pending_irq *iter, *n;
      unsigned long flags;
  
@@ -83,5 +84,5 @@ index 3ebdf9953f..6172789064 100644
       * For edge triggered interrupts we always ignore a "falling edge".
       * For level triggered interrupts we shouldn't, but do anyways.
 -- 
-2.34.1
+2.43.0
 

@@ -1,7 +1,7 @@
-From 02b27580d0714f1ab3360cfe9a1041e14b0eb0f9 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>
 Date: Wed, 4 Apr 2018 20:22:27 +0300
-Subject: [PATCH 06/22] libxl: Add DTB passthrough nodes list
+Subject: [PATCH] libxl: Add DTB passthrough nodes list
 
 Some platforms need more nodes from partial device tree in
 addition to "passthrough" node which are given to domain by
@@ -13,6 +13,7 @@ comas.
 
 Signed-off-by: Iurii Konovalenko <iurii.konovalenko@globallogic.com>
 Signed-off-by: Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>
+(cherry picked from commit 02b27580d0714f1ab3360cfe9a1041e14b0eb0f9)
 ---
  tools/libs/light/libxl_arm.c     | 20 ++++++++++++++++----
  tools/libs/light/libxl_types.idl |  1 +
@@ -73,10 +74,10 @@ index 7e9f8a1bc3..e4407d6e3f 100644
          FDT( fdt_end_node(fdt) );
  
 diff --git a/tools/libs/light/libxl_types.idl b/tools/libs/light/libxl_types.idl
-index d64a573ff3..4a958f69f4 100644
+index a7893460f0..3c35f873df 100644
 --- a/tools/libs/light/libxl_types.idl
 +++ b/tools/libs/light/libxl_types.idl
-@@ -638,6 +638,7 @@ libxl_domain_build_info = Struct("domain_build_info",[
+@@ -647,6 +647,7 @@ libxl_domain_build_info = Struct("domain_build_info",[
      # Note that the partial device tree should avoid to use the phandle
      # 65000 which is reserved by the toolstack.
      ("device_tree",      string),
@@ -85,10 +86,10 @@ index d64a573ff3..4a958f69f4 100644
      ("bootloader",       string),
      ("bootloader_args",  libxl_string_list),
 diff --git a/tools/xl/xl_parse.c b/tools/xl/xl_parse.c
-index af86d3186d..1cc41f1bff 100644
+index 0ccece3e8a..01783731b5 100644
 --- a/tools/xl/xl_parse.c
 +++ b/tools/xl/xl_parse.c
-@@ -2620,6 +2620,13 @@ skip_vfb:
+@@ -2675,6 +2675,13 @@ skip_vfb:
          }
      }
  
@@ -103,5 +104,5 @@ index af86d3186d..1cc41f1bff 100644
          d_config->num_usbctrls = 0;
          d_config->usbctrls = NULL;
 -- 
-2.34.1
+2.43.0
 

@@ -1,8 +1,7 @@
-From 597a3fd40201580144e6370bb2474c8f406ccecc Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Tue, 17 Oct 2023 13:27:49 +0300
-Subject: [PATCH 16/22] xen/arm: Update emulation of level for legacy PCI
- interrupts
+Subject: [PATCH] xen/arm: Update emulation of level for legacy PCI interrupts
 
 To avoid mixing with real H/W SPIs add a check for unallocated irqs.
 Update the pci_irq_level array size calculation according to
@@ -13,6 +12,7 @@ For the upstream this should be squashed with:
 "xen/arm: Emulate level for legacy PCI interrupts with current vGIC"
 
 Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
+(cherry picked from commit 07097b482384424ba22435367198dd5852d1683f)
 ---
  xen/arch/arm/gic-vgic.c         | 2 ++
  xen/arch/arm/include/asm/vgic.h | 3 +--
@@ -20,7 +20,7 @@ Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
  3 files changed, 5 insertions(+), 3 deletions(-)
 
 diff --git a/xen/arch/arm/gic-vgic.c b/xen/arch/arm/gic-vgic.c
-index 76efebb271..0e9929d852 100644
+index c17cf7f338..c7fb15fe12 100644
 --- a/xen/arch/arm/gic-vgic.c
 +++ b/xen/arch/arm/gic-vgic.c
 @@ -240,6 +240,8 @@ static void gic_update_one_lr(struct vcpu *v, int i)
@@ -33,7 +33,7 @@ index 76efebb271..0e9929d852 100644
                  if ( test_bit(GIC_IRQ_GUEST_ENABLED, &p->status) )
                      gic_raise_guest_irq(v, irq, p->priority);
 diff --git a/xen/arch/arm/include/asm/vgic.h b/xen/arch/arm/include/asm/vgic.h
-index bfa3e0835d..ab86ad9520 100644
+index b305a9b89a..8d5f7f720f 100644
 --- a/xen/arch/arm/include/asm/vgic.h
 +++ b/xen/arch/arm/include/asm/vgic.h
 @@ -127,8 +127,7 @@ struct vgic_irq_rank {
@@ -47,10 +47,10 @@ index bfa3e0835d..ab86ad9520 100644
  #define vgic_pci_irq_level(d, irq)   \
      ((d)->arch.vgic.pci_irq_level[(irq) - GUEST_VIRTIO_PCI_SPI_FIRST])
 diff --git a/xen/arch/arm/vgic.c b/xen/arch/arm/vgic.c
-index 6172789064..0bcd883596 100644
+index 95c4bf7195..a8757321c5 100644
 --- a/xen/arch/arm/vgic.c
 +++ b/xen/arch/arm/vgic.c
-@@ -758,7 +758,8 @@ void vgic_inject_irq(struct domain *d, struct vcpu *v, unsigned int virq,
+@@ -762,7 +762,8 @@ void vgic_inject_irq(struct domain *d, struct vcpu *v, unsigned int virq,
      unsigned long flags;
  
      if ( virq >= GUEST_VIRTIO_PCI_SPI_FIRST &&
@@ -61,5 +61,5 @@ index 6172789064..0bcd883596 100644
  
      /*
 -- 
-2.34.1
+2.43.0
 

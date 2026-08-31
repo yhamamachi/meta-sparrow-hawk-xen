@@ -1,7 +1,7 @@
-From dc3cc7092c7ee84255da01b1a6634027f642eff9 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Sun, 11 Sep 2022 20:03:53 +0300
-Subject: [PATCH 08/22] libxl/arm: Add basic virtio-pci support
+Subject: [PATCH] libxl/arm: Add basic virtio-pci support
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -28,6 +28,7 @@ the PCI passthrough as we might have both features enabled at
 the same time.
 
 Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
+(cherry picked from commit 37c557abea90e9f7ba52c7cb82cbb1237cd84fd2)
 ---
  docs/man/xl.cfg.5.pod.in         |   9 ++-
  tools/libs/light/libxl_arm.c     | 121 +++++++++++++++++++++++++++----
@@ -39,10 +40,10 @@ Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
  7 files changed, 245 insertions(+), 49 deletions(-)
 
 diff --git a/docs/man/xl.cfg.5.pod.in b/docs/man/xl.cfg.5.pod.in
-index 27c455210b..9894c8ebe2 100644
+index 24f2c94705..1c3e64dc37 100644
 --- a/docs/man/xl.cfg.5.pod.in
 +++ b/docs/man/xl.cfg.5.pod.in
-@@ -1672,8 +1672,13 @@ hexadecimal format, without the "0x" prefix and all in lower case, like
+@@ -1695,8 +1695,13 @@ hexadecimal format, without the "0x" prefix and all in lower case, like
  
  =item B<transport=STRING>
  
@@ -256,10 +257,10 @@ index e4407d6e3f..ffd963736f 100644
           */
          if (iommu_needed)
 diff --git a/tools/libs/light/libxl_create.c b/tools/libs/light/libxl_create.c
-index bfc9149096..2bf509c6e4 100644
+index 9cbea98682..aea0934c9a 100644
 --- a/tools/libs/light/libxl_create.c
 +++ b/tools/libs/light/libxl_create.c
-@@ -1077,6 +1077,7 @@ int libxl__domain_config_setdefault(libxl__gc *gc,
+@@ -1079,6 +1079,7 @@ int libxl__domain_config_setdefault(libxl__gc *gc,
      libxl_ctx *ctx = libxl__gc_owner(gc);
      int ret, i;
      bool pod_enabled = false;
@@ -267,7 +268,7 @@ index bfc9149096..2bf509c6e4 100644
      libxl_domain_create_info *c_info = &d_config->c_info;
  
      libxl_physinfo physinfo;
-@@ -1271,12 +1272,23 @@ int libxl__domain_config_setdefault(libxl__gc *gc,
+@@ -1273,12 +1274,23 @@ int libxl__domain_config_setdefault(libxl__gc *gc,
      }
  
      for (i = 0; i < d_config->num_virtios; i++) {
@@ -294,7 +295,7 @@ index bfc9149096..2bf509c6e4 100644
  
      ret = 0;
 diff --git a/tools/libs/light/libxl_types.idl b/tools/libs/light/libxl_types.idl
-index 4a958f69f4..d6fe85b02c 100644
+index f527764c34..1c85428929 100644
 --- a/tools/libs/light/libxl_types.idl
 +++ b/tools/libs/light/libxl_types.idl
 @@ -288,6 +288,7 @@ libxl_vkb_backend = Enumeration("vkb_backend", [
@@ -305,7 +306,7 @@ index 4a958f69f4..d6fe85b02c 100644
      ])
  
  libxl_passthrough = Enumeration("passthrough", [
-@@ -789,13 +790,21 @@ libxl_device_virtio = Struct("device_virtio", [
+@@ -799,13 +800,21 @@ libxl_device_virtio = Struct("device_virtio", [
      ("backend_domid", libxl_domid),
      ("backend_domname", string),
      ("type", string),
@@ -446,10 +447,10 @@ index e5e321adc5..b593fd45de 100644
      }
  
 diff --git a/tools/xl/xl_parse.c b/tools/xl/xl_parse.c
-index 1cc41f1bff..34da436040 100644
+index 1c2323723c..7f8d2fc705 100644
 --- a/tools/xl/xl_parse.c
 +++ b/tools/xl/xl_parse.c
-@@ -1219,6 +1219,24 @@ static int parse_virtio_config(libxl_device_virtio *virtio, char *token)
+@@ -1221,6 +1221,24 @@ static int parse_virtio_config(libxl_device_virtio *virtio, char *token)
          if (rc) return rc;
      } else if (MATCH_OPTION("grant_usage", token, oparg)) {
          libxl_defbool_set(&virtio->grant_usage, strtoul(oparg, NULL, 0));
@@ -474,7 +475,7 @@ index 1cc41f1bff..34da436040 100644
      } else {
          fprintf(stderr, "Unknown string \"%s\" in virtio spec\n", token);
          return -1;
-@@ -1240,6 +1258,7 @@ static void parse_virtio_list(const XLU_Config *config,
+@@ -1242,6 +1260,7 @@ static void parse_virtio_list(const XLU_Config *config,
          while ((item = xlu_cfg_get_listitem(virtios, entry)) != NULL) {
              libxl_device_virtio *virtio;
              char *p;
@@ -482,7 +483,7 @@ index 1cc41f1bff..34da436040 100644
  
              virtio = ARRAY_EXTEND_INIT(d_config->virtios, d_config->num_virtios,
                                         libxl_device_virtio_init);
-@@ -1262,6 +1281,8 @@ static void parse_virtio_list(const XLU_Config *config,
+@@ -1264,6 +1283,8 @@ static void parse_virtio_list(const XLU_Config *config,
                          strcat(str, p2);
                          p = str;
                      }
@@ -491,7 +492,7 @@ index 1cc41f1bff..34da436040 100644
                  }
  
                  rc = parse_virtio_config(virtio, p);
-@@ -1272,6 +1293,21 @@ static void parse_virtio_list(const XLU_Config *config,
+@@ -1274,6 +1295,21 @@ static void parse_virtio_list(const XLU_Config *config,
                  p = strtok(NULL, ",");
              }
  
@@ -514,10 +515,10 @@ index 1cc41f1bff..34da436040 100644
              free(buf);
          }
 diff --git a/xen/include/public/arch-arm.h b/xen/include/public/arch-arm.h
-index 095b1a23e3..5b64aeadc5 100644
+index 6dc9a681a2..da8c5b8eac 100644
 --- a/xen/include/public/arch-arm.h
 +++ b/xen/include/public/arch-arm.h
-@@ -534,6 +534,9 @@ typedef uint64_t xen_callback_t;
+@@ -541,6 +541,9 @@ typedef uint64_t xen_callback_t;
  #define GUEST_FFA_NOTIF_PEND_INTR_ID      8
  #define GUEST_FFA_SCHEDULE_RECV_INTR_ID   9
  
@@ -528,5 +529,5 @@ index 095b1a23e3..5b64aeadc5 100644
  #define PSCI_cpu_suspend 0
  #define PSCI_cpu_off     1
 -- 
-2.34.1
+2.43.0
 

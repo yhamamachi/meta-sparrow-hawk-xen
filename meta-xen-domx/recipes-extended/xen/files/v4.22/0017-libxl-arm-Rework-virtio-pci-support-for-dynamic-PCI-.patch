@@ -1,8 +1,8 @@
-From a83dd7e92912aae1a67b8820ed860454129d05e2 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Tue, 17 Oct 2023 13:27:59 +0300
-Subject: [PATCH 15/22] libxl/arm: Rework virtio-pci support for dynamic PCI
- host allocation
+Subject: [PATCH] libxl/arm: Rework virtio-pci support for dynamic PCI host
+ allocation
 
 In order to enable more use-cases such as having multiple
 device-models (Qemu) running in different backend domains which provide
@@ -27,6 +27,7 @@ For the upstream this should be squashed with:
 and subsequent commits for the toolstack.
 
 Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
+(cherry picked from commit 91332f509bc577b896d6d58fcff0966b68499aa0)
 ---
  tools/libs/light/libxl_arm.c      | 245 +++++++++++++++++++++++-------
  tools/libs/light/libxl_create.c   |  14 ++
@@ -442,10 +443,10 @@ index e4d9775870..d61f7ddb0e 100644
  
          /*
 diff --git a/tools/libs/light/libxl_create.c b/tools/libs/light/libxl_create.c
-index 20b9c4c28d..058c8dfd76 100644
+index 967d6f09e2..c14797f90a 100644
 --- a/tools/libs/light/libxl_create.c
 +++ b/tools/libs/light/libxl_create.c
-@@ -1775,6 +1775,20 @@ static void domcreate_launch_dm(libxl__egc *egc, libxl__multidev *multidev,
+@@ -1777,6 +1777,20 @@ static void domcreate_launch_dm(libxl__egc *egc, libxl__multidev *multidev,
          libxl__device_add(gc, domid, &libxl__pvcallsif_devtype,
                            &d_config->pvcallsifs[i]);
  
@@ -548,10 +549,10 @@ index cf499b9ee5..6fd6fe6015 100644
                                        uint32_t domid,
                                        uint32_t backend_domid,
 diff --git a/tools/libs/light/libxl_internal.h b/tools/libs/light/libxl_internal.h
-index 1e556f1e10..51fa2857ee 100644
+index afc0388b8f..33e92b94f0 100644
 --- a/tools/libs/light/libxl_internal.h
 +++ b/tools/libs/light/libxl_internal.h
-@@ -4205,6 +4205,10 @@ _hidden int libxl__save_qdisk_backend_dm_args(libxl__gc *gc,
+@@ -4206,6 +4206,10 @@ _hidden int libxl__save_qdisk_backend_dm_args(libxl__gc *gc,
                                                uint32_t backend_domid,
                                                const libxl_domain_build_info *guest_info);
  
@@ -563,12 +564,12 @@ index 1e556f1e10..51fa2857ee 100644
  
  
 diff --git a/tools/libs/light/libxl_types.idl b/tools/libs/light/libxl_types.idl
-index f5a6acd097..eb961e271a 100644
+index 96d94f1ae1..7b75d862e4 100644
 --- a/tools/libs/light/libxl_types.idl
 +++ b/tools/libs/light/libxl_types.idl
-@@ -581,6 +581,19 @@ libxl_altp2m_mode = Enumeration("altp2m_mode", [
-     (3, "limited"),
-     ], init_val = "LIBXL_ALTP2M_MODE_DISABLED")
+@@ -590,6 +590,19 @@ libxl_xs_quota_list = Struct("xs_quota_list", [
+     ("quota", Array(libxl_xs_quota_item, "num_quota"))
+     ])
  
 +libxl_virtio_pci_host = Struct("virtio_pci_host", [
 +    ("backend_domid",     libxl_domid),
@@ -586,7 +587,7 @@ index f5a6acd097..eb961e271a 100644
  libxl_domain_build_info = Struct("domain_build_info",[
      ("max_vcpus",       integer),
      ("avail_vcpus",     libxl_bitmap),
-@@ -656,6 +669,7 @@ libxl_domain_build_info = Struct("domain_build_info",[
+@@ -665,6 +678,7 @@ libxl_domain_build_info = Struct("domain_build_info",[
      ("apic",             libxl_defbool),
      ("dm_restrict",      libxl_defbool),
      ("tee",              libxl_tee_type),
@@ -594,7 +595,7 @@ index f5a6acd097..eb961e271a 100644
      ("u", KeyedUnion(None, libxl_domain_type, "type",
                  [("hvm", Struct(None, [("firmware",         string),
                                         ("bios",             libxl_bios_type),
-@@ -808,6 +822,7 @@ libxl_device_virtio = Struct("device_virtio", [
+@@ -818,6 +832,7 @@ libxl_device_virtio = Struct("device_virtio", [
                                        ("dev", uint8),
                                        ("bus", uint8),
                                        ("domain", uint16),
@@ -631,10 +632,10 @@ index cf8744473c..95f37b6cf6 100644
  
      tmp = NULL;
 diff --git a/xen/include/public/arch-arm.h b/xen/include/public/arch-arm.h
-index 5b64aeadc5..5ac01a120f 100644
+index da8c5b8eac..e9dd0eb21c 100644
 --- a/xen/include/public/arch-arm.h
 +++ b/xen/include/public/arch-arm.h
-@@ -471,6 +471,19 @@ typedef uint64_t xen_callback_t;
+@@ -478,6 +478,19 @@ typedef uint64_t xen_callback_t;
  #define GUEST_VPCI_MEM_ADDR                 xen_mk_ullong(0x23000000)
  #define GUEST_VPCI_MEM_SIZE                 xen_mk_ullong(0x10000000)
  
@@ -654,7 +655,7 @@ index 5b64aeadc5..5ac01a120f 100644
  /*
   * 16MB == 4096 pages reserved for guest to use as a region to map its
   * grant table in.
-@@ -481,6 +494,11 @@ typedef uint64_t xen_callback_t;
+@@ -488,6 +501,11 @@ typedef uint64_t xen_callback_t;
  #define GUEST_MAGIC_BASE  xen_mk_ullong(0x39000000)
  #define GUEST_MAGIC_SIZE  xen_mk_ullong(0x01000000)
  
@@ -666,7 +667,7 @@ index 5b64aeadc5..5ac01a120f 100644
  #define GUEST_RAM_BANKS   2
  
  /*
-@@ -535,7 +553,7 @@ typedef uint64_t xen_callback_t;
+@@ -542,7 +560,7 @@ typedef uint64_t xen_callback_t;
  #define GUEST_FFA_SCHEDULE_RECV_INTR_ID   9
  
  #define GUEST_VIRTIO_PCI_SPI_FIRST   44
@@ -676,5 +677,5 @@ index 5b64aeadc5..5ac01a120f 100644
  /* PSCI functions */
  #define PSCI_cpu_suspend 0
 -- 
-2.34.1
+2.43.0
 

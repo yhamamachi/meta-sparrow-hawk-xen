@@ -1,8 +1,8 @@
-From 040d48fabc691c9d544c6bdebd41379bde34af0f Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Thu, 16 Mar 2017 12:30:43 +0200
-Subject: [PATCH 05/22] flask: Use use_device_iommu_nointremap primitives for
- several devices
+Subject: [PATCH] flask: Use use_device_iommu_nointremap primitives for several
+ devices
 
 Allow a device to be used by a domain only if an IOMMU is active,
 even if it does not support interrupt remapping.
@@ -10,6 +10,7 @@ even if it does not support interrupt remapping.
 This is needed for the device pass-through use case.
 
 Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
+(cherry picked from commit 040d48fabc691c9d544c6bdebd41379bde34af0f)
 ---
  tools/flask/policy/modules/domU.te | 5 +++++
  1 file changed, 5 insertions(+)
@@ -28,5 +29,5 @@ index 3f269018f9..0bea4ef8bb 100644
 +use_device_iommu_nointremap(domU_t, device_t)
 +use_device_iommu_nointremap(domU_t, ioport_t)
 -- 
-2.34.1
+2.43.0
 
