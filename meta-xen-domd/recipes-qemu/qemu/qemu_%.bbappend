@@ -9,6 +9,7 @@ SRC_URI:append = " \
     file://0002-hw-arm-xen_arm-disable-vTPM-wiring-GUEST_TPM_BASE-r.patch \
     file://0003-hw-xen-disable-buffered-ioreq-on-non-x86.patch \
     file://0004-hw-arm-xen_arm-create-virtio-mmio-devices-only-witho.patch \
+    file://0005-vhost-pass-Xen-guest-domid-to-vhost_xen-kernel-drive.patch \
 "
 
 # Install qemu binary wrapper

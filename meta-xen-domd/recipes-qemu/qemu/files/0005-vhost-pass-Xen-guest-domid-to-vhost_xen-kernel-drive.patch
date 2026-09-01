@@ -1,0 +1,125 @@
+From c692a11be88bb257384e75871992d0f14ee994f8 Mon Sep 17 00:00:00 2001
+From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+Date: Tue, 1 Sep 2026 16:37:28 +0900
+Subject: [PATCH] vhost: pass Xen guest domid to vhost_xen kernel driver
+ explicitly
+
+The vhost_xen kernel driver used to guess the guest domid from
+Xenstore contents, which only works for a single Xen guest at a time
+and can latch onto the wrong domid, breaking vhost-vsock (and any
+other vhost device wired to vhost_xen) grant/foreign mappings.
+
+Qemu always knows which Xen domain it is running a device model for
+(xen_domid), so pass it down explicitly via the new
+VHOST_XEN_SET_GUEST_DOMID ioctl right after taking ownership of the
+vhost device, before any virtqueue is set up. This only takes effect
+when attached to a real Xen domain (xen_mode == XEN_ATTACH) and the
+backend implements the new op, so it is a no-op for non-Xen and
+non-kernel vhost backends.
+
+Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+---
+ hw/virtio/vhost-backend.c         | 9 +++++++++
+ hw/virtio/vhost.c                 | 9 +++++++++
+ include/hw/virtio/vhost-backend.h | 4 ++++
+ linux-headers/linux/vhost.h       | 8 ++++++++
+ 4 files changed, 30 insertions(+)
+
+diff --git a/hw/virtio/vhost-backend.c b/hw/virtio/vhost-backend.c
+index e409a865ae..e3bcc2c6a0 100644
+--- a/hw/virtio/vhost-backend.c
++++ b/hw/virtio/vhost-backend.c
+@@ -203,6 +203,14 @@ static int vhost_kernel_get_vq_index(struct vhost_dev *dev, int idx)
+     return idx - dev->vq_index;
+ }
+ 
++static int vhost_kernel_set_xen_guest_domid(struct vhost_dev *dev,
++                                            uint32_t domid)
++{
++    uint16_t guest_domid = domid;
++
++    return vhost_kernel_call(dev, VHOST_XEN_SET_GUEST_DOMID, &guest_domid);
++}
++
+ #ifdef CONFIG_VHOST_VSOCK
+ static int vhost_kernel_vsock_set_guest_cid(struct vhost_dev *dev,
+                                             uint64_t guest_cid)
+@@ -319,6 +327,7 @@ const VhostOps kernel_ops = {
+         .vhost_set_owner = vhost_kernel_set_owner,
+         .vhost_reset_device = vhost_kernel_reset_device,
+         .vhost_get_vq_index = vhost_kernel_get_vq_index,
++        .vhost_set_xen_guest_domid = vhost_kernel_set_xen_guest_domid,
+ #ifdef CONFIG_VHOST_VSOCK
+         .vhost_vsock_set_guest_cid = vhost_kernel_vsock_set_guest_cid,
+         .vhost_vsock_set_running = vhost_kernel_vsock_set_running,
+diff --git a/hw/virtio/vhost.c b/hw/virtio/vhost.c
+index b643f42ea4..eed2988198 100644
+--- a/hw/virtio/vhost.c
++++ b/hw/virtio/vhost.c
+@@ -27,6 +27,7 @@
+ #include "migration/qemu-file-types.h"
+ #include "sysemu/dma.h"
+ #include "sysemu/tcg.h"
++#include "hw/xen/xen.h"
+ #include "trace.h"
+ 
+ /* enabled until disconnected backend stabilizes */
+@@ -1331,6 +1332,14 @@ int vhost_dev_init(struct vhost_dev *hdev, void *opaque,
+         goto fail;
+     }
+ 
++    if (xen_mode == XEN_ATTACH && hdev->vhost_ops->vhost_set_xen_guest_domid) {
++        r = hdev->vhost_ops->vhost_set_xen_guest_domid(hdev, xen_domid);
++        if (r < 0) {
++            error_setg_errno(errp, -r, "vhost_set_xen_guest_domid failed");
++            goto fail;
++        }
++    }
++
+     r = hdev->vhost_ops->vhost_get_features(hdev, &features);
+     if (r < 0) {
+         error_setg_errno(errp, -r, "vhost_get_features failed");
+diff --git a/include/hw/virtio/vhost-backend.h b/include/hw/virtio/vhost-backend.h
+index 81bf3109f8..e3b5112445 100644
+--- a/include/hw/virtio/vhost-backend.h
++++ b/include/hw/virtio/vhost-backend.h
+@@ -126,6 +126,9 @@ typedef int (*vhost_get_device_id_op)(struct vhost_dev *dev, uint32_t *dev_id);
+ 
+ typedef bool (*vhost_force_iommu_op)(struct vhost_dev *dev);
+ 
++typedef int (*vhost_set_xen_guest_domid_op)(struct vhost_dev *dev,
++                                            uint32_t domid);
++
+ typedef struct VhostOps {
+     VhostBackendType backend_type;
+     vhost_backend_init vhost_backend_init;
+@@ -171,6 +174,7 @@ typedef struct VhostOps {
+     vhost_vq_get_addr_op  vhost_vq_get_addr;
+     vhost_get_device_id_op vhost_get_device_id;
+     vhost_force_iommu_op vhost_force_iommu;
++    vhost_set_xen_guest_domid_op vhost_set_xen_guest_domid;
+ } VhostOps;
+ 
+ int vhost_backend_update_device_iotlb(struct vhost_dev *dev,
+diff --git a/linux-headers/linux/vhost.h b/linux-headers/linux/vhost.h
+index c998860d7b..8dc69fe27c 100644
+--- a/linux-headers/linux/vhost.h
++++ b/linux-headers/linux/vhost.h
+@@ -120,6 +120,14 @@
+ #define VHOST_VSOCK_SET_GUEST_CID	_IOW(VHOST_VIRTIO, 0x60, __u64)
+ #define VHOST_VSOCK_SET_RUNNING		_IOW(VHOST_VIRTIO, 0x61, int)
+ 
++/* VHOST_XEN specific defines */
++
++/* Tell vhost which Xen domid the guest driving this device belongs to.
++ * Needed so descriptor addresses (grant references or pseudo-physical
++ * addresses) can be mapped from the correct domain. Must be set before
++ * the device starts processing virtqueues. */
++#define VHOST_XEN_SET_GUEST_DOMID	_IOW(VHOST_VIRTIO, 0x90, __u16)
++
+ /* VHOST_VDPA specific defines */
+ 
+ /* Get the device id. The device ids follow the same definition of
+-- 
+2.43.0
+

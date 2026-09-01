@@ -27,6 +27,7 @@ SRC_URI:append = " \
     file://xen_patchset/0008-vhost_xen-Change-a-logic-to-get-the-guest-domid.patch \
     file://xen_patchset/0009-Use-mhp_get_pluggable_range-in-balloon-as-well.patch \
     file://xen_patchset/0010-vhost_xen-Fix-build-error.patch \
+    file://xen_patchset/0012-vhost_xen-Get-guest-domid-via-new-VHOST_XEN_SET_GUES.patch \
 "
 
 do_compile:prepend:sparrow-hawk () {

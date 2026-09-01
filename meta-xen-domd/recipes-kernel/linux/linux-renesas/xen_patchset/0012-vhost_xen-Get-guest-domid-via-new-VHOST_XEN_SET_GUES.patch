@@ -1,0 +1,224 @@
+From 88ed5f8ad3c6367c307fba1c46f4ca5e72bc7393 Mon Sep 17 00:00:00 2001
+From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+Date: Tue, 1 Sep 2026 16:36:41 +0900
+Subject: [PATCH] vhost_xen: Get guest domid via new VHOST_XEN_SET_GUEST_DOMID
+ ioctl
+
+guest_domid was a single module-wide static variable, discovered by
+watching the Xenstore "device-model" directory and only updated when
+it contained exactly one entry. This breaks down as soon as more than
+one Xen guest uses a vhost device concurrently (e.g. DomA and DomU
+both using vhost-vsock-pci): the watch either keeps stale domid or
+never updates. It also has been observed to latch onto a domid that
+does not match any running guest, in which case vhost_xen_map_desc()
+fails with "Failed to map pages from domN (ret=-3)" and the vsock
+transport never manages to establish grant/foreign mappings.
+
+Replace this best-effort Xenstore watch with an explicit per-device
+domid, set by userspace (Qemu) via a new VHOST_XEN_SET_GUEST_DOMID
+ioctl before the device starts processing virtqueues. Qemu always
+knows which Xen domain it is running the device model for (xen_domid),
+so it can pass the correct domid directly instead of vhost guessing it
+from Xenstore contents.
+
+Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+---
+ drivers/vhost/vhost.c      | 16 +++++++++
+ drivers/vhost/vhost.h      | 12 +++++++
+ drivers/vhost/xen.c        | 71 +-------------------------------------
+ include/uapi/linux/vhost.h |  8 +++++
+ 4 files changed, 37 insertions(+), 70 deletions(-)
+
+diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
+index 3597d21f3534..67e378eb75e6 100644
+--- a/drivers/vhost/vhost.c
++++ b/drivers/vhost/vhost.c
+@@ -599,6 +599,9 @@ void vhost_dev_init(struct vhost_dev *dev,
+ 	dev->use_worker = use_worker;
+ 	dev->msg_handler = msg_handler;
+ 	dev->fork_owner = fork_from_owner_default;
++#ifdef CONFIG_VHOST_XEN
++	dev->guest_domid = DOMID_INVALID;
++#endif
+ 	init_waitqueue_head(&dev->wait);
+ 	INIT_LIST_HEAD(&dev->read_list);
+ 	INIT_LIST_HEAD(&dev->pending_list);
+@@ -2365,6 +2368,19 @@ long vhost_dev_ioctl(struct vhost_dev *d, unsigned int ioctl, void __user *argp)
+ 		goto done;
+ 
+ 	switch (ioctl) {
++#ifdef CONFIG_VHOST_XEN
++	case VHOST_XEN_SET_GUEST_DOMID: {
++		u16 domid;
++
++		if (copy_from_user(&domid, argp, sizeof(domid))) {
++			r = -EFAULT;
++			break;
++		}
++		d->guest_domid = domid;
++		r = 0;
++		break;
++	}
++#endif
+ 	case VHOST_SET_MEM_TABLE:
+ 		r = vhost_set_memory(d, argp);
+ 		break;
+diff --git a/drivers/vhost/vhost.h b/drivers/vhost/vhost.h
+index d25ebba2aab8..cace8fce73e4 100644
+--- a/drivers/vhost/vhost.h
++++ b/drivers/vhost/vhost.h
+@@ -14,6 +14,9 @@
+ #include <linux/atomic.h>
+ #include <linux/vhost_iotlb.h>
+ #include <linux/irqbypass.h>
++#ifdef CONFIG_VHOST_XEN
++#include <xen/interface/xen.h>
++#endif
+ 
+ struct vhost_work;
+ struct vhost_task;
+@@ -209,6 +212,15 @@ struct vhost_dev {
+ 	bool fork_owner;
+ 	int (*msg_handler)(struct vhost_dev *dev, u32 asid,
+ 			   struct vhost_iotlb_msg *msg);
++#ifdef CONFIG_VHOST_XEN
++	/*
++	 * Xen domid of the guest driving this device. Set by userspace via
++	 * VHOST_XEN_SET_GUEST_DOMID before the device starts processing
++	 * virtqueues. Needed to map descriptor addresses from the correct
++	 * domain when several Xen guests use vhost devices concurrently.
++	 */
++	domid_t guest_domid;
++#endif
+ };
+ 
+ bool vhost_exceeds_weight(struct vhost_virtqueue *vq, int pkts, int total_len);
+diff --git a/drivers/vhost/xen.c b/drivers/vhost/xen.c
+index 30ec142718d2..ee92e102c391 100644
+--- a/drivers/vhost/xen.c
++++ b/drivers/vhost/xen.c
+@@ -15,15 +15,12 @@
+ #include <linux/vhost.h>
+ #include <xen/grant_table.h>
+ #include <xen/xen.h>
+-#include <xen/xenbus.h>
+ #include <xen/interface/memory.h>
+ #include <asm/xen/hypercall.h>
+ #include <linux/vmalloc.h>
+ 
+ #include "vhost.h"
+ 
+-static domid_t guest_domid = DOMID_INVALID;
+-
+ static bool nogrant;
+ module_param(nogrant, bool, 0444);
+ MODULE_PARM_DESC(nogrant, "Disable Xen grant mappings");
+@@ -322,6 +319,7 @@ void *vhost_xen_map_desc(struct vhost_virtqueue *vq, u64 addr, u32 size,
+ 	struct vhost_xen_map *map;
+ 	unsigned long offset = xen_offset_in_page(addr);
+ 	int count = XEN_PFN_UP(offset + size);
++	domid_t guest_domid = vq->dev->guest_domid;
+ 	int ret;
+ 
+ 	if (!xen_domain() || guest_domid == DOMID_INVALID)
+@@ -405,78 +403,11 @@ static const struct vhost_xen_ops vhost_xen_foreign_ops = {
+ 	.unmap_pages = vhost_xen_foreign_unmap_pages,
+ };
+ 
+-static void vhost_xen_get_guest_domid(struct xenbus_watch *watch,
+-		const char *path, const char *token)
+-{
+-	char **dm_dir;
+-	unsigned int n = 0;
+-
+-	dm_dir = xenbus_directory(XBT_NIL, "device-model", "", &n);
+-	if (IS_ERR(dm_dir))
+-		return;
+-
+-	if (n == 0) {
+-		if (guest_domid != DOMID_INVALID) {
+-			guest_domid = DOMID_INVALID;
+-			pr_info("%s: Reset current domid\n", __func__);
+-		}
+-	} else if (n == 1) {
+-		char *dm_str, *dm_path;
+-		domid_t domid;
+-
+-		domid = simple_strtoul(dm_dir[0], NULL, 0);
+-
+-		dm_path = kasprintf(GFP_KERNEL, "device-model/%d", domid);
+-		if (!dm_path)
+-			goto out;
+-
+-		dm_str = (char *)xenbus_read(XBT_NIL, dm_path, "state", NULL);
+-		if (IS_ERR(dm_str)) {
+-			kfree(dm_path);
+-			goto out;
+-		}
+-
+-		if (!strcmp(dm_str, "running")) {
+-			guest_domid = domid;
+-			pr_info("%s: Set new domid: %u\n", __func__, guest_domid);
+-		}
+-
+-		kfree(dm_path);
+-		kfree(dm_str);
+-	}
+-
+-out:
+-	kfree(dm_dir);
+-}
+-
+-static struct xenbus_watch vhost_xen_qemu_args = {
+-	.node = "device-model",
+-	.callback = vhost_xen_get_guest_domid,
+-};
+-
+-static int vhost_xen_watcher(struct notifier_block *notifier,
+-		unsigned long event, void *data)
+-{
+-	int ret;
+-
+-	ret = register_xenbus_watch(&vhost_xen_qemu_args);
+-	if (ret)
+-		pr_err("%s: Failed to set watcher (ret=%d)\n", __func__, ret);
+-
+-	return NOTIFY_DONE;
+-}
+-
+-static struct notifier_block vhost_xen_notifier = {
+-	.notifier_call = vhost_xen_watcher,
+-};
+-
+ static int __init vhost_xen_init(void)
+ {
+ 	if (!xen_domain())
+ 		return -ENODEV;
+ 
+-	register_xenstore_notifier(&vhost_xen_notifier);
+-
+ 	vhost_xen_ops = nogrant ? &vhost_xen_foreign_ops : &vhost_xen_grant_ops;
+ 
+ 	pr_info("%s: Initialize module for Xen %s mappings\n", __func__,
+diff --git a/include/uapi/linux/vhost.h b/include/uapi/linux/vhost.h
+index 96b178f1bd5c..8ac52e215ac1 100644
+--- a/include/uapi/linux/vhost.h
++++ b/include/uapi/linux/vhost.h
+@@ -146,6 +146,14 @@
+ #define VHOST_VSOCK_SET_GUEST_CID	_IOW(VHOST_VIRTIO, 0x60, __u64)
+ #define VHOST_VSOCK_SET_RUNNING		_IOW(VHOST_VIRTIO, 0x61, int)
+ 
++/* VHOST_XEN specific defines */
++
++/* Tell vhost which Xen domid the guest driving this device belongs to.
++ * Needed so descriptor addresses (grant references or pseudo-physical
++ * addresses) can be mapped from the correct domain. Must be set before
++ * the device starts processing virtqueues. */
++#define VHOST_XEN_SET_GUEST_DOMID	_IOW(VHOST_VIRTIO, 0x90, __u16)
++
+ /* VHOST_VDPA specific defines */
+ 
+ /* Get the device id. The device ids follow the same definition of
+-- 
+2.43.0
+
