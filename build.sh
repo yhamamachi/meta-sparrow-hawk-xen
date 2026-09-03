@@ -8,34 +8,36 @@ USING_DOMU=no
 USE_GRAPHICS_PACKAGE=yes
 ENABLE_VIRTIO=no
 ENABLE_DOMU_VIRTIO=no
-CLEAN_BUILD_TEST=no
 ANDROID_VERSION=15
 
 Usage() {
     echo "Usage:"
     echo "    $0 [option]"
     echo "option:"
-    echo "    -a: Using DomA(Default is disable. Virtio is forcely enabled.)"
-    echo "    -c: Clean Build test(Default is disable)"
-    echo "    -u: Using DomU(Default is disable)"
-    echo "    -v: Enable Virtio backend on DomD(Default is disabled)"
-    echo "    -A <15|16|17>: AAOS version to build for DomA(Default is 15)"
-    echo "    -h: Show this usage"
+    echo "    -a | --doma:            Using DomA(Default is disable. Virtio is forcely enabled.)"
+    echo "    -u | --domu:            Using DomU(Default is disable)"
+    echo "    -v | --virtio:          Enable Virtio backend on DomD(Default is disabled)"
+    echo "    -A | --android-version <15|16|17>: AAOS version to build for DomA(Default is 15)"
+    echo "    -h | --help:            Show this usage"
 }
 
 # Proc arguments
-OPTIND=1
-while getopts "acghuvA:" OPT
-do
-    case $OPT in
-        a) USING_DOMA=yes; ENABLE_VIRTIO=yes ;;
-        c) CLEAN_BUILD_TEST=yes;;
-        u) USING_DOMU=yes;;
-        v) ENABLE_VIRTIO=yes;;
-        A) ANDROID_VERSION=$OPTARG;;
-        h) Usage; exit;;
-        *) echo -e "\e[31mERROR: Unsupported option\e[m"; Usage; exit;;
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -a|--doma)
+            USING_DOMA=yes; ENABLE_VIRTIO=yes ;;
+        -u|--domu)
+            USING_DOMU=yes ;;
+        -v|--virtio)
+            ENABLE_VIRTIO=yes ;;
+        -A|--android-version)
+            ANDROID_VERSION=$2
+            shift ;;
+        -h|--help)
+            Usage; exit 0 ;;
+        *) echo -e "\e[31mERROR: Unsupported option: $1\e[m"; Usage; exit 1 ;;
     esac
+    shift
 done
 if [[ "${USING_DOMU}" == "yes" ]] && [[ "${ENABLE_VIRTIO}" == "yes" ]]; then
     ENABLE_DOMU_VIRTIO=yes
@@ -43,12 +45,6 @@ fi
 
 cd ${WORK_DIR}
 cp -f ../prod-devel-rcar4_new.yaml ./
-
-if [[ "${CLEAN_BUILD_TEST}" == "yes" ]]; then
-    sed -i -e 's/"yocto"/"yocto-clean"/' ./prod-devel-rcar4_new.yaml
-    rm -rf yocto-clean/build-dom*/conf
-    rm -rf ./yocto-clean/build-dom*
-fi
 
 # repo command setup
 if [[ ${USING_DOMA} == "yes" ]]; then
