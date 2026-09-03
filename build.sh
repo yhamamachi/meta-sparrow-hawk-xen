@@ -1,7 +1,7 @@
 #!/bin/bash -eu
 
 SCRIPT_DIR=$(cd `dirname $0` && pwd)
-WORK_DIR=${SCRIPT_DIR}/work_v4hsbc_xen
+WORK_DIR=${SCRIPT_DIR}/work
 mkdir -p ${WORK_DIR}
 USING_DOMA=no
 USING_DOMU=no
