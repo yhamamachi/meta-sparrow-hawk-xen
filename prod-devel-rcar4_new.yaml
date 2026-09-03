@@ -48,6 +48,9 @@ common_data:
   conf: &COMMON_CONF
     - [DL_DIR, "${TOPDIR}/../common_data/downloads"]
 
+    # Remove per-recipe work dirs after packaging to reduce disk space
+    - [INHERIT:append, " rm_work"]
+
     # Skip warning about missing "virtualization" distro feature
     - [SKIP_META_VIRT_SANITY_CHECK, "1"]
 
