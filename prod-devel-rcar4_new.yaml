@@ -470,8 +470,6 @@ parameters:
                 - [MACHINE_FEATURES:append, " gsx"]
           domd:
             builder:
-              layers:
-                - "../../../meta-xen-domd-gfx"
               conf:
                 # Enable Gfx Pkgs
                 - [MACHINE_FEATURES:append, " gsx"]
