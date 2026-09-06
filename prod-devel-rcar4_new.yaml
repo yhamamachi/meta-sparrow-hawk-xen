@@ -524,6 +524,25 @@ parameters:
                 - [DISTRO_FEATURES:append, " enable_virtio"]
                 - [DISTRO_FEATURES:append, " xen vmsep"]
 
+  DOMD_IMAGE_SHRINK:
+    desc: "Remove unneeded packages (opencv, gstreamer, etc.) from DomD image"
+    "yes":
+      default: true
+      overrides:
+        components:
+          domd:
+            builder:
+              conf:
+                # DomD only needs to act as a DomU backend.
+                # Drop the Renesas BSP packagegroups (opencv, gstreamer,
+                # libcamera, python3 demo deps, ...) to reduce build time
+                # and image size.
+                - [IMAGE_INSTALL:remove, "packagegroup-resesas-bsp"]
+                - [IMAGE_INSTALL:remove, "packagegroup-renesas-bsp-tools"]
+                - [IMAGE_INSTALL:remove, "packagegroup-renesas-bsp-demo"]
+    "no":
+      desc: "Nothing to do"
+
   ENABLE_DOMU_VIRTIO:
     desc: "Build Linux as a guest VM using Virtio backend"
     "no":
