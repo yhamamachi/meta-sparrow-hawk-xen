@@ -1,0 +1,139 @@
+From 16e3d25a584989242a30f5a9ae1622e599bc9f6a Mon Sep 17 00:00:00 2001
+From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+Date: Mon, 28 Sep 2026 21:46:27 +0900
+Subject: [PATCH] WIP: Porting contig-pagecache patch
+
+Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+---
+ mm/readahead.c | 87 ++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 85 insertions(+), 2 deletions(-)
+
+diff --git a/mm/readahead.c b/mm/readahead.c
+index 3a4b5d58eeb6..4b5795f86da9 100644
+--- a/mm/readahead.c
++++ b/mm/readahead.c
+@@ -181,6 +181,53 @@ static void read_pages(struct readahead_control *rac)
+ 	BUG_ON(readahead_count(rac));
+ }
+ 
++/*
++ * Contiguous chunk helper for readahead:
++ * - We allocate up to MAX_ORDER_NR_PAGES pages at once via alloc_pages_exact().
++ * - Pages are consumed one-by-one. Unused tail pages are returned with put_page().
++ * - Never call free_pages_exact() on a partially-consumed chunk.
++ */
++struct ra_chunk {
++	struct page *base;  /* first page of the chunk */
++	unsigned long  nr;  /* total pages in this chunk */
++	unsigned long  off; /* next index to consume (0..nr) */
++};
++
++static inline void ra_chunk_reset(struct ra_chunk *cc)
++{
++	cc->base = NULL;
++	cc->nr = 0;
++	cc->off = 0;
++}
++
++/* Try to (re)fill the chunk with up to 'want' pages (clamped to MAX_ORDER_NR_PAGES) */
++static int ra_chunk_refill(struct ra_chunk *cc, gfp_t gfp_mask, unsigned long want)
++{
++	unsigned long n = min_t(unsigned long, want, MAX_ORDER_NR_PAGES);
++	void *area;
++
++	if (!n)
++		return -EINVAL;
++	/* alloc_pages_exact() warns on __GFP_HIGHMEM */
++	area = alloc_pages_exact(n * PAGE_SIZE, gfp_mask & ~__GFP_HIGHMEM);
++	if (!area)
++		return -ENOMEM;
++
++	cc->base = virt_to_page(area);
++	cc->nr   = n;
++	cc->off  = 0;
++	return 0;
++}
++
++static void ra_chunk_put_unused(struct ra_chunk *cc)
++{
++	if (!cc->base)
++		return;
++	while (cc->off < cc->nr)
++		put_page(cc->base + cc->off++);
++	ra_chunk_reset(cc);
++}
++
+ static struct folio *ractl_alloc_folio(struct readahead_control *ractl,
+ 				       gfp_t gfp_mask, unsigned int order)
+ {
+@@ -228,6 +275,16 @@ void page_cache_ra_unbounded(struct readahead_control *ractl,
+ 	 */
+ 	unsigned int nofs = memalloc_nofs_save();
+ 
++	/*
++	 * Try to allocate pages in contiguous chunks of up to
++	 * MAX_ORDER_NR_PAGES. Chunks consist of order-0 pages, so they
++	 * cannot be used when the mapping requires larger folios.
++	 */
++	bool use_chunks = !mapping_min_folio_order(mapping);
++	struct ra_chunk chunk;
++
++	ra_chunk_reset(&chunk);
++
+ 	trace_page_cache_ra_unbounded(mapping->host, index, nr_to_read,
+ 				      lookahead_size);
+ 	filemap_invalidate_lock_shared(mapping);
+@@ -255,6 +312,7 @@ void page_cache_ra_unbounded(struct readahead_control *ractl,
+ 	 */
+ 	while (i < nr_to_read) {
+ 		struct folio *folio = xa_load(&mapping->i_pages, index + i);
++		unsigned long remain = nr_to_read - i;
+ 		int ret;
+ 
+ 		if (folio && !xa_is_value(folio)) {
+@@ -272,8 +330,28 @@ void page_cache_ra_unbounded(struct readahead_control *ractl,
+ 			continue;
+ 		}
+ 
+-		folio = ractl_alloc_folio(ractl, gfp_mask,
+-					mapping_min_folio_order(mapping));
++		/*
++		 * Obtain a folio, first from a contiguous chunk, else
++		 * fallback per-folio.
++		 */
++		if (use_chunks) {
++			if (!chunk.base || chunk.off == chunk.nr) {
++				/*
++				 * Refill with up to MAX_ORDER_NR_PAGES or
++				 * the remaining needed pages.
++				 */
++				if (remain == 1 ||
++				    ra_chunk_refill(&chunk, gfp_mask, remain))
++					use_chunks = false;
++			}
++		}
++		if (use_chunks) {
++			folio = page_folio(chunk.base + chunk.off++);
++			if (ractl->dropbehind)
++				__folio_set_dropbehind(folio);
++		} else
++			folio = ractl_alloc_folio(ractl, gfp_mask,
++						mapping_min_folio_order(mapping));
+ 		if (!folio)
+ 			break;
+ 
+@@ -300,6 +378,11 @@ void page_cache_ra_unbounded(struct readahead_control *ractl,
+ 	 * will then handle the error.
+ 	 */
+ 	read_pages(ractl);
++
++	/* Return any unused pages in the current contiguous chunk. */
++	if (use_chunks)
++		ra_chunk_put_unused(&chunk);
++
+ 	filemap_invalidate_unlock_shared(mapping);
+ 	memalloc_nofs_restore(nofs);
+ }
+-- 
+2.43.0
+
