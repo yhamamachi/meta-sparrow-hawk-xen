@@ -1,0 +1,124 @@
+diff --git a/mm/readahead.c b/mm/readahead.c
+index bf79275060f3..279426adcd7b 100644
+--- a/mm/readahead.c
++++ b/mm/readahead.c
+@@ -188,6 +188,53 @@ static void read_pages(struct readahead_control *rac)
+ 	BUG_ON(readahead_count(rac));
+ }
+ 
++/*
++ * Contiguous chunk helper for readahead:
++ * - We allocate up to MAX_ORDER_NR_PAGES pages at once via alloc_pages_exact().
++ * - Pages are consumed one-by-one. Unused tail pages are returned with put_page().
++ * - Never call free_pages_exact() on a partially-consumed chunk.
++ */
++struct ra_chunk {
++	struct page *base;  /* first page of the chunk */
++	unsigned long  nr;  /* total pages in this chunk */
++	unsigned long  off; /* next index to consume (0..nr) */
++};
++
++static inline void ra_chunk_reset(struct ra_chunk *cc)
++{
++	cc->base = NULL;
++	cc->nr = 0;
++	cc->off = 0;
++}
++
++/* Try to (re)fill the chunk with up to 'want' pages (clamped to MAX_ORDER_NR_PAGES) */
++static int ra_chunk_refill(struct ra_chunk *cc, gfp_t gfp_mask, unsigned long want)
++{
++	unsigned long n = min_t(unsigned long, want, MAX_ORDER_NR_PAGES);
++	void *area;
++
++	if (!n)
++		return -EINVAL;
++	/* alloc_pages_exact() warns on __GFP_HIGHMEM */
++	area = alloc_pages_exact(n * PAGE_SIZE, gfp_mask & ~__GFP_HIGHMEM);
++	if (!area)
++		return -ENOMEM;
++
++	cc->base = virt_to_page(area);
++	cc->nr   = n;
++	cc->off  = 0;
++	return 0;
++}
++
++static void ra_chunk_put_unused(struct ra_chunk *cc)
++{
++	if (!cc->base)
++		return;
++	while (cc->off < cc->nr)
++		put_page(cc->base + cc->off++);
++	ra_chunk_reset(cc);
++}
++
+ /**
+  * page_cache_ra_unbounded - Start unchecked readahead.
+  * @ractl: Readahead control.
+@@ -223,6 +270,16 @@ void page_cache_ra_unbounded(struct readahead_control *ractl,
+ 	 */
+ 	unsigned int nofs = memalloc_nofs_save();
+ 
++	/*
++	 * Try to allocate pages in contiguous chunks of up to
++	 * MAX_ORDER_NR_PAGES. Chunks consist of order-0 pages, so they
++	 * cannot be used when the mapping requires larger folios.
++	 */
++	bool use_chunks = !mapping_min_folio_order(mapping);
++	struct ra_chunk chunk;
++
++	ra_chunk_reset(&chunk);
++
+ 	filemap_invalidate_lock_shared(mapping);
+ 	index = mapping_align_index(mapping, index);
+ 
+@@ -243,6 +300,7 @@ void page_cache_ra_unbounded(struct readahead_control *ractl,
+ 	 */
+ 	while (i < nr_to_read) {
+ 		struct folio *folio = xa_load(&mapping->i_pages, index + i);
++		unsigned long remain = nr_to_read - i;
+ 		int ret;
+ 
+ 		if (folio && !xa_is_value(folio)) {
+@@ -260,8 +318,26 @@ void page_cache_ra_unbounded(struct readahead_control *ractl,
+ 			continue;
+ 		}
+ 
+-		folio = filemap_alloc_folio(gfp_mask,
+-					    mapping_min_folio_order(mapping));
++		/*
++		 * Obtain a folio, first from a contiguous chunk, else
++		 * fallback per-folio.
++		 */
++		if (use_chunks) {
++			if (!chunk.base || chunk.off == chunk.nr) {
++				/*
++				 * Refill with up to MAX_ORDER_NR_PAGES or
++				 * the remaining needed pages.
++				 */
++				if (remain == 1 ||
++				    ra_chunk_refill(&chunk, gfp_mask, remain))
++					use_chunks = false;
++			}
++		}
++		if (use_chunks)
++			folio = page_folio(chunk.base + chunk.off++);
++		else
++			folio = filemap_alloc_folio(gfp_mask,
++						    mapping_min_folio_order(mapping));
+ 		if (!folio)
+ 			break;
+ 
+@@ -288,6 +364,11 @@ void page_cache_ra_unbounded(struct readahead_control *ractl,
+ 	 * will then handle the error.
+ 	 */
+ 	read_pages(ractl);
++
++	/* Return any unused pages in the current contiguous chunk. */
++	if (use_chunks)
++		ra_chunk_put_unused(&chunk);
++
+ 	filemap_invalidate_unlock_shared(mapping);
+ 	memalloc_nofs_restore(nofs);
+ }
