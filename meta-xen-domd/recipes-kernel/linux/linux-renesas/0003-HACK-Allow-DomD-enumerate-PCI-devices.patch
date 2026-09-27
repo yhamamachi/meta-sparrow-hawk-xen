@@ -3,6 +3,7 @@ From: Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>
 Date: Tue, 9 Nov 2021 15:25:44 +0200
 Subject: [PATCH 3/4] HACK: Allow DomD enumerate PCI devices
 
+Upstream-Status: Inappropriate [embedded specific]
 Signed-off-by: Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>
 ---
  drivers/xen/pci.c | 2 ++

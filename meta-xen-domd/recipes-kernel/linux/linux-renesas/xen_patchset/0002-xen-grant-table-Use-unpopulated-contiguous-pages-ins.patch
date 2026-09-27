@@ -14,6 +14,7 @@ introduced is_xen_unpopulated_page() in gnttab_dma_free_pages() to know
 what API to use for freeing pages.
 
 On review: https://lore.kernel.org/xen-devel/1655740136-3974-3-git-send-email-olekstysh@gmail.com/
+Upstream-Status: Submitted [https://lore.kernel.org/xen-devel/1655740136-3974-3-git-send-email-olekstysh@gmail.com/]
 Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 ---
  drivers/xen/grant-table.c | 24 ++++++++++++++++++++++++

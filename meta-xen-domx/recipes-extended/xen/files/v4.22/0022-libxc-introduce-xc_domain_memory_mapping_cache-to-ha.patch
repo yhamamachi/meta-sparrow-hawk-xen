@@ -10,6 +10,7 @@ are the same for the XEN_DOMCTL_memory_mapping hypercall (0 is device
 memory, 1 is normal memory). Pass CACHEABILITY_DEVMEM by default -- no
 changes in behavior.
 
+Upstream-Status: Pending
 Signed-off-by: Stefano Stabellini <stefanos@xilinx.com>
 Signed-off-by: Dmytro Firsov <dmytro_firsov@epam.com>
 (cherry picked from commit 928dac191f9de027df3cd4f8ce1181ea2623dc22)

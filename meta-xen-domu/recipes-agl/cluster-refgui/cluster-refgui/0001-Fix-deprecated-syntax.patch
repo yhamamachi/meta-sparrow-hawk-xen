@@ -3,6 +3,7 @@ From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
 Date: Fri, 31 Jan 2025 22:07:16 +0900
 Subject: [PATCH] Fix deprecated syntax
 
+Upstream-Status: Pending
 Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
 ---
  GUIModel/ACC/ACC_Animation.qml           |  2 +-

@@ -6,6 +6,7 @@ Subject: [PATCH] pci: Add support for V4H pcie host
 
 Update pci-host-rcar4 compatible to also include r8a779g0 boards.
 
+Upstream-Status: Pending
 Signed-off-by: Mykyta Poturai <mykyta_poturai@epam.com>
 ---
  xen/arch/arm/pci/pci-host-rcar4.c | 1 +

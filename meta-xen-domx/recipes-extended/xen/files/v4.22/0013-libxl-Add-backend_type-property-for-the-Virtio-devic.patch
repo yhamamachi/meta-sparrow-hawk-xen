@@ -19,6 +19,7 @@ the time being, so the combination of "backend=DomD" and
 Qemu configuration for Virtio devices should be described via
 "device_model_args" property.
 
+Upstream-Status: Pending
 Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 (cherry picked from commit 6f4bb4ebfc9d316d82c5703d3c3348f261c6e1aa)
 ---

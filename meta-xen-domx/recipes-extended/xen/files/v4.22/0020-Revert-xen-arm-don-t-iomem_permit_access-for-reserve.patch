@@ -7,6 +7,7 @@ Subject: [PATCH] Revert "xen/arm: don't iomem_permit_access for
 This reverts commit f9335bd4b89ba398ae993a0655c40c545b75d7c1
 (manual revert).
 
+Upstream-Status: Inappropriate [embedded specific]
 Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Signed-off-by: Dmytro Firsov <dmytro_firsov@epam.com>
 (cherry picked from commit 5896fb9c309872b651e177b80fecdb7a4e9f45ec)

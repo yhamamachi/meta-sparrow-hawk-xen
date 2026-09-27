@@ -7,6 +7,7 @@ This driver allows simpler device passthrough in case their resources
 cannot be split between guests, e.g. they share some common resource(s)
 and para-virtualized drivers are not an option.
 
+Upstream-Status: Inappropriate [embedded specific]
 Signed-off-by: Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>
 Signed-off-by: Mykyta Poturai <mykyta_poturai@epam.com>
 ---

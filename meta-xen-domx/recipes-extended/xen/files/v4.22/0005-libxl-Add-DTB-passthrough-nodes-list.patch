@@ -11,6 +11,7 @@ Specify in domain configuration file which values should be added
 by providing "dtb_passthrough_nodes" list of strings separated by
 comas.
 
+Upstream-Status: Pending
 Signed-off-by: Iurii Konovalenko <iurii.konovalenko@globallogic.com>
 Signed-off-by: Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>
 (cherry picked from commit 02b27580d0714f1ab3360cfe9a1041e14b0eb0f9)

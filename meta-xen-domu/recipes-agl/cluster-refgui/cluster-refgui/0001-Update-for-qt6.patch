@@ -3,6 +3,7 @@ From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
 Date: Fri, 31 Jan 2025 12:54:52 +0900
 Subject: [PATCH] Update for qt6
 
+Upstream-Status: Pending
 Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
 ---
  GUIModel/MeterEffect/GaussianBlur.qml | 4 ++--

@@ -67,11 +67,6 @@ common_data:
     # as the scarthgap poky default local.conf did
     - [EXTRA_IMAGE_FEATURES, "allow-empty-password empty-root-password allow-root-login"]
 
-    # Many local patches do not have Upstream-Status yet, which is an error
-    # since wrynose. Downgrade it to a warning until they are updated.
-    - [ERROR_QA:remove, "patch-status"]
-    - [WARN_QA:append, " patch-status"]
-
     # Remove per-recipe work dirs after packaging to reduce disk space
     - [INHERIT:append, " rm_work"]
 

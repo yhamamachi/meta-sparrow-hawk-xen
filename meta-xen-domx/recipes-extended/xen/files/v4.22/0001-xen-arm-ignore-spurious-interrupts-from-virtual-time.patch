@@ -17,6 +17,7 @@ fires but the pending bit is not set, treat it as spurious and ignore it.
 This issue is reproducible under heavy load on the R-Car X5H board
 (Cortex-A720AE r0p0).
 
+Upstream-Status: Pending
 Signed-off-by: Mykola Kvach <mykola_kvach@epam.com>
 Reviewed-by: Volodymyr Babchuk <volodymyr_babchuk@epam.com>
 Tested-by: Leonid Komarianskyi <leonid_komarianskyi@epam.com>

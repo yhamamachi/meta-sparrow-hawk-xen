@@ -15,6 +15,7 @@ today) and normal memory as p2m_ram_rw.
 
 On x86, return error if the cacheability requested is not device memory.
 
+Upstream-Status: Pending
 Signed-off-by: Stefano Stabellini <stefanos@xilinx.com>
 (cherry picked from commit 516cece92f4cadea7e94c51ddbda34d55c3cbb68)
 ---

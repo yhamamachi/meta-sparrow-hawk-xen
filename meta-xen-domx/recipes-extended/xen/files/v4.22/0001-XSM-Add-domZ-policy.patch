@@ -3,6 +3,7 @@ From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
 Date: Thu, 26 Mar 2026 13:42:19 +0900
 Subject: [PATCH] XSM: Add domZ policy
 
+Upstream-Status: Inappropriate [embedded specific]
 Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
 ---
  tools/flask/policy/modules/domZ.te      | 41 +++++++++++++++++++++++++

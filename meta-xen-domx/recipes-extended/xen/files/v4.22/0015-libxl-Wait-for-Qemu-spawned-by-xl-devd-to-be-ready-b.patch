@@ -21,6 +21,7 @@ which in turn should trigger xl devd in driver domain to spawn Qemu.
 TODO: Likely this could be done more nicely than current patch does,
 for example, to not use deprecated func, etc.
 
+Upstream-Status: Pending
 Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Signed-off-by: Dmytro Firsov <dmytro_firsov@epam.com>
 (cherry picked from commit 43b8023f5fb96afa523ae4e7098e5eb2ecacde97)

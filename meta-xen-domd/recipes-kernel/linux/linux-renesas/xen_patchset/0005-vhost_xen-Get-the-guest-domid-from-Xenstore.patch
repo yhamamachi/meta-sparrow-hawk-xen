@@ -11,6 +11,7 @@ to get the required info.
 The proper solution would be to pass guest domid from Qemu directly by
 extending some of VHOST ioctls (for example, VHOST_SET_MEM_TABLE).
 
+Upstream-Status: Inappropriate [out-of-tree Xen virtio-pci support]
 Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Acked-by: Volodymyr Babchuk <volodymyr_babchuk@epam.com>
 ---

@@ -8,6 +8,7 @@ XEN guest domain memory map to one specific for an exact platform.
 In our case R-CAR Gen3 has IO mapped at 0xc0000000 with 1GB size,
 so we limit RAM0_SIZE to 2GB at 0x40000000.
 
+Upstream-Status: Inappropriate [embedded specific]
 Signed-off-by: Andrii Anisov <andrii_anisov@epam.com>
 (cherry picked from commit 990f0ccccd4d9d22b102337bc21c3bc6942911ba)
 ---

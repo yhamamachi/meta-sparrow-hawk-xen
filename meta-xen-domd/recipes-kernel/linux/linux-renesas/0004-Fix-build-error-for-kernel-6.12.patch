@@ -3,6 +3,7 @@ From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
 Date: Wed, 2 Jul 2025 18:17:37 +0900
 Subject: [PATCH 4/4] Fix build error for kernel 6.12
 
+Upstream-Status: Inappropriate [embedded specific]
 Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
 ---
  drivers/xen/xt-passthrough.c | 4 +++-

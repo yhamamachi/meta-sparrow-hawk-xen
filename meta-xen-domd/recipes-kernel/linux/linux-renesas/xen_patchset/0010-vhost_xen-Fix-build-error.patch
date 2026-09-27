@@ -3,6 +3,7 @@ From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
 Date: Fri, 31 Oct 2025 00:16:02 +0900
 Subject: [PATCH 10/11] vhost_xen: Fix build error
 
+Upstream-Status: Inappropriate [out-of-tree Xen virtio-pci support]
 Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
 ---
  drivers/vhost/xen.c | 1 +

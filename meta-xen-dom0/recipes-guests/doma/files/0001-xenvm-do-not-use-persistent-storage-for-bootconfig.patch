@@ -7,6 +7,7 @@ Do not use persistent storage for bootconfig, use
 the original way.
 
 Change-Id: I71e63b4739470f0f3d6e462c7ee20e0d54bfa92e
+Upstream-Status: Inappropriate [embedded specific]
 Signed-off-by: Andrii Chepurnyi <andrii_chepurnyi@epam.com>
 ---
  cuttlefish.fragment | 4 ++--

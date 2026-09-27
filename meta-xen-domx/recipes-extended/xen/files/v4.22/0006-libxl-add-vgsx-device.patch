@@ -3,6 +3,7 @@ From: Oleksandr Grytsov <oleksandr_grytsov@epam.com>
 Date: Wed, 31 Jan 2018 21:03:11 +0200
 Subject: [PATCH] libxl: add vgsx device
 
+Upstream-Status: Pending
 Signed-off-by: Oleksandr Grytsov <oleksandr_grytsov@epam.com>
 (cherry picked from commit 1075e13806909cebeb0fd3bb6f1beb4632296ad2)
 ---

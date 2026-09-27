@@ -23,6 +23,7 @@ TODO: With reusing Qdisk backend functionality for Virtio backends
 we likely need to rename involved functions, entries in Xenstore,
 log files that contain qdisk in the name.
 
+Upstream-Status: Pending
 Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Signed-off-by: Dmytro Firsov <dmytro_firsov@epam.com>
 (cherry picked from commit 4a4d6c7b8aa81a013746046eaf7c09d464784ee9)

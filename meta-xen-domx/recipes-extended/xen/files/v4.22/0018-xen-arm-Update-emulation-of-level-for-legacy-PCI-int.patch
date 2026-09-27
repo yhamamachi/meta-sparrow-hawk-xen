@@ -11,6 +11,7 @@ with CONFIG_VIRTIO_PCI.
 For the upstream this should be squashed with:
 "xen/arm: Emulate level for legacy PCI interrupts with current vGIC"
 
+Upstream-Status: Pending
 Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 (cherry picked from commit 07097b482384424ba22435367198dd5852d1683f)
 ---

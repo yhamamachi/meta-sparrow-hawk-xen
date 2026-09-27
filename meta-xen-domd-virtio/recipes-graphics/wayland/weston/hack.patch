@@ -1,3 +1,5 @@
+Upstream-Status: Inappropriate [embedded specific]
+
 diff --git a/kiosk-shell/kiosk-shell.c b/kiosk-shell/kiosk-shell.c
 index 28805322..a08b9b3b 100644
 --- a/kiosk-shell/kiosk-shell.c

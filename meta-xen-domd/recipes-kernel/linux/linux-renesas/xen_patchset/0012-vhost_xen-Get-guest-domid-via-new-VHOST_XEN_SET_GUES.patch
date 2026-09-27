@@ -21,6 +21,7 @@ knows which Xen domain it is running the device model for (xen_domid),
 so it can pass the correct domid directly instead of vhost guessing it
 from Xenstore contents.
 
+Upstream-Status: Inappropriate [out-of-tree Xen virtio-pci support]
 Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
 ---
  drivers/vhost/vhost.c      | 16 +++++++++

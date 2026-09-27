@@ -26,6 +26,7 @@ For the upstream this should be squashed with:
 "libxl/arm: Add basic virtio-pci support"
 and subsequent commits for the toolstack.
 
+Upstream-Status: Pending
 Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 (cherry picked from commit 91332f509bc577b896d6d58fcff0966b68499aa0)
 ---

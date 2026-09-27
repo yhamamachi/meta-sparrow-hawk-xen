@@ -5,6 +5,7 @@ Subject: [PATCH 1/2] v4h: Configure IPMMU registers
 
 Enable second stage translation in IPMMU.
 
+Upstream-Status: Pending
 Signed-off-by: Mykyta Poturai <mykyta_poturai@epam.com>
 ---
  plat/renesas/rcar_gen4/bl31_plat_setup.c | 18 ++++++++++++++++++

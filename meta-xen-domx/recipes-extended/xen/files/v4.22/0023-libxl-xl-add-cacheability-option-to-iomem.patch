@@ -11,6 +11,7 @@ Store the parameter in a new field in libxl_iomem_range.
 
 Pass the cacheability option to xc_domain_memory_mapping.
 
+Upstream-Status: Pending
 Signed-off-by: Stefano Stabellini <stefanos@xilinx.com>
 Signed-off-by: Dmytro Firsov <dmytro_firsov@epam.com>
 (cherry picked from commit d4823d5ef97e69e45e97c1a8fd768427df43eec0)

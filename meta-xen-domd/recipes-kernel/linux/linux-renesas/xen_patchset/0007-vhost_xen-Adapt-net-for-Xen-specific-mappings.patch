@@ -9,6 +9,7 @@ Please note, the following configs should be enabled in defconfig:
  CONFIG_MACVLAN=y
  CONFIG_MACVTAP=y
 
+Upstream-Status: Inappropriate [out-of-tree Xen virtio-pci support]
 Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Acked-by: Volodymyr Babchuk <volodymyr_babchuk@epam.com>
 Signed-off-by: Dmytro Firsov <dmytro_firsov@epam.com>
