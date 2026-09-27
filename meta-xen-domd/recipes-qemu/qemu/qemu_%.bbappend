@@ -7,6 +7,7 @@ SRC_URI:append = " \
     file://0003-hw-arm-xen-pvh-use-xenpv-machine-with-default-virtio.patch \
     file://0004-hw-xen-set-xenstore-node-owner-to-the-running-domain.patch \
     file://0005-hw-xen-xen-pvh-common-register-ioreq-server-before-i.patch \
+    file://0006-hw-virtio-vhost-do-not-pass-the-Xen-grants-region-to.patch \
 "
 
 EXTRA_OECONF:append = " --enable-xen"

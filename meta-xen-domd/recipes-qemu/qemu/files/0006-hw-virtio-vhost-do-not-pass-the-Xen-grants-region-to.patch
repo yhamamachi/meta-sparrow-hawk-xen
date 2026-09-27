@@ -1,0 +1,62 @@
+Subject: [PATCH] hw/virtio/vhost: do not pass the Xen grants region to vhost
+Upstream-Status: Pending
+
+xen-pvh-common registers the "xen.grants" RAM region at
+XEN_GRANT_ADDR_OFF. Grant references in this region can only be mapped
+via address_space_map(), and xen_map_cache() aborts on any other access
+with "Tried to access a grant reference without mapping it.".
+
+The vhost memory listener treats xen.grants as a normal RAM section and
+calls memory_region_get_ram_ptr() on it when building the memory table,
+so starting a vhost device (e.g. vhost-vsock-pci) under Xen aborts QEMU.
+Skip the grants region in vhost_section(). Also add the missing
+xen_mr_is_grants() stub for builds without Xen.
+---
+ hw/virtio/vhost.c  | 10 ++++++++++
+ hw/xen/xen_stubs.c |  5 +++++
+ 2 files changed, 15 insertions(+)
+
+diff --git a/hw/virtio/vhost.c b/hw/virtio/vhost.c
+index 317959c66..68d03bff6 100644
+--- a/hw/virtio/vhost.c
++++ b/hw/virtio/vhost.c
+@@ -29,6 +29,7 @@
+ #include "system/dma.h"
+ #include "system/memory.h"
+ #include "hw/xen/xen.h"
++#include "system/xen.h"
+ #include "trace.h"
+ 
+ /* enabled until disconnected backend stabilizes */
+@@ -568,6 +569,15 @@ static bool vhost_section(struct vhost_dev *dev, MemoryRegionSection *section)
+ {
+     MemoryRegion *mr = section->mr;
+ 
++    /*
++     * The Xen grants region can only be accessed via address_space_map()
++     * and mapping it as a whole aborts QEMU, so never pass it to vhost.
++     */
++    if (xen_enabled() && xen_mr_is_grants(mr)) {
++        trace_vhost_reject_section(mr->name, 4);
++        return false;
++    }
++
+     if (memory_region_is_ram(mr) && !memory_region_is_rom(mr)) {
+         uint8_t dirty_mask = memory_region_get_dirty_log_mask(mr);
+         uint8_t handled_dirty;
+diff --git a/hw/xen/xen_stubs.c b/hw/xen/xen_stubs.c
+index 5e565df39..942098980 100644
+--- a/hw/xen/xen_stubs.c
++++ b/hw/xen/xen_stubs.c
+@@ -29,6 +29,11 @@ bool xen_mr_is_memory(MemoryRegion *mr)
+     g_assert_not_reached();
+ }
+ 
++bool xen_mr_is_grants(MemoryRegion *mr)
++{
++    g_assert_not_reached();
++}
++
+ void xen_invalidate_map_cache_entry(uint8_t *buffer)
+ {
+     g_assert_not_reached();
