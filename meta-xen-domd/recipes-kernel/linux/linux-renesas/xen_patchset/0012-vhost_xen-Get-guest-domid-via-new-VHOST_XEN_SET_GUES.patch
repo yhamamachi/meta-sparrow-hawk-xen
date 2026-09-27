@@ -1,8 +1,8 @@
-From 88ed5f8ad3c6367c307fba1c46f4ca5e72bc7393 Mon Sep 17 00:00:00 2001
+From 9fc1251dbde4dc77a375f4e40cfab799bd292d42 Mon Sep 17 00:00:00 2001
 From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
 Date: Tue, 1 Sep 2026 16:36:41 +0900
-Subject: [PATCH] vhost_xen: Get guest domid via new VHOST_XEN_SET_GUEST_DOMID
- ioctl
+Subject: [PATCH 11/11] vhost_xen: Get guest domid via new
+ VHOST_XEN_SET_GUEST_DOMID ioctl
 
 guest_domid was a single module-wide static variable, discovered by
 watching the Xenstore "device-model" directory and only updated when
@@ -30,10 +30,10 @@ Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
  4 files changed, 37 insertions(+), 70 deletions(-)
 
 diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
-index 3597d21f3534..67e378eb75e6 100644
+index 4d97b6c50518..4f9f59438dc1 100644
 --- a/drivers/vhost/vhost.c
 +++ b/drivers/vhost/vhost.c
-@@ -599,6 +599,9 @@ void vhost_dev_init(struct vhost_dev *dev,
+@@ -604,6 +604,9 @@ void vhost_dev_init(struct vhost_dev *dev,
  	dev->use_worker = use_worker;
  	dev->msg_handler = msg_handler;
  	dev->fork_owner = fork_from_owner_default;
@@ -43,7 +43,7 @@ index 3597d21f3534..67e378eb75e6 100644
  	init_waitqueue_head(&dev->wait);
  	INIT_LIST_HEAD(&dev->read_list);
  	INIT_LIST_HEAD(&dev->pending_list);
-@@ -2365,6 +2368,19 @@ long vhost_dev_ioctl(struct vhost_dev *d, unsigned int ioctl, void __user *argp)
+@@ -2372,6 +2375,19 @@ long vhost_dev_ioctl(struct vhost_dev *d, unsigned int ioctl, void __user *argp)
  		goto done;
  
  	switch (ioctl) {
@@ -64,7 +64,7 @@ index 3597d21f3534..67e378eb75e6 100644
  		r = vhost_set_memory(d, argp);
  		break;
 diff --git a/drivers/vhost/vhost.h b/drivers/vhost/vhost.h
-index d25ebba2aab8..cace8fce73e4 100644
+index ec8c8214fd52..c12b5e86ad61 100644
 --- a/drivers/vhost/vhost.h
 +++ b/drivers/vhost/vhost.h
 @@ -14,6 +14,9 @@
@@ -77,7 +77,7 @@ index d25ebba2aab8..cace8fce73e4 100644
  
  struct vhost_work;
  struct vhost_task;
-@@ -209,6 +212,15 @@ struct vhost_dev {
+@@ -212,6 +215,15 @@ struct vhost_dev {
  	bool fork_owner;
  	int (*msg_handler)(struct vhost_dev *dev, u32 asid,
  			   struct vhost_iotlb_msg *msg);
@@ -201,7 +201,7 @@ index 30ec142718d2..ee92e102c391 100644
  
  	pr_info("%s: Initialize module for Xen %s mappings\n", __func__,
 diff --git a/include/uapi/linux/vhost.h b/include/uapi/linux/vhost.h
-index 96b178f1bd5c..8ac52e215ac1 100644
+index c57674a6aa0d..ecb5907b9324 100644
 --- a/include/uapi/linux/vhost.h
 +++ b/include/uapi/linux/vhost.h
 @@ -146,6 +146,14 @@

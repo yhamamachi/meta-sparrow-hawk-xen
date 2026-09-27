@@ -1,7 +1,7 @@
-From 7d6951dc39e4c58ce3db94c603b37a62135188a4 Mon Sep 17 00:00:00 2001
+From c7dcbe587706eaa1d0e06177823113eafcfd7d12 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Wed, 8 Jun 2022 11:03:50 +0300
-Subject: [PATCH 09/10] Use mhp_get_pluggable_range() in balloon as well
+Subject: [PATCH 09/11] Use mhp_get_pluggable_range() in balloon as well
 
 Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 ---
@@ -9,10 +9,10 @@ Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
-index 88511187458a..c896936bc48e 100644
+index 8c44a25a7d2b..e551fad114fb 100644
 --- a/drivers/xen/balloon.c
 +++ b/drivers/xen/balloon.c
-@@ -236,6 +236,7 @@ static void release_memory_resource(struct resource *resource)
+@@ -240,6 +240,7 @@ static void release_memory_resource(struct resource *resource)
  static struct resource *additional_memory_resource(phys_addr_t size)
  {
  	struct resource *res;
@@ -20,7 +20,7 @@ index 88511187458a..c896936bc48e 100644
  	int ret;
  
  	res = kzalloc(sizeof(*res), GFP_KERNEL);
-@@ -245,8 +246,9 @@ static struct resource *additional_memory_resource(phys_addr_t size)
+@@ -249,8 +250,9 @@ static struct resource *additional_memory_resource(phys_addr_t size)
  	res->name = "System RAM";
  	res->flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
  
@@ -32,5 +32,5 @@ index 88511187458a..c896936bc48e 100644
  	if (ret < 0) {
  		pr_err("Cannot allocate new System RAM resource\n");
 -- 
-2.34.1
+2.43.0
 

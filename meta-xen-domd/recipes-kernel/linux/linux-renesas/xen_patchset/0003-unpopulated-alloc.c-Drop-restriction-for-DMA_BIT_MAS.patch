@@ -1,7 +1,7 @@
-From a9a110e5d0a0e019b1a680e4a245232bda07035b Mon Sep 17 00:00:00 2001
+From a27c7e6a2bf655973b936e6ec1ad783005e35a79 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Thu, 2 Feb 2023 22:24:14 +0200
-Subject: [PATCH 03/10] unpopulated-alloc.c: Drop restriction for
+Subject: [PATCH 03/11] unpopulated-alloc.c: Drop restriction for
  DMA_BIT_MASK(64)
 
 The single at the monent in-tree user of that API sets DMA_BIT_MASK(64),
@@ -17,7 +17,7 @@ Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
  1 file changed, 4 deletions(-)
 
 diff --git a/drivers/xen/unpopulated-alloc.c b/drivers/xen/unpopulated-alloc.c
-index 95a44f9e55c4..5ed1099cd602 100644
+index 951a07f2384a..fcd3d2d77a57 100644
 --- a/drivers/xen/unpopulated-alloc.c
 +++ b/drivers/xen/unpopulated-alloc.c
 @@ -290,10 +290,6 @@ EXPORT_SYMBOL(xen_free_unpopulated_pages);
@@ -32,5 +32,5 @@ index 95a44f9e55c4..5ed1099cd602 100644
  }
  EXPORT_SYMBOL(xen_alloc_unpopulated_contiguous_pages);
 -- 
-2.34.1
+2.43.0
 

@@ -1,7 +1,7 @@
-From 8edfa9705522a9398666fecf5de703aee55335ce Mon Sep 17 00:00:00 2001
+From 07eadf41e757a0472db53defc895f8d150c06a08 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Thu, 25 May 2023 19:14:17 +0300
-Subject: [PATCH 04/10] vhost_xen: Implement Xen grant mappings module for
+Subject: [PATCH 04/11] vhost_xen: Implement Xen grant mappings module for
  vhost
 
 A specific module for accessing descriptors in virtio rings which contain
@@ -26,7 +26,7 @@ Signed-off-by: Dmytro Firsov <dmytro_firsov@epam.com>
  create mode 100644 drivers/vhost/xen.c
 
 diff --git a/drivers/vhost/Kconfig b/drivers/vhost/Kconfig
-index a4730217bfb6..341a22d9f6e2 100644
+index bc0f38574497..6e792f4ad9d3 100644
 --- a/drivers/vhost/Kconfig
 +++ b/drivers/vhost/Kconfig
 @@ -6,9 +6,15 @@ config VHOST_IOTLB
@@ -57,11 +57,11 @@ index f3e1897cce85..52c1a8e37f19 100644
 +obj-$(CONFIG_VHOST_XEN) += vhost_xen.o
 +vhost_xen-y := xen.o
 diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
-index 276dded52212..3597d21f3534 100644
+index bccdc9eab267..4d97b6c50518 100644
 --- a/drivers/vhost/vhost.c
 +++ b/drivers/vhost/vhost.c
-@@ -612,6 +612,9 @@ void vhost_dev_init(struct vhost_dev *dev,
- 		vq->heads = NULL;
+@@ -618,6 +618,9 @@ void vhost_dev_init(struct vhost_dev *dev,
+ 		vq->nheads = NULL;
  		vq->dev = dev;
  		mutex_init(&vq->mutex);
 +#ifdef CONFIG_VHOST_XEN
@@ -70,7 +70,7 @@ index 276dded52212..3597d21f3534 100644
  		vhost_vq_reset(dev, vq);
  		if (vq->handle_kick)
  			vhost_poll_init(&vq->poll, vq->handle_kick,
-@@ -1207,6 +1210,9 @@ void vhost_dev_cleanup(struct vhost_dev *dev)
+@@ -1213,6 +1216,9 @@ void vhost_dev_cleanup(struct vhost_dev *dev)
  		if (dev->vqs[i]->call_ctx.ctx)
  			eventfd_ctx_put(dev->vqs[i]->call_ctx.ctx);
  		vhost_vq_reset(dev, dev->vqs[i]);
@@ -80,7 +80,7 @@ index 276dded52212..3597d21f3534 100644
  	}
  	vhost_dev_free_iovecs(dev);
  	if (dev->log_ctx)
-@@ -1997,6 +2003,14 @@ static long vhost_set_memory(struct vhost_dev *d, struct vhost_memory __user *m)
+@@ -2003,6 +2009,14 @@ static long vhost_set_memory(struct vhost_dev *d, struct vhost_memory __user *m)
  	for (region = newmem->regions;
  	     region < newmem->regions + mem.nregions;
  	     region++) {
@@ -95,7 +95,7 @@ index 276dded52212..3597d21f3534 100644
  		if (vhost_iotlb_add_range(newumem,
  					  region->guest_phys_addr,
  					  region->guest_phys_addr +
-@@ -2631,6 +2645,15 @@ static int translate_desc(struct vhost_virtqueue *vq, u64 addr, u32 len,
+@@ -2650,6 +2664,15 @@ static int translate_desc(struct vhost_virtqueue *vq, u64 addr, u32 len,
  	u64 s = 0, last = addr + len - 1;
  	int ret = 0;
  
@@ -111,7 +111,7 @@ index 276dded52212..3597d21f3534 100644
  	while ((u64)len > s) {
  		u64 size;
  		if (unlikely(ret >= iov_size)) {
-@@ -2710,7 +2733,12 @@ static int get_indirect(struct vhost_virtqueue *vq,
+@@ -2729,7 +2752,12 @@ static int get_indirect(struct vhost_virtqueue *vq,
  			vq_err(vq, "Translation failure %d in indirect.\n", ret);
  		return ret;
  	}
@@ -124,7 +124,7 @@ index 276dded52212..3597d21f3534 100644
  	count = len / sizeof desc;
  	/* Buffers are chained via a 16 bit next field, so
  	 * we can have at most 2^16 of these. */
-@@ -2772,6 +2800,12 @@ static int get_indirect(struct vhost_virtqueue *vq,
+@@ -2791,6 +2819,12 @@ static int get_indirect(struct vhost_virtqueue *vq,
  			*out_num += ret;
  		}
  	} while ((i = next_desc(vq, &desc)) != -1);
@@ -138,10 +138,10 @@ index 276dded52212..3597d21f3534 100644
  }
  
 diff --git a/drivers/vhost/vhost.h b/drivers/vhost/vhost.h
-index ab704d84fb34..27f311c5b557 100644
+index b49f08e4a1b4..dbc9583b0cc9 100644
 --- a/drivers/vhost/vhost.h
 +++ b/drivers/vhost/vhost.h
-@@ -160,6 +160,15 @@ struct vhost_virtqueue {
+@@ -163,6 +163,15 @@ struct vhost_virtqueue {
  	bool user_be;
  #endif
  	u32 busyloop_timeout;
@@ -157,7 +157,7 @@ index ab704d84fb34..27f311c5b557 100644
  };
  
  struct vhost_msg_node {
-@@ -269,6 +278,24 @@ int vhost_init_device_iotlb(struct vhost_dev *d);
+@@ -281,6 +290,24 @@ int vhost_init_device_iotlb(struct vhost_dev *d);
  void vhost_iotlb_map_free(struct vhost_iotlb *iotlb,
  			  struct vhost_iotlb_map *map);
  
@@ -552,5 +552,5 @@ index 000000000000..0b9f1b57c73c
 +MODULE_AUTHOR("Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>");
 +MODULE_LICENSE("GPL v2");
 -- 
-2.34.1
+2.43.0
 

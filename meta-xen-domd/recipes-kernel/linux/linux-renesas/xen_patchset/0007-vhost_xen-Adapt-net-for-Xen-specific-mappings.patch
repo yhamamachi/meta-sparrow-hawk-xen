@@ -1,7 +1,7 @@
-From 864528cb79f655cca11266d368a7a7e7bf9002ee Mon Sep 17 00:00:00 2001
+From 774194ff99818246f4beb6f1769ce12b87cc6714 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Thu, 15 Jun 2023 17:27:33 +0300
-Subject: [PATCH 07/10] vhost_xen: Adapt net for Xen specific mappings
+Subject: [PATCH 07/11] vhost_xen: Adapt net for Xen specific mappings
 
 Please note, the following configs should be enabled in defconfig:
  CONFIG_VHOST_NET=y
@@ -17,10 +17,10 @@ Signed-off-by: Dmytro Firsov <dmytro_firsov@epam.com>
  1 file changed, 42 insertions(+)
 
 diff --git a/drivers/vhost/net.c b/drivers/vhost/net.c
-index aff4ec783562..eef3ad1e6d9f 100644
+index 1e77c0482b84..b8773345bdee 100644
 --- a/drivers/vhost/net.c
 +++ b/drivers/vhost/net.c
-@@ -148,6 +148,27 @@ struct vhost_net {
+@@ -151,6 +151,27 @@ struct vhost_net {
  
  static unsigned vhost_net_zcopy_mask __read_mostly;
  
@@ -48,7 +48,7 @@ index aff4ec783562..eef3ad1e6d9f 100644
  static void *vhost_net_buf_get_ptr(struct vhost_net_buf *rxq)
  {
  	if (rxq->tail != rxq->head)
-@@ -619,7 +640,11 @@ static size_t init_iov_iter(struct vhost_virtqueue *vq, struct iov_iter *iter,
+@@ -633,7 +654,11 @@ static size_t init_iov_iter(struct vhost_virtqueue *vq, struct iov_iter *iter,
  	/* Skip header. TODO: support TSO. */
  	size_t len = iov_length(vq->iov, out);
  
@@ -60,9 +60,9 @@ index aff4ec783562..eef3ad1e6d9f 100644
  	iov_iter_advance(iter, hdr_size);
  
  	return iov_iter_count(iter);
-@@ -828,6 +853,11 @@ static void handle_tx_copy(struct vhost_net *net, struct socket *sock)
- 		vq->heads[nvq->done_idx].id = cpu_to_vhost32(vq, head);
- 		vq->heads[nvq->done_idx].len = 0;
+@@ -849,6 +874,11 @@ static void handle_tx_copy(struct vhost_net *net, struct socket *sock)
+ 			vq->heads[nvq->done_idx].len = 0;
+ 		}
  		++nvq->done_idx;
 +
 +#ifdef CONFIG_VHOST_XEN
@@ -72,7 +72,7 @@ index aff4ec783562..eef3ad1e6d9f 100644
  	} while (likely(!vhost_exceeds_weight(vq, ++sent_pkts, total_len)));
  
  	vhost_tx_batch(net, nvq, sock, &msg);
-@@ -1167,14 +1197,22 @@ static void handle_rx(struct vhost_net *net)
+@@ -1216,14 +1246,22 @@ static void handle_rx(struct vhost_net *net)
  			msg.msg_control = vhost_net_buf_consume(&nvq->rxq);
  		/* On overrun, truncate and discard */
  		if (unlikely(headcount > UIO_MAXIOV)) {
@@ -95,7 +95,7 @@ index aff4ec783562..eef3ad1e6d9f 100644
  		fixup = msg.msg_iter;
  		if (unlikely((vhost_hlen))) {
  			/* We will supply the header ourselves
-@@ -1218,6 +1256,10 @@ static void handle_rx(struct vhost_net *net)
+@@ -1267,6 +1305,10 @@ static void handle_rx(struct vhost_net *net)
  			goto out;
  		}
  		nvq->done_idx += headcount;
@@ -103,9 +103,9 @@ index aff4ec783562..eef3ad1e6d9f 100644
 +		/* Descriptors must be unmapped as soon as they are not used */
 +		vhost_net_unmap_desc(vq, in);
 +#endif
- 		if (nvq->done_idx > VHOST_NET_BATCH)
- 			vhost_net_signal_used(nvq);
- 		if (unlikely(vq_log))
+ 		count += in_order ? 1 : headcount;
+ 		if (nvq->done_idx > VHOST_NET_BATCH) {
+ 			vhost_net_signal_used(nvq, count);
 -- 
-2.34.1
+2.43.0
 

@@ -1,7 +1,7 @@
-From d887933eecc84127ba05146df5a06215d0ea701f Mon Sep 17 00:00:00 2001
+From 455cc7a47aa8daa974f8c8b6ba9e71f62c028433 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Thu, 18 Nov 2021 21:39:08 +0200
-Subject: [PATCH 02/10] xen/grant-table: Use unpopulated contiguous pages
+Subject: [PATCH 02/11] xen/grant-table: Use unpopulated contiguous pages
  instead of real RAM ones
 
 Depends on CONFIG_XEN_UNPOPULATED_ALLOC. If enabled then unpopulated
@@ -20,7 +20,7 @@ Signed-off-by: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
  1 file changed, 24 insertions(+)
 
 diff --git a/drivers/xen/grant-table.c b/drivers/xen/grant-table.c
-index 04a6b470b15d..5bf089e8039d 100644
+index 478d2ad725ac..d9518918c1d7 100644
 --- a/drivers/xen/grant-table.c
 +++ b/drivers/xen/grant-table.c
 @@ -1066,6 +1066,23 @@ int gnttab_dma_alloc_pages(struct gnttab_dma_alloc_args *args)
@@ -62,5 +62,5 @@ index 04a6b470b15d..5bf089e8039d 100644
  		args->frames[i] = page_to_xen_pfn(args->pages[i]);
  
 -- 
-2.34.1
+2.43.0
 

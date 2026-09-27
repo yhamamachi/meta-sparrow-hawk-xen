@@ -1,7 +1,7 @@
-From dc557c224d5cf00b660ac9a4c731ce44427d37e5 Mon Sep 17 00:00:00 2001
+From 2266136f31fa8f1fe5a5dd00b0693b79bbe30e94 Mon Sep 17 00:00:00 2001
 From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
 Date: Fri, 31 Oct 2025 00:16:02 +0900
-Subject: [PATCH 10/10] vhost_xen: Fix build error
+Subject: [PATCH 10/11] vhost_xen: Fix build error
 
 Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
 ---
@@ -21,5 +21,5 @@ index 3b2ae7a3f7f6..30ec142718d2 100644
  #include "vhost.h"
  
 -- 
-2.34.1
+2.43.0
 

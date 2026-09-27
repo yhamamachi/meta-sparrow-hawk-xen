@@ -66,8 +66,8 @@ common_data:
     - [PREFERRED_VERSION_xen, "4.22%"]
 
     # Specify the linux kernel version
-    - [PREFERRED_VERSION_linux-renesas, "6.12%"]
-    - [LINUXLIBCVERSION, "6.12%"]
+    - [PREFERRED_VERSION_linux-renesas, "6.18%"]
+    - [LINUXLIBCVERSION, "6.18%"]
 
   # Conf options for domain that are built used renesas layer
   domd_domu_conf: &DOMD_DOMU_CONF

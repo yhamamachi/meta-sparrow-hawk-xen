@@ -1,7 +1,7 @@
-From aeb8ca122a8d5503c66f69db0ff73772844e0701 Mon Sep 17 00:00:00 2001
+From 1beb222b0903c4ec17b36e10b2a207b22c939942 Mon Sep 17 00:00:00 2001
 From: Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
 Date: Wed, 9 Aug 2023 10:18:52 +0300
-Subject: [PATCH 08/10] vhost_xen: Change a logic to get the guest domid
+Subject: [PATCH 08/11] vhost_xen: Change a logic to get the guest domid
 
 The Xenstore entry "drivers/dom0-qemu-command-monitor/..." which
 represents Qemu command line is not present anymore since we
@@ -82,5 +82,5 @@ index bdeca47a3121..3b2ae7a3f7f6 100644
  };
  
 -- 
-2.34.1
+2.43.0
 
