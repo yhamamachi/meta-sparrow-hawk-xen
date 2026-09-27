@@ -37,14 +37,14 @@ XT_DOMU_DTB_NAME ??= ""
 do_install() {
     install -d ${D}${sysconfdir}/xen
     install -d ${D}${libdir}/xen/boot
-    install -m 0644 ${WORKDIR}/${XT_DOMU_CONFIG_NAME} ${D}${sysconfdir}/xen/domu.cfg
+    install -m 0644 ${UNPACKDIR}/${XT_DOMU_CONFIG_NAME} ${D}${sysconfdir}/xen/domu.cfg
     if [ -n "${XT_DOMU_DTB_NAME}" ]; then
         install -m 0644 ${S}/${XT_DOMU_DTB_NAME} ${D}${libdir}/xen/boot/domu.dtb
     fi
     install -m 0644 ${S}/Image ${D}${libdir}/xen/boot/linux-domu
 
     install -d ${D}${systemd_unitdir}/system
-    install -m 0644 ${WORKDIR}/domu.service ${D}${systemd_unitdir}/system/
+    install -m 0644 ${UNPACKDIR}/domu.service ${D}${systemd_unitdir}/system/
 }
 
 
@@ -65,7 +65,7 @@ FILES:${PN}:append = " \
 do_install:append() {
     # Install domu-set-root script
     install -d ${D}${libdir}/xen/bin
-    install -m 0744 ${WORKDIR}/domu-set-root ${D}${libdir}/xen/bin
+    install -m 0744 ${UNPACKDIR}/domu-set-root ${D}${libdir}/xen/bin
 
     # Call domu-set-root script before launching domain
     echo "[Service]" >> ${D}${systemd_unitdir}/system/domu.service

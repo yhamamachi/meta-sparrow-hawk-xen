@@ -6,7 +6,7 @@ SRC_URI:append = "\
 "
 
 SRC_URI:append:sparrow-hawk = " \
-    file://r8a779g3-${MACHINE}-domu.dts;subdir=git/arch/${ARCH}/boot/dts/renesas \
+    file://r8a779g3-${MACHINE}-domu.dts;subdir=${BB_GIT_DEFAULT_DESTSUFFIX}/arch/${ARCH}/boot/dts/renesas \
     file://r8a779g0.cfg \
 "
 KERNEL_DEVICETREE:append:sparrow-hawk = " renesas/r8a779g3-${MACHINE}-domu.dtb"

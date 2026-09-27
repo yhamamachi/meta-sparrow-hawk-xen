@@ -6,8 +6,10 @@ SRC_URI = " \
     file://90-virtio-tablet-pci.rules \
 "
 
+S = "${UNPACKDIR}"
+
 do_install () {
     install -d ${D}${sysconfdir}/udev/rules.d/
-    install -m 0644 ${WORKDIR}/90-virtio-tablet-pci.rules ${D}${sysconfdir}/udev/rules.d/
+    install -m 0644 ${UNPACKDIR}/90-virtio-tablet-pci.rules ${D}${sysconfdir}/udev/rules.d/
 }
 

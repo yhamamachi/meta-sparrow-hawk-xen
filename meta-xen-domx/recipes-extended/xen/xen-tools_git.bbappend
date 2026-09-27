@@ -2,6 +2,15 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 require xen-source.inc
 
+# xen-source.inc overrides SRC_URI, so restore the networking files
+# required by virt_networking.bbclass inherited in xen-tools.inc
+SRC_URI += "file://10-ether.network \
+            file://10-xenbr0.netdev \
+            file://10-xenbr0.network"
+# Do not install them: 10-ether.network bridges every ethernet port to
+# xenbr0, which conflicts with our own network configuration
+RDEPENDS:${PN}:remove = "${PN}-net-conf"
+
 LIC_FILES_CHKSUM ?= "file://COPYING;md5=d1a1e216f80b6d8da95fec897d0dbec9"
 
 FILES:${PN} = "\
@@ -28,7 +37,6 @@ EXTRA_OECONF:remove = " --with-system-qemu=${bindir}/qemu-system-i386"
 EXTRA_OECONF:append = " --with-system-qemu=${bindir}/qemu-system-${QEMU_ARCH}"
 
 ### START:  WA for Xen 4.21: from master branch of meta-virtualization
-PACKAGES +=  " ${PN}-libxenmanage ${PN}-libxenmanage-dev"
 RDEPENDS:${PN} = "\
     ${PN}-libxenmanage \
 "

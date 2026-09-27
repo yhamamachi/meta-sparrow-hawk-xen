@@ -1,0 +1,137 @@
+Subject: [PATCH] hw/arm/xen-pvh: use xenpv machine with default virtio-pci host
+
+Xen 4.22 libxl still starts the device model with "-M xenpv", while
+QEMU 8.2+ names the ARM Xen PVH machine "xenpvh". Make "xenpv" the
+primary machine type again and register "xenpvh" as a compat alias.
+
+libxl with the xen-troops virtio-pci patchset does not pass the PCI host
+bridge layout to QEMU as machine properties. Use the first virtio-pci
+host bridge from the Xen public headers (GUEST_VIRTIO_PCI_*) as the
+default layout and disable the virtio-mmio transports, as virtio devices
+are exposed through PCIe only.
+
+The per-host ECAM window is only 2MiB, so map only the configured part
+of the GPEX ECAM region and relax the 256MiB pci-ecam-size check.
+
+This replaces the QEMU 8.2.7 patches "arm-xen: add xenpv alias for
+xenpvh" and "arm-xen: add pcie bus for xenpvh". Raising max_cpus and
+disabling buffered ioreqs on Arm are handled by upstream QEMU 10.2.
+
+Upstream-Status: Inappropriate [out-of-tree Xen virtio-pci support]
+
+diff --git a/hw/arm/xen-pvh.c b/hw/arm/xen-pvh.c
+index 86a029661..f51f3db99 100644
+--- a/hw/arm/xen-pvh.c
++++ b/hw/arm/xen-pvh.c
+@@ -12,7 +12,27 @@
+ #include "hw/xen/xen-pvh-common.h"
+ #include "hw/arm/machines-qom.h"
+ 
+-#define TYPE_XEN_ARM  MACHINE_TYPE_NAME("xenpvh")
++/*
++ * Xen 4.22 libxl still starts the device model with "-M xenpv", so keep
++ * "xenpv" as the primary type and register "xenpvh" as a compat alias.
++ */
++#define TYPE_XEN_ARM  MACHINE_TYPE_NAME("xenpv")
++
++/*
++ * Default virtio-pci host bridge layout. These are provided by the Xen
++ * public headers (xen/arch-arm.h) of the xen-troops virtio-pci patchset.
++ * libxl does not pass the PCI layout to QEMU as machine properties, so the
++ * first host bridge described there is used as the default.
++ */
++#ifndef GUEST_VIRTIO_PCI_ECAM_BASE
++#define GUEST_VIRTIO_PCI_ECAM_BASE          0x33000000ULL
++#define GUEST_VIRTIO_PCI_HOST_ECAM_SIZE     0x00200000ULL
++#define GUEST_VIRTIO_PCI_MEM_ADDR           0x34000000ULL
++#define GUEST_VIRTIO_PCI_MEM_SIZE           0x04000000ULL
++#define GUEST_VIRTIO_PCI_PREFETCH_MEM_ADDR  0x3a000000ULL
++#define GUEST_VIRTIO_PCI_PREFETCH_MEM_SIZE  0x04000000ULL
++#define GUEST_VIRTIO_PCI_SPI_FIRST          44
++#endif
+ 
+ /*
+  * VIRTIO_MMIO_DEV_SIZE is imported from tools/libs/light/libxl_arm.c under Xen
+@@ -33,10 +53,19 @@ static void xen_arm_instance_init(Object *obj)
+     s->cfg.ram_low = (MemMapEntry) { GUEST_RAM0_BASE, GUEST_RAM0_SIZE };
+     s->cfg.ram_high = (MemMapEntry) { GUEST_RAM1_BASE, GUEST_RAM1_SIZE };
+ 
+-    s->cfg.virtio_mmio_num = NR_VIRTIO_MMIO_DEVICES;
++    /* Virtio devices are exposed through the PCIe host bridge instead. */
++    s->cfg.virtio_mmio_num = 0;
+     s->cfg.virtio_mmio_irq_base = GUEST_VIRTIO_MMIO_SPI_FIRST;
+     s->cfg.virtio_mmio = (MemMapEntry) { GUEST_VIRTIO_MMIO_BASE,
+                                          VIRTIO_MMIO_DEV_SIZE };
++
++    s->cfg.pci_ecam = (MemMapEntry) { GUEST_VIRTIO_PCI_ECAM_BASE,
++                                      GUEST_VIRTIO_PCI_HOST_ECAM_SIZE };
++    s->cfg.pci_mmio = (MemMapEntry) { GUEST_VIRTIO_PCI_MEM_ADDR,
++                                      GUEST_VIRTIO_PCI_MEM_SIZE };
++    s->cfg.pci_mmio_high = (MemMapEntry) { GUEST_VIRTIO_PCI_PREFETCH_MEM_ADDR,
++                                           GUEST_VIRTIO_PCI_PREFETCH_MEM_SIZE };
++    s->cfg.pci_intx_irq_base = GUEST_VIRTIO_PCI_SPI_FIRST;
+ }
+ 
+ static void xen_pvh_set_pci_intx_irq(void *opaque, int intx_irq, int level)
+@@ -99,9 +128,16 @@ static const TypeInfo xen_arm_machine_type = {
+     .interfaces = arm_aarch64_machine_interfaces,
+ };
+ 
++static const TypeInfo xenpvh_compat_machine_type = {
++    .name = MACHINE_TYPE_NAME("xenpvh"),
++    .parent = TYPE_XEN_ARM,
++    .instance_size = sizeof(XenPVHMachineState),
++};
++
+ static void xen_arm_machine_register_types(void)
+ {
+     type_register_static(&xen_arm_machine_type);
++    type_register_static(&xenpvh_compat_machine_type);
+ }
+ 
+ type_init(xen_arm_machine_register_types)
+diff --git a/hw/xen/xen-pvh-common.c b/hw/xen/xen-pvh-common.c
+index b93ff80c8..b5deb2037 100644
+--- a/hw/xen/xen-pvh-common.c
++++ b/hw/xen/xen-pvh-common.c
+@@ -142,7 +142,14 @@ static inline void xenpvh_gpex_init(XenPVHMachineState *s,
+     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
+ 
+     ecam_reg = sysbus_mmio_get_region(SYS_BUS_DEVICE(dev), 0);
+-    memory_region_add_subregion(sysmem, s->cfg.pci_ecam.base, ecam_reg);
++    /*
++     * Only map the configured part of the ECAM window, so a host bridge with
++     * less than 256 buses does not overlap the MMIO windows placed after it.
++     */
++    memory_region_init_alias(&s->pci.ecam_alias, OBJECT(dev), "pcie-ecam",
++                             ecam_reg, 0, s->cfg.pci_ecam.size);
++    memory_region_add_subregion(sysmem, s->cfg.pci_ecam.base,
++                                &s->pci.ecam_alias);
+ 
+     mmio_reg = sysbus_mmio_get_region(SYS_BUS_DEVICE(dev), 1);
+ 
+@@ -213,8 +220,10 @@ static void xen_pvh_init(MachineState *ms)
+ 
+     /* Non-zero pci-ecam-size enables PCI.  */
+     if (s->cfg.pci_ecam.size) {
+-        if (s->cfg.pci_ecam.size != 256 * MiB) {
+-            error_report("pci-ecam-size only supports values 0 or 0x10000000");
++        if (s->cfg.pci_ecam.size > 256 * MiB ||
++            s->cfg.pci_ecam.size % MiB) {
++            error_report("pci-ecam-size must be a multiple of 1MiB (one bus)"
++                         " and at most 0x10000000");
+             exit(EXIT_FAILURE);
+         }
+         if (!s->cfg.pci_intx_irq_base) {
+diff --git a/include/hw/xen/xen-pvh-common.h b/include/hw/xen/xen-pvh-common.h
+index 5db83d88e..519d1dc36 100644
+--- a/include/hw/xen/xen-pvh-common.h
++++ b/include/hw/xen/xen-pvh-common.h
+@@ -68,6 +68,7 @@ struct XenPVHMachineState {
+ 
+     struct {
+         GPEXHost gpex;
++        MemoryRegion ecam_alias;
+         MemoryRegion mmio_alias;
+         MemoryRegion mmio_high_alias;
+     } pci;

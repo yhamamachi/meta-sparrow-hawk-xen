@@ -12,6 +12,8 @@ SRC_URI = "\
     file://backend-ready@.service \
 "
 
+S = "${UNPACKDIR}"
+
 FILES:${PN} = " \
     ${libdir}/xen/bin/wait-for-backend \
     ${systemd_unitdir}/system/backend-ready@.service \
@@ -21,8 +23,8 @@ SYSTEMD_SERVICE:${PN} = "backend-ready@.service"
 
 do_install() {
     install -d ${D}${libdir}/xen/bin
-    install -m 0755 ${WORKDIR}/wait-for-backend ${D}${libdir}/xen/bin/wait-for-backend
+    install -m 0755 ${UNPACKDIR}/wait-for-backend ${D}${libdir}/xen/bin/wait-for-backend
 
     install -d ${D}${systemd_unitdir}/system
-    install -m 0644 ${WORKDIR}/backend-ready@.service ${D}${systemd_unitdir}/system/
+    install -m 0644 ${UNPACKDIR}/backend-ready@.service ${D}${systemd_unitdir}/system/
 }

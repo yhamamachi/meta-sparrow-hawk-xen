@@ -32,9 +32,10 @@ domain path. When the node is not readable - which is the case for dom0 -
 fall back to 0 and keep the previous behaviour.
 
 diff --git a/hw/xen/xen_pvdev.c b/hw/xen/xen_pvdev.c
+index fe95b62d1..08af2cc4c 100644
 --- a/hw/xen/xen_pvdev.c
 +++ b/hw/xen/xen_pvdev.c
-@@ -58,9 +58,32 @@ void xen_config_cleanup(void)
+@@ -59,9 +59,32 @@ void xen_config_cleanup(void)
      }
  }
  
@@ -68,6 +69,3 @@ diff --git a/hw/xen/xen_pvdev.c b/hw/xen/xen_pvdev.c
          xen_pv_printf(NULL, 0, "xs_mkdir %s: failed\n", path);
          return -1;
      }
-     xenstore_cleanup_dir(g_strdup(path));
-     return 0;
- }

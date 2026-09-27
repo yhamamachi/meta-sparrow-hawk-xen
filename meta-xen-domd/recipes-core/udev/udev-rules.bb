@@ -6,8 +6,10 @@ SRC_URI = " \
     file://90-touchscreen.rules \
 "
 
+S = "${UNPACKDIR}"
+
 do_install () {
     install -d ${D}${sysconfdir}/udev/rules.d/
-    install -m 0644 ${WORKDIR}/90-touchscreen.rules ${D}${sysconfdir}/udev/rules.d/
+    install -m 0644 ${UNPACKDIR}/90-touchscreen.rules ${D}${sysconfdir}/udev/rules.d/
 }
 

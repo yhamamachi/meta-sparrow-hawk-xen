@@ -26,12 +26,12 @@ SYSTEMD_SERVICE:${PN} = "domd.service"
 do_install() {
     install -d ${D}${sysconfdir}/xen
     install -d ${D}${libdir}/xen/boot
-    install -m 0644 ${WORKDIR}/${XT_DOMD_CONFIG_NAME} ${D}${sysconfdir}/xen/domd.cfg
+    install -m 0644 ${UNPACKDIR}/${XT_DOMD_CONFIG_NAME} ${D}${sysconfdir}/xen/domd.cfg
     install -m 0644 ${S}/${XT_DOMD_DTB_NAME} ${D}${libdir}/xen/boot/domd.dtb
     install -m 0644 ${S}/Image ${D}${libdir}/xen/boot/linux-domd
 
     install -d ${D}${systemd_unitdir}/system
-    install -m 0644 ${WORKDIR}/domd.service ${D}${systemd_unitdir}/system/
+    install -m 0644 ${UNPACKDIR}/domd.service ${D}${systemd_unitdir}/system/
 }
 
 RDEPENDS:append:sparrow-hawk = " dtc"
@@ -61,7 +61,7 @@ do_install:append() {
 
     # Install domd-set-root script
     install -d ${D}${libdir}/xen/bin
-    install -m 0744 ${WORKDIR}/domd-set-root ${D}${libdir}/xen/bin
+    install -m 0744 ${UNPACKDIR}/domd-set-root ${D}${libdir}/xen/bin
 
     # Call domd-set-root script before launching domain
     echo "[Service]" >> ${D}${systemd_unitdir}/system/domd.service

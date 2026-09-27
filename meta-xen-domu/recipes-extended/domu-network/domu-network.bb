@@ -9,7 +9,7 @@ SRC_URI = " \
     file://systemd-networkd-wait-online.conf \
 "
 
-S = "${WORKDIR}"
+S = "${UNPACKDIR}"
 
 FILES:${PN} = " \
     ${sysconfdir}/systemd/network/etnX0.network \

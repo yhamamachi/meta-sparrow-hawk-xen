@@ -20,15 +20,13 @@ SRC_URI = " \
 "
 SRCREV = "1b8b1da73be6f9dd400b0ea20a0c2fa977dd7ece"
 
-S = "${WORKDIR}/git"
-
 do_compile[noexec] = "1"
 do_install () {
     install -d ${D}/${systemd_unitdir}/system
-    install -m 0644 ${WORKDIR}/${SYSTEMD_SERVICE_FILENAME} ${D}/${systemd_unitdir}/system
+    install -m 0644 ${UNPACKDIR}/${SYSTEMD_SERVICE_FILENAME} ${D}/${systemd_unitdir}/system
 
     install -d ${D}/${USRBINPATH}
-    install -m 0755 ${WORKDIR}/${SCRIPT_NAME} ${D}/${USRBINPATH}
+    install -m 0755 ${UNPACKDIR}/${SCRIPT_NAME} ${D}/${USRBINPATH}
 
     # Store APKs into rootfs
     install -d ${D}/${USRBINPATH}/apks

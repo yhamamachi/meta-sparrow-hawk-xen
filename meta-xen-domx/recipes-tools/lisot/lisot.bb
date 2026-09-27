@@ -3,8 +3,6 @@ SECTION = "extras"
 LICENSE = "Apache-2.0"
 PR = "r0"
 
-S = "${WORKDIR}/git"
-
 SRC_URI = " \
     git://github.com/xen-troops/lisot.git;protocol=https;branch=main \
 "

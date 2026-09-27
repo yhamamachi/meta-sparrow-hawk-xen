@@ -1,11 +1,11 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
 SRC_URI:append = " \
-    file://r8a779g3-xen-chosen.dtsi;subdir=git/arch/arm64/boot/dts/renesas \
-    file://r8a779g3-xen.dts;subdir=git/arch/arm64/boot/dts/renesas \
-    file://r8a779g3-domd.dts;subdir=git/arch/arm64/boot/dts/renesas \
-    file://r8a779g3-sparrow-hawk-domd.dts;subdir=git/arch/arm64/boot/dts/renesas \
-    file://r8a779g3-sparrow-hawk-xen.dts;subdir=git/arch/arm64/boot/dts/renesas \
+    file://r8a779g3-xen-chosen.dtsi;subdir=${BB_GIT_DEFAULT_DESTSUFFIX}/arch/arm64/boot/dts/renesas \
+    file://r8a779g3-xen.dts;subdir=${BB_GIT_DEFAULT_DESTSUFFIX}/arch/arm64/boot/dts/renesas \
+    file://r8a779g3-domd.dts;subdir=${BB_GIT_DEFAULT_DESTSUFFIX}/arch/arm64/boot/dts/renesas \
+    file://r8a779g3-sparrow-hawk-domd.dts;subdir=${BB_GIT_DEFAULT_DESTSUFFIX}/arch/arm64/boot/dts/renesas \
+    file://r8a779g3-sparrow-hawk-xen.dts;subdir=${BB_GIT_DEFAULT_DESTSUFFIX}/arch/arm64/boot/dts/renesas \
     file://append.cfg \
     ${@bb.utils.contains('DISTRO_FEATURES', 'enable_virtio', ' file://vsock.cfg', '', d)} \
 "
@@ -47,7 +47,7 @@ KERNEL_DEVICETREE = ""
 python __anonymous () {
     for fname in (d.getVar("ADDITIONAL_DEVICE_TREES") or "").split():
         dts = fname[:-3] + "dts"
-        d.appendVar("SRC_URI", " file://%s;subdir=git/arch/${ARCH}/boot/dts/renesas"%dts)
+        d.appendVar("SRC_URI", " file://%s;subdir=${BB_GIT_DEFAULT_DESTSUFFIX}/arch/${ARCH}/boot/dts/renesas"%dts)
         dtb = fname[:-3] + "dtb"
         d.appendVar("KERNEL_DEVICETREE", " renesas/%s"%dtb)
 }

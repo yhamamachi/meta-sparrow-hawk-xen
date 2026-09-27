@@ -38,13 +38,13 @@ XT_DOMA_DTB_NAME ??= ""
 do_install() {
     install -d ${D}${sysconfdir}/xen
     install -d ${D}${libdir}/xen/boot
-    install -m 0644 ${WORKDIR}/${XT_DOMA_CONFIG_NAME} ${D}${sysconfdir}/xen/doma.cfg
+    install -m 0644 ${UNPACKDIR}/${XT_DOMA_CONFIG_NAME} ${D}${sysconfdir}/xen/doma.cfg
     if [ -n "${XT_DOMA_DTB_NAME}" ]; then
         install -m 0644 ${S}/${XT_DOMA_DTB_NAME} ${D}${libdir}/xen/boot/doma.dtb
     fi
 
     install -d ${D}${systemd_unitdir}/system
-    install -m 0644 ${WORKDIR}/doma.service ${D}${systemd_unitdir}/system/
+    install -m 0644 ${UNPACKDIR}/doma.service ${D}${systemd_unitdir}/system/
 }
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
@@ -61,7 +61,7 @@ FILES:${PN}:append = " \
 do_install:append() {
     # Install domu-set-root script
     install -d ${D}${libdir}/xen/bin
-    install -m 0744 ${WORKDIR}/doma-set-root ${D}${libdir}/xen/bin
+    install -m 0744 ${UNPACKDIR}/doma-set-root ${D}${libdir}/xen/bin
 
     # Call doma-set-root script before launching domain
     echo "[Service]" >> ${D}${systemd_unitdir}/system/doma.service

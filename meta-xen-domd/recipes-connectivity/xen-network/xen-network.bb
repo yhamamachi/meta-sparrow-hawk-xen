@@ -16,7 +16,7 @@ SRC_URI = " \
     file://systemd-networkd-wait-online.conf \
 "
 
-S = "${WORKDIR}"
+S = "${UNPACKDIR}"
 
 inherit systemd
 

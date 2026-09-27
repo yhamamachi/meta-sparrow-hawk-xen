@@ -37,22 +37,40 @@ variables:
 
 common_data:
   # Sources used by all yocto-based domains
-  # poky, meta-openembedded, meta-virtualization uses AGL verified revision.
-  # poky is updated for fixing psuedo-native error: https://adaptivesupport.amd.com/s/article/000040533
+  # Yocto 6.0 (wrynose) no longer provides the combined poky repository.
+  # bitbake, openembedded-core and meta-yocto are fetched separately.
   sources: &COMMON_SOURCES
     - type: git
-      url: "https://git.yoctoproject.org/poky"
-      rev: "1d54d1c4736a114e1cecbe85a0306e3814d5ce70"
+      url: "https://git.openembedded.org/bitbake"
+      rev: "84a8d046593840df460c1312365031c817eb8918" # 2.18
+    - type: git
+      url: "https://git.openembedded.org/openembedded-core"
+      rev: "cc4695f65beb6e5069fbecc16475fa5a27c768e9" # wrynose
+    - type: git
+      url: "https://git.yoctoproject.org/meta-yocto"
+      rev: "ddeeba423ff0565b8f1192f16072b5993d5ea6a0" # wrynose
     - type: git
       url: "https://git.openembedded.org/meta-openembedded"
-      rev: "2759d8870ea387b76c902070bed8a6649ff47b56"
+      rev: "47d7dbdd10890bbd429bc0cccbe14435c37e5af1" # wrynose
     - type: git
       url: "https://git.yoctoproject.org/meta-virtualization"
-      rev: "f92518e20530edfebca45e4170e11460949a5303"
+      rev: "a07bf78dab0d46099a7e6ca8b2aadb07535efc13" # wrynose
 
   # Common configuration options for all yocto-based domains
   conf: &COMMON_CONF
     - [DL_DIR, "${TOPDIR}/../common_data/downloads"]
+
+    # openembedded-core defaults to "nodistro"; keep using poky distro
+    - [DISTRO, "poky"]
+
+    # debug-tweaks was removed; allow root login without password
+    # as the scarthgap poky default local.conf did
+    - [EXTRA_IMAGE_FEATURES, "allow-empty-password empty-root-password allow-root-login"]
+
+    # Many local patches do not have Upstream-Status yet, which is an error
+    # since wrynose. Downgrade it to a warning until they are updated.
+    - [ERROR_QA:remove, "patch-status"]
+    - [WARN_QA:append, " patch-status"]
 
     # Remove per-recipe work dirs after packaging to reduce disk space
     - [INHERIT:append, " rm_work"]
@@ -113,6 +131,7 @@ components:
       - *COMMON_SOURCES
     builder:
       type: yocto
+      base_distro: "openembedded-core"
       work_dir: "%{DOM0_BUILD_DIR}"
       conf:
         - *COMMON_CONF
@@ -135,6 +154,7 @@ components:
 
 
       layers:
+        - "../meta-yocto/meta-poky"
         - "../meta-virtualization"
         - "../meta-openembedded/meta-oe"
         - "../meta-openembedded/meta-filesystems"
@@ -154,9 +174,10 @@ components:
       - *COMMON_SOURCES
       - type: git
         url: https://git.yoctoproject.org/meta-selinux
-        rev: scarthgap
+        rev: "1c3a699f363167571ab39fecb0fe6f56691a4e20" # wrynose
     builder:
       type: yocto
+      base_distro: "openembedded-core"
       work_dir: "%{DOMD_BUILD_DIR}"
       conf:
         - *COMMON_CONF
@@ -176,6 +197,7 @@ components:
 
       build_target: core-image-weston
       layers:
+        - "../meta-yocto/meta-poky"
         - "../meta-virtualization"
         - "../meta-selinux"
         - "../meta-openembedded/meta-oe"
@@ -196,6 +218,7 @@ components:
       - *COMMON_SOURCES
     builder:
       type: yocto
+      base_distro: "openembedded-core"
       work_dir: "%{DOMU_BUILD_DIR}"
       conf:
         - *COMMON_CONF
@@ -213,6 +236,7 @@ components:
         - [IMAGE_INSTALL:remove, "packagegroup-renesas-bsp-demo"]
 
       layers:
+        - "../meta-yocto/meta-poky"
         - "../meta-openembedded/meta-oe"
         - "../meta-openembedded/meta-filesystems"
         - "../meta-openembedded/meta-python"
@@ -373,7 +397,7 @@ parameters:
             sources:
               - type: git
                 url: https://github.com/rcar-community/meta-sparrow-hawk
-                rev: v2026-04-13
+                rev: "a45dbc05ca63f900014d7dc4aa9255e8868d655a" # wrynose-dev
             builder:
               layers:
                 - "../meta-sparrow-hawk"
@@ -488,6 +512,8 @@ parameters:
                 # Enable Wayland/Weston
                 - [DISTRO_FEATURES_NATIVESDK:append, " wayland"]
                 - [DISTRO_FEATURES:append, " pam wayland"]
+                # Required by packagegroup-graphics-oss-opencl (clinfo)
+                - [DISTRO_FEATURES:append, " opencl"]
                 - [BB_MULTI_PROVIDER_ALLOWED:append, "virtual/libgl virtual/egl virtual/libgles1 virtual/libgles2"]
                 - [PREFERRED_PROVIDER_virtual/libgles1, ""]
                 - [PREFERRED_PROVIDER_virtual/libgles2, "user-module-gles"]
@@ -496,6 +522,8 @@ parameters:
                 - [PREFERRED_PROVIDER_virtual/mesa, ""]
                 - [PREFERRED_PROVIDER_virtual/libgbm, "libgbm"]
                 - [PREFERRED_PROVIDER_libgbm-dev, "libgbm"]
+                # mesa-gl conflicts with libgbm (same as meta-sparrow-hawk template)
+                - [BBMASK:append, " mesa-gl"]
 
   ENABLE_VIRTIO:
     desc: "Add meta-test layer and some configs"
@@ -663,7 +691,7 @@ parameters:
             sources:
               - type: git
                 url: https://github.com/kraj/meta-clang.git
-                rev: 9fbfa9db33131abdf3870a94f00199eb53e276e5 # scarthgap
+                rev: ef0d22f21910a0c30c967eeb17d8f209806e2d81 # wrynose
             builder:
               layers:
                 - "../meta-clang"

@@ -2,7 +2,7 @@ Subject: [PATCH] hw/input: virtio-input add BTN_TOUCH for tablet
 Upstream-Status: Inappropriate [embedded specific]
 
 diff --git a/hw/input/virtio-input-hid.c b/hw/input/virtio-input-hid.c
-index 45e4d4c75..d7d62ba11 100644
+index d986c3c16..f62a9afb0 100644
 --- a/hw/input/virtio-input-hid.c
 +++ b/hw/input/virtio-input-hid.c
 @@ -88,6 +88,8 @@ static void virtio_input_handle_event(DeviceState *dev, QemuConsole *src,
