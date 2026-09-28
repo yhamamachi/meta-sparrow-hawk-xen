@@ -14,6 +14,7 @@ SRC_URI:append = " \
     file://0003-HACK-Allow-DomD-enumerate-PCI-devices.patch \
     file://0004-Fix-build-error-for-kernel-6.12.patch \
     file://0001-WIP-Porting-contig-pagecache-patch.patch \
+    file://0001-block-enable-RWF_DONTCACHE-for-block-device-buffered.patch \
 "
 
 # Port Xen patch from v6.1.102/rcar-6.0.0.rc5-xt on xen-troops/linux

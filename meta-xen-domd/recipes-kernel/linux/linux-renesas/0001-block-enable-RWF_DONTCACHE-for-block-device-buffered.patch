@@ -1,0 +1,35 @@
+From 3c05bcd349d690855946819a37885c118f3b56c4 Mon Sep 17 00:00:00 2001
+From: Koichiro Den <den@valinux.co.jp>
+Date: Fri, 19 Dec 2025 16:17:07 +0900
+Subject: [PATCH] block: enable RWF_DONTCACHE for block device buffered I/O
+
+Set FOP_DONTCACHE for def_blk_fops so preadv2()/pwritev2() can accept
+RWF_DONTCACHE on block device files. The generic page cache and iomap
+infrastructure already handles RWF_DONTCACHE semantics for the buffered
+I/O, so simply enabling the flag suffices.
+
+This lets userspace request drop-behind behaviour and is particularly
+useful for avoiding double caching in virtualization stacks that do not
+use O_DIRECT (e.g. virtio-disk backend for xen).
+
+Signed-off-by: Koichiro Den <den@valinux.co.jp>
+---
+ block/fops.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/block/fops.c b/block/fops.c
+index d4b1d942f270..6174dc9caf36 100644
+--- a/block/fops.c
++++ b/block/fops.c
+@@ -889,7 +889,7 @@ const struct file_operations def_blk_fops = {
+ 	.splice_write	= iter_file_splice_write,
+ 	.fallocate	= blkdev_fallocate,
+ 	.uring_cmd	= blkdev_uring_cmd,
+-	.fop_flags	= FOP_BUFFER_RASYNC,
++	.fop_flags	= FOP_BUFFER_RASYNC | FOP_DONTCACHE,
+ };
+ 
+ static __init int blkdev_init(void)
+-- 
+2.43.0
+
