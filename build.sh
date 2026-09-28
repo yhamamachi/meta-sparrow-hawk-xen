@@ -15,6 +15,8 @@ Usage() {
     echo "    $0 [option]"
     echo "option:"
     echo "    -a | --doma:            Using DomA(Default is disable. Virtio is forcely enabled.)"
+    echo "    -p | --doma-prebuilt <image>: Using DomA with a prebuilt uncompressed android_only.img"
+    echo "                            instead of building Android(Virtio is forcely enabled.)"
     echo "    -u | --domu:            Using DomU(Default is disable)"
     echo "    -v | --virtio:          Enable Virtio backend on DomD(Default is disabled)"
     echo "    -A | --android-version <15|16|17>: AAOS version to build for DomA(Default is 15)"
@@ -26,6 +28,10 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         -a|--doma)
             USING_DOMA=yes; ENABLE_VIRTIO=yes ;;
+        -p|--doma-prebuilt)
+            USING_DOMA=prebuilt; ENABLE_VIRTIO=yes
+            ANDROID_PREBUILT_IMAGE=$(realpath $2)
+            shift ;;
         -u|--domu)
             USING_DOMU=yes ;;
         -v|--virtio)
@@ -51,6 +57,12 @@ if [[ ${USING_DOMA} == "yes" ]]; then
     curl https://storage.googleapis.com/git-repo-downloads/repo > repo
     chmod a+x ./repo
     export PATH=$PWD:$PATH
+fi
+
+# The yaml refers to the prebuilt Android image as android_only.img
+if [[ ${USING_DOMA} == "prebuilt" ]] && \
+   [[ ${ANDROID_PREBUILT_IMAGE} != $(realpath -m android_only.img) ]]; then
+    ln -sf ${ANDROID_PREBUILT_IMAGE} android_only.img
 fi
 
 rm -rf yocto/build-dom*/conf
