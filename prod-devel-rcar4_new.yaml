@@ -808,7 +808,7 @@ parameters:
             sources:
               - type: git
                 url: https://github.com/kraj/meta-clang.git
-                rev: 9fbfa9db33131abdf3870a94f00199eb53e276e5 # scarthgap
+                rev: ef0d22f21910a0c30c967eeb17d8f209806e2d81 # wrynose
               # meta-google refers to device/google/trout by a relative
               # symlink, so keep the AOSP directory layout
               - type: git
