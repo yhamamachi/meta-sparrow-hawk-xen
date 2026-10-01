@@ -1,0 +1,350 @@
+From 37c137d7cf68faa170beb2d6245e1c1c5b11488f Mon Sep 17 00:00:00 2001
+From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+Date: Thu, 1 Oct 2026 11:09:26 +0900
+Subject: [PATCH] mmc: renesas_sdhi: Add SW bounce buffer workaround for
+ no-IOMMU case
+
+The internal DMAC can handle only one segment. Without an IOMMU (e.g.
+the hardware domain under Xen, where Xen owns the IPMMU), scattered
+pages cannot be merged into a single DMA segment, so max_segs is 1 and
+requests stay small, which hurts performance significantly.
+
+As an experimental SW workaround, when the device is not behind an
+IOMMU, allocate a 512 KiB physically contiguous bounce buffer and
+advertise larger max_segs/max_blk_count. The total request length is
+bounded by max_blk_count, so a request never exceeds the buffer.
+
+Only fragmented requests (sg_len > 1) are copied through the bounce
+buffer. Requests consisting of a single segment keep using the existing
+zero-copy DMA path, including the pre_req() mapping. The bounce state
+is reset at the start of every request and on DMA abort, so it never
+leaks into the next request. If the buffer allocation fails, the single
+segment limits are restored.
+
+The workaround is enabled automatically when no IOMMU is present and
+can be disabled with the sw_bounce=0 module parameter. Behaviour with
+an IOMMU is unchanged.
+
+TEMP: add debugfs counters (sw_bounce_{direct,bounce,oversize}) to
+evaluate the workaround. They are to be removed before upstreaming.
+
+Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+---
+ drivers/mmc/host/renesas_sdhi.h               |   9 +
+ drivers/mmc/host/renesas_sdhi_internal_dmac.c | 175 +++++++++++++++++-
+ 2 files changed, 180 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/mmc/host/renesas_sdhi.h b/drivers/mmc/host/renesas_sdhi.h
+index 084964cecf9d..e2f5f7f5ac93 100644
+--- a/drivers/mmc/host/renesas_sdhi.h
++++ b/drivers/mmc/host/renesas_sdhi.h
+@@ -69,6 +69,15 @@ struct renesas_sdhi_dma {
+ 	void (*enable)(struct tmio_mmc_host *host, bool enable);
+ 	struct completion dma_dataend;
+ 	struct work_struct dma_complete;
++	/* SW workaround for the lack of IOMMU (internal DMAC only) */
++	struct page *bounce_page;
++	void *bounce_buf;		/* non-NULL: bounce buffer is available */
++	dma_addr_t bounce_dma;
++	bool bounce_active;		/* current request is using the buffer */
++	/* TEMP: debug counters for evaluation, remove before upstreaming */
++	unsigned long dbg_direct;
++	unsigned long dbg_bounce;
++	unsigned long dbg_oversize;
+ };
+ 
+ struct renesas_sdhi {
+diff --git a/drivers/mmc/host/renesas_sdhi_internal_dmac.c b/drivers/mmc/host/renesas_sdhi_internal_dmac.c
+index 9e3ed0bcddd6..99af830fba7a 100644
+--- a/drivers/mmc/host/renesas_sdhi_internal_dmac.c
++++ b/drivers/mmc/host/renesas_sdhi_internal_dmac.c
+@@ -8,6 +8,7 @@
+  */
+ 
+ #include <linux/bitops.h>
++#include <linux/debugfs.h>
+ #include <linux/device.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/io-64-nonatomic-hi-lo.h>
+@@ -20,6 +21,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/scatterlist.h>
++#include <linux/sizes.h>
+ #include <linux/sys_soc.h>
+ 
+ #include "renesas_sdhi.h"
+@@ -73,6 +75,38 @@ enum renesas_sdhi_dma_cookie {
+  */
+ 
+ static unsigned long global_flags;
++
++/*
++ * The DMAC handles only one segment. Without an IOMMU (e.g. the hardware
++ * domain under Xen, where Xen owns the IPMMU), scattered pages can't be merged
++ * into one DMA segment, so max_segs has to be 1 and requests stay small. As a
++ * SW workaround, use a physically contiguous bounce buffer for requests which
++ * consist of multiple segments. Requests with a single segment keep using the
++ * zero-copy DMA path, so only the fragmented ones pay for the memcpy.
++ *
++ * The host limits are set so that a request never exceeds the bounce buffer:
++ * max_blk_count (and thus max_req_size) bounds the total length, while
++ * max_segs is only a limit on the number of segments, not on the length.
++ */
++#define SDHI_BOUNCE_SIZE	SZ_512K
++
++static bool sw_bounce = true;
++module_param(sw_bounce, bool, 0444);
++MODULE_PARM_DESC(sw_bounce,
++		 "Use a bounce buffer to allow multiple segments if no IOMMU is available (default: true)");
++
++static bool renesas_sdhi_internal_dmac_use_bounce(struct device *dev)
++{
++	return sw_bounce && !device_iommu_mapped(dev);
++}
++
++/* A bounce buffer is available (no IOMMU) and this request is fragmented */
++static bool renesas_sdhi_internal_dmac_need_bounce(struct renesas_sdhi_dma *dma_priv,
++						   struct mmc_data *data)
++{
++	return dma_priv->bounce_buf && data->sg_len > 1;
++}
++
+ /*
+  * Workaround for avoiding to use RX DMAC by multiple channels. On R-Car M3-W
+  * ES1.0, when multiple SDHI channels use RX DMAC simultaneously, sometimes
+@@ -314,8 +348,12 @@ renesas_sdhi_internal_dmac_enable_dma(struct tmio_mmc_host *host, bool enable)
+ static void
+ renesas_sdhi_internal_dmac_abort_dma(struct tmio_mmc_host *host)
+ {
++	struct renesas_sdhi *priv = host_to_priv(host);
+ 	u64 val = RST_DTRANRST1 | RST_DTRANRST0;
+ 
++	/* The transfer is aborted, so there is nothing to copy back */
++	priv->dma_priv.bounce_active = false;
++
+ 	renesas_sdhi_internal_dmac_enable_dma(host, false);
+ 
+ 	writel(RST_RESERVED_BITS & ~val, host->ctl + DM_CM_RST);
+@@ -407,14 +445,31 @@ renesas_sdhi_internal_dmac_start_dma(struct tmio_mmc_host *host,
+ 				     struct mmc_data *data)
+ {
+ 	struct renesas_sdhi *priv = host_to_priv(host);
++	struct renesas_sdhi_dma *dma_priv = &priv->dma_priv;
+ 	struct scatterlist *sg = host->sg_ptr;
++	size_t len = data->blksz * data->blocks;
++	bool bounce = renesas_sdhi_internal_dmac_need_bounce(dma_priv, data);
++	dma_addr_t addr;
+ 	u32 dtran_mode = DTRAN_MODE_BUS_WIDTH;
+ 
++	/* Never carry the bounce state over from a previous request */
++	dma_priv->bounce_active = false;
++
+ 	if (!sdhi_has_quirk(priv, fixed_addr_mode))
+ 		dtran_mode |= DTRAN_MODE_ADDR_MODE;
+ 
+-	if (!renesas_sdhi_internal_dmac_map(host, data, COOKIE_MAPPED))
++	if (bounce) {
++		/* The host limits should keep this from happening */
++		if (len > SDHI_BOUNCE_SIZE) {
++			dma_priv->dbg_oversize++;
++			dev_warn_ratelimited(&host->pdev->dev,
++					     "request too large for bounce buffer: %zu bytes, %u segs\n",
++					     len, data->sg_len);
++			goto force_pio;
++		}
++	} else if (!renesas_sdhi_internal_dmac_map(host, data, COOKIE_MAPPED)) {
+ 		goto force_pio;
++	}
+ 
+ 	if (data->flags & MMC_DATA_READ) {
+ 		dtran_mode |= DTRAN_MODE_CH_NUM_CH1;
+@@ -425,12 +480,32 @@ renesas_sdhi_internal_dmac_start_dma(struct tmio_mmc_host *host,
+ 		dtran_mode |= DTRAN_MODE_CH_NUM_CH0;
+ 	}
+ 
++	if (bounce) {
++		if (data->flags & MMC_DATA_READ) {
++			dma_sync_single_for_device(&host->pdev->dev,
++						   dma_priv->bounce_dma, len,
++						   DMA_FROM_DEVICE);
++		} else {
++			sg_copy_to_buffer(data->sg, data->sg_len,
++					  dma_priv->bounce_buf, len);
++			dma_sync_single_for_device(&host->pdev->dev,
++						   dma_priv->bounce_dma, len,
++						   DMA_TO_DEVICE);
++		}
++		dma_priv->bounce_active = true;
++		dma_priv->dbg_bounce++;
++		addr = dma_priv->bounce_dma;
++	} else {
++		dma_priv->dbg_direct++;
++		addr = sg_dma_address(sg);
++	}
++
+ 	priv->dma_priv.end_flags = 0;
+ 	renesas_sdhi_internal_dmac_enable_dma(host, true);
+ 
+ 	/* set dma parameters */
+ 	writel(dtran_mode, host->ctl + DM_CM_DTRAN_MODE);
+-	writel(sg_dma_address(sg), host->ctl + DM_DTRAN_ADDR);
++	writel(addr, host->ctl + DM_DTRAN_ADDR);
+ 
+ 	host->dma_on = true;
+ 
+@@ -463,6 +538,8 @@ static void renesas_sdhi_internal_dmac_issue_work_fn(struct work_struct *work)
+ 
+ static bool renesas_sdhi_internal_dmac_complete(struct tmio_mmc_host *host)
+ {
++	struct renesas_sdhi *priv = host_to_priv(host);
++	struct renesas_sdhi_dma *dma_priv = &priv->dma_priv;
+ 	enum dma_data_direction dir;
+ 
+ 	if (!host->dma_on)
+@@ -479,6 +556,20 @@ static bool renesas_sdhi_internal_dmac_complete(struct tmio_mmc_host *host)
+ 	renesas_sdhi_internal_dmac_enable_dma(host, false);
+ 	renesas_sdhi_internal_dmac_unmap(host, host->data, COOKIE_MAPPED);
+ 
++	if (dma_priv->bounce_active) {
++		struct mmc_data *data = host->data;
++		size_t len = data->blksz * data->blocks;
++
++		if (dir == DMA_FROM_DEVICE && !data->error) {
++			dma_sync_single_for_cpu(&host->pdev->dev,
++						dma_priv->bounce_dma, len,
++						DMA_FROM_DEVICE);
++			sg_copy_from_buffer(data->sg, data->sg_len,
++					    dma_priv->bounce_buf, len);
++		}
++		dma_priv->bounce_active = false;
++	}
++
+ 	if (dir == DMA_FROM_DEVICE)
+ 		clear_bit(SDHI_INTERNAL_DMAC_RX_IN_USE, &global_flags);
+ 
+@@ -525,12 +616,17 @@ static void renesas_sdhi_internal_dmac_pre_req(struct mmc_host *mmc,
+ 					       struct mmc_request *mrq)
+ {
+ 	struct tmio_mmc_host *host = mmc_priv(mmc);
++	struct renesas_sdhi *priv = host_to_priv(host);
+ 	struct mmc_data *data = mrq->data;
+ 
+ 	if (!data)
+ 		return;
+ 
+ 	data->host_cookie = COOKIE_UNMAPPED;
++	/* Fragmented requests are copied to the bounce buffer, not mapped */
++	if (renesas_sdhi_internal_dmac_need_bounce(&priv->dma_priv, data))
++		return;
++
+ 	renesas_sdhi_internal_dmac_map(host, data, COOKIE_PRE_MAPPED);
+ }
+ 
+@@ -546,6 +642,32 @@ renesas_sdhi_internal_dmac_request_dma(struct tmio_mmc_host *host,
+ 	writel(0, host->ctl + DM_CM_INFO1);
+ 	writel(0, host->ctl + DM_CM_INFO2);
+ 
++	if (renesas_sdhi_internal_dmac_use_bounce(&host->pdev->dev)) {
++		struct renesas_sdhi_dma *dma_priv = &priv->dma_priv;
++
++		dma_priv->bounce_page = dma_alloc_pages(&host->pdev->dev,
++							SDHI_BOUNCE_SIZE,
++							&dma_priv->bounce_dma,
++							DMA_BIDIRECTIONAL,
++							GFP_KERNEL);
++		if (dma_priv->bounce_page) {
++			dma_priv->bounce_buf = page_address(dma_priv->bounce_page);
++			dev_info(&host->pdev->dev,
++				 "using %u KiB bounce buffer (no IOMMU)\n",
++				 SDHI_BOUNCE_SIZE / SZ_1K);
++		} else {
++			/* Revert to the single segment limits */
++			dev_warn(&host->pdev->dev,
++				 "bounce buffer allocation failed\n");
++			host->mmc->max_segs = 1;
++			host->mmc->max_blk_count = UINT_MAX / TMIO_MAX_BLK_SIZE;
++			host->mmc->max_req_size = min_t(size_t,
++					host->mmc->max_blk_size * host->mmc->max_blk_count,
++					dma_max_mapping_size(&host->pdev->dev));
++			host->mmc->max_seg_size = host->mmc->max_req_size;
++		}
++	}
++
+ 	/* Each value is set to non-zero to assume "enabling" each DMA */
+ 	host->chan_rx = host->chan_tx = (void *)0xdeadbeaf;
+ 
+@@ -562,6 +684,17 @@ renesas_sdhi_internal_dmac_request_dma(struct tmio_mmc_host *host,
+ static void
+ renesas_sdhi_internal_dmac_release_dma(struct tmio_mmc_host *host)
+ {
++	struct renesas_sdhi *priv = host_to_priv(host);
++	struct renesas_sdhi_dma *dma_priv = &priv->dma_priv;
++
++	if (dma_priv->bounce_page) {
++		dma_free_pages(&host->pdev->dev, SDHI_BOUNCE_SIZE,
++			       dma_priv->bounce_page, dma_priv->bounce_dma,
++			       DMA_BIDIRECTIONAL);
++		dma_priv->bounce_page = NULL;
++		dma_priv->bounce_buf = NULL;
++	}
++
+ 	/* Each value is set to zero to assume "disabling" each DMA */
+ 	host->chan_rx = host->chan_tx = NULL;
+ }
+@@ -582,7 +715,11 @@ static int renesas_sdhi_internal_dmac_probe(struct platform_device *pdev)
+ 	const struct soc_device_attribute *attr;
+ 	const struct renesas_sdhi_of_data_with_quirks *of_data_quirks;
+ 	const struct renesas_sdhi_quirks *quirks;
++	const struct renesas_sdhi_of_data *of_data;
++	struct renesas_sdhi_of_data *bounce_of_data;
++	struct tmio_mmc_host *host;
+ 	struct device *dev = &pdev->dev;
++	int ret;
+ 
+ 	of_data_quirks = of_device_get_match_data(&pdev->dev);
+ 	quirks = of_data_quirks->quirks;
+@@ -594,8 +731,38 @@ static int renesas_sdhi_internal_dmac_probe(struct platform_device *pdev)
+ 	/* value is max of SD_SECCNT. Confirmed by HW engineers */
+ 	dma_set_max_seg_size(dev, 0xffffffff);
+ 
+-	return renesas_sdhi_probe(pdev, &renesas_sdhi_internal_dmac_dma_ops,
+-				  of_data_quirks->of_data, quirks);
++	of_data = of_data_quirks->of_data;
++	if (renesas_sdhi_internal_dmac_use_bounce(dev)) {
++		bounce_of_data = devm_kmemdup(dev, of_data, sizeof(*of_data),
++					      GFP_KERNEL);
++		if (!bounce_of_data)
++			return -ENOMEM;
++
++		bounce_of_data->max_blk_count = SDHI_BOUNCE_SIZE / TMIO_MAX_BLK_SIZE;
++		/* +1 for the unaligned head/tail; the length is limited above */
++		bounce_of_data->max_segs = SDHI_BOUNCE_SIZE / PAGE_SIZE + 1;
++		of_data = bounce_of_data;
++	}
++
++	ret = renesas_sdhi_probe(pdev, &renesas_sdhi_internal_dmac_dma_ops,
++				 of_data, quirks);
++	if (ret)
++		return ret;
++
++	/* TEMP: debug counters for evaluation, remove before upstreaming */
++	host = platform_get_drvdata(pdev);
++	if (host->mmc->debugfs_root) {
++		struct renesas_sdhi_dma *dma_priv = &host_to_priv(host)->dma_priv;
++
++		debugfs_create_ulong("sw_bounce_direct", 0444, host->mmc->debugfs_root,
++				     &dma_priv->dbg_direct);
++		debugfs_create_ulong("sw_bounce_bounce", 0444, host->mmc->debugfs_root,
++				     &dma_priv->dbg_bounce);
++		debugfs_create_ulong("sw_bounce_oversize", 0444, host->mmc->debugfs_root,
++				     &dma_priv->dbg_oversize);
++	}
++
++	return 0;
+ }
+ 
+ static const struct dev_pm_ops renesas_sdhi_internal_dmac_dev_pm_ops = {
+-- 
+2.43.0
+
