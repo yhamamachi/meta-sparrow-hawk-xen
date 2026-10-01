@@ -13,6 +13,7 @@ SRC_URI:append = " \
     file://0001-xen-Initial-version-of-Xen-passthrough-helper-driver.patch \
     file://0003-HACK-Allow-DomD-enumerate-PCI-devices.patch \
     file://0004-Fix-build-error-for-kernel-6.12.patch \
+    file://0001-mmc-renesas_sdhi-Add-SW-bounce-buffer-workaround-for.patch \
 "
 
 # Port Xen patch from v6.1.102/rcar-6.0.0.rc5-xt on xen-troops/linux
