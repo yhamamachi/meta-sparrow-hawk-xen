@@ -802,6 +802,9 @@ parameters:
                 - "../android/device/epam/aosp-xenvm-trout/agl_services_build/yocto-layer/meta-google"
               conf:
                 - [BBMASK:append, "|meta-google/recipes-trout/images/rcar-image-adas.bbappend"]
+                # The source recipe shares its WORKDIR with the consumers
+                # (work-shared), so rm_work must not wipe it under them
+                - [RM_WORK_EXCLUDE:append, " google-trout-agl-services-source"]
         images:
           full:
             partitions:
