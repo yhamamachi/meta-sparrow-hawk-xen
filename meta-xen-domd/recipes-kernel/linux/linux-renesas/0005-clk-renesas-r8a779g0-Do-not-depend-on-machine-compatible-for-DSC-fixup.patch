@@ -1,0 +1,28 @@
+From: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+Subject: [PATCH] clk: renesas: r8a779g0: Do not depend on machine compatible for DSC fixup
+
+The DSC clock force-on workaround is skipped unless the root node is
+compatible with "renesas,r8a779g0". A Xen guest (DomD) sees the root
+compatible of "xen,xenvm", so the workaround never runs there. DSC then
+stays off at boot, is not marked CLK_IS_CRITICAL (crit_mod_clks are only
+marked critical when on at boot) and DSI1 outputs no video.
+
+This function is only called from the r8a779g0 CPG init, so check the
+CPG node compatible instead of the machine compatible.
+
+Upstream-Status: Inappropriate [temporary workaround, superseded by proper DSC support]
+Signed-off-by: Yuya Hamamachi <yuya.hamamachi.sx@renesas.com>
+---
+diff --git a/drivers/clk/renesas/r8a779g0-cpg-mssr.c b/drivers/clk/renesas/r8a779g0-cpg-mssr.c
+index 23e588b435b8..b1f35df38b04 100644
+--- a/drivers/clk/renesas/r8a779g0-cpg-mssr.c
++++ b/drivers/clk/renesas/r8a779g0-cpg-mssr.c
+@@ -355,7 +355,7 @@ static void __init r8a779g0_cpg_mssr_dsc_fixup_init(struct device *dev)
+ 	u32 value;
+ 	int error;
+ 
+-	if (!of_machine_is_compatible("renesas,r8a779g0"))
++	if (!of_device_is_compatible(dev->of_node, "renesas,r8a779g0-cpg-mssr"))
+ 		return;
+ 
+ 	dsi1np = of_find_node_by_path("/soc/display@feb00000");
