@@ -11,12 +11,12 @@ Signed-off-by: Mykyta Poturai <mykyta_poturai@epam.com>
  1 file changed, 18 insertions(+)
 
 diff --git a/plat/renesas/rcar_gen4/bl31_plat_setup.c b/plat/renesas/rcar_gen4/bl31_plat_setup.c
-index d9eb56882..f1fbd0794 100644
+index d7ea02c16..5fd1fad13 100644
 --- a/plat/renesas/rcar_gen4/bl31_plat_setup.c
 +++ b/plat/renesas/rcar_gen4/bl31_plat_setup.c
-@@ -62,6 +62,23 @@ static const uintptr_t gicr_base_addrs[2] = {
- 	0U			/* Zero Termination */
- };
+@@ -68,6 +68,23 @@ void plat_gic_pre_pcpu_init(unsigned int cpu_idx)
+ {
+ }
  
 +static void rcar_ipmmu_setup(void)
 +{
@@ -38,8 +38,8 @@ index d9eb56882..f1fbd0794 100644
  void bl31_platform_setup(void)
  {
  	/* Initialize generic timer */
-@@ -79,6 +96,7 @@ void bl31_platform_setup(void)
- 	gic_set_gicr_frames(gicr_base_addrs);
+@@ -83,6 +100,7 @@ void bl31_platform_setup(void)
+ 	mmio_write_32(RCAR_CNTC_BASE + CNTCR_OFF, CNTCR_FCREQ(0) | CNTCR_EN);
  
  	rcar_pwrc_setup();
 +	rcar_ipmmu_setup();
