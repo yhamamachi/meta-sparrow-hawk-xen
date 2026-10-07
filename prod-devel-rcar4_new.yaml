@@ -373,7 +373,7 @@ parameters:
             sources:
               - type: git
                 url: https://github.com/rcar-community/meta-sparrow-hawk
-                rev: v2026-04-13
+                rev: 7f69da6c045f097597af7753d6419c53c5149d8f
             builder:
               layers:
                 - "../meta-sparrow-hawk"
