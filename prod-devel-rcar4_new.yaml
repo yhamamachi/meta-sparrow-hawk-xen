@@ -475,27 +475,12 @@ parameters:
       default: true
       overrides:
         components:
-          dom0:
-            builder:
-              conf:
-                # Enable Gfx Pkgs
-                - [MACHINE_FEATURES:append, " gsx"]
           domd:
             builder:
               conf:
-                # Enable Gfx Pkgs
-                - [MACHINE_FEATURES:append, " gsx"]
                 # Enable Wayland/Weston
                 - [DISTRO_FEATURES_NATIVESDK:append, " wayland"]
                 - [DISTRO_FEATURES:append, " pam wayland"]
-                - [BB_MULTI_PROVIDER_ALLOWED:append, "virtual/libgl virtual/egl virtual/libgles1 virtual/libgles2"]
-                - [PREFERRED_PROVIDER_virtual/libgles1, ""]
-                - [PREFERRED_PROVIDER_virtual/libgles2, "user-module-gles"]
-                - [PREFERRED_PROVIDER_virtual/egl, "libegl"]
-                - [PREFERRED_PROVIDER_virtual/libgl, ""]
-                - [PREFERRED_PROVIDER_virtual/mesa, ""]
-                - [PREFERRED_PROVIDER_virtual/libgbm, "libgbm"]
-                - [PREFERRED_PROVIDER_libgbm-dev, "libgbm"]
 
   ENABLE_VIRTIO:
     desc: "Add meta-test layer and some configs"
